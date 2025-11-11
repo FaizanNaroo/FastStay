@@ -1,13 +1,38 @@
-def validate_signup_data(data):
-    required_fields = ['email', 'password', 'fname', 'lname', 'usertype', 'gender', 'city', 'age']
-    for field in required_fields:
-        if field not in data or data[field] in [None, ""]:
-            return False, f"Missing field: {field}"
+# faststay_app/utils/validators.py
 
-    # Extra validations (optional)
-    if '@' not in data['email']:
-        return False, "Invalid email format"
-    if len(data['password']) < 6:
-        return False, "Password must be at least 6 characters"
+import re
 
-    return True, None
+def validate_email(email: str) -> bool:
+    """Check if email is valid."""
+    regex = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-.]+\.[a-zA-Z]{2,}$'
+    return re.match(regex, email) is not None
+
+def validate_password(password: str) -> bool:
+    """Check if password meets requirements (min 8 chars, 1 number, 1 uppercase, 1 LowerCase, 1 Special Character)."""
+    if len(password) < 8:
+        return False
+    if not re.search(r'\d', password):
+        return False
+    if not re.search(r'[A-Z]', password):
+        return False
+    if not re.search(r'[a-z]', password):
+        return False
+    if not re.search(r'^[a-zA-Z0-9]', password):
+        return False
+    return True
+
+def validate_username(username: str) -> bool:
+    """Check if username is alphanumeric and 3-30 characters."""
+    if not username.isalnum():
+        return False
+    if not (3 <= len(username) <= 15):
+        return False
+    return True
+
+def validate_name(name: str) -> bool:
+    """Checks if the Name is an actual name, without special characters"""
+    pattern = r'^[A-Za-z\s-]+$'
+    return bool(re.fullmatch(pattern, name))
+
+def validate_age(age: int) -> bool:
+    return age >= 18
