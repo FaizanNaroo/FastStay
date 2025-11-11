@@ -45,6 +45,9 @@ Create Table HostelManager(
   OperatingHours int CHECK(OperatingHours>=1 AND OperatingHours<=24)
 );
 
+Alter table hostelmanager
+Alter column PhoneNo Type char(11);
+
 Create Table Hostel(
   HostelId Serial Primary Key,
   ManagerId int references HostelManager(ManagerId) On delete cascade On update cascade,
@@ -70,6 +73,7 @@ Create Table HostelPics(
 
 -- If Manager is uploading hostel pic then consider RoomSeaterNo: -1 ,
 -- else Manager will provide RoomSeaterNo while uploading RoomPic
+-- The boolean tells whether hostel pics or room pics
 Alter Table HostelPics
 Add Column isHostelPic boolean,
 Add Column RoomSeaterNo int Default -1;
@@ -153,11 +157,13 @@ Select * from securityinfo;
 Select * from expenses;
 Select * from hostelrating;
 
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
+
 -- Procedures for Insertion and Deletion and no return data
 -- Functions in case need to return something
 
 -- 1, User Sigin i.e. Creating an acount
-Create or Replace function Signin(
+Create or Replace function Signup(
   UserType varchar(10),
   Fname varchar(50),
   Lname varchar(50),
@@ -171,7 +177,7 @@ Declare
   p_loginId int;
   p_userId int;
 Begin
-  if exists(Select 1 from LoginInfo L where L.Email = Signin.email) then
+  if exists(Select 1 from LoginInfo L where L.Email = Signup.email) then
     return 0;     -- Acount with this email already exists
   End if;
 
@@ -190,11 +196,11 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from signin('Admin','Arham','Zeeshan',20,'Male','Sialkot','arhamzeeshan617@gmail.com','Playstation0896');
+--Select * from signin('Admin','Arham','Zeeshan',20,'Male','Sialkot','arhamzeeshan617@gmail.com','Playstation0896');
+Select * from signup('Admin','Fezan','Shamshad',20,'Male','Sialkot','fezan617@gmail.com','Playstation0896');
 Select * from Users;
-Select * from LoginInfo;
 
---2, Get All the Users
+--2, Print All the Users
 Create or Replace function GetAllUsers()
 Returns Table(
   UserId int,
@@ -326,7 +332,7 @@ Select * from appsuggestions;
 Create or Replace function AddManagerDetails(
   p_UserId int,
   p_PhotoLink Text,
-  p_PhoneNo int,
+  p_PhoneNo char(11),
   p_Education varchar(50),
   p_ManagerType varchar(50),
   p_OperatingHours int
@@ -336,8 +342,9 @@ Begin
     return false;
   End if;
 
+  -- This check ensures that student cannot create another Manager Acount
   if exists(Select 1 from StudentDemographics where StudentId = p_UserId) then
-    return true;
+    return false;
   End if;
 
   if p_ManagerType in ('Owner','Employee') and (p_OperatingHours>=1 AND p_OperatingHours<=24) then
@@ -350,4 +357,125 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from addmanagerdetails(1,'someurtl',923324434300,'BS CS','Owner',8);
+Select * from AddManagerDetails(1,'someurl','03324434300','BS CS','Owner',8);
+
+--8, Update HostelManager Details
+Create or Replace function UpdateManagerDetails(
+  p_ManagerId int,
+  p_PhotoLink Text,
+  p_PhoneNo char(11),
+  p_Education varchar(50),
+  p_ManagerType varchar(50),
+  p_OperatingHours int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from HostelManager where managerid = p_ManagerId) then
+    return false;
+  End if;
+
+  if p_ManagerType in ('Owner','Employee') and (p_OperatingHours>=1 AND p_OperatingHours<=24) then
+    Update HostelManager
+    set photolink = p_PhotoLink,
+        phoneno = p_PhoneNo,
+        education = p_Education,
+        managertype = p_ManagerType,
+        operatinghours = p_OperatingHours
+    where managerid = p_ManagerId;
+    return true;
+  End if;
+
+  return false;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from UpdateManagerDetails(1,'someurl','03324434300','BS CS','Owner',8);
+Select * from hostelmanager;
+
+--9, Delete HostelManager (Used by SuperAdmin)
+Create or Replace function DeleteHostelManager(
+  p_ManagerId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostelmanager where managerid = p_ManagerId) then
+    return false;
+  End if;
+
+  Delete from hostelmanager
+  where managerid = p_ManagerId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from DeleteHostelManager(1);
+
+--10, Add Hostel Details (Hostel Manager can add his hostel details)
+Create or Replace function AddHostelDetails(
+  p_ManagerId int,
+  p_BlockNo int,
+  p_HouseNo int,
+  p_HostelType varchar(50),
+  p_isParking boolean,
+  p_NumRooms int,
+  p_NumFloors int,
+  p_WaterTimings Time,
+  p_CleanlinessTenure int,
+  p_IssueResolvingTenure int,
+  p_MessProvide boolean,
+  p_GeezerFlag boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from HostelManager where Managerid = p_ManagerId) then
+    return false;
+  End if;
+
+  if p_HostelType in ('Portion','Building') then
+    Insert into Hostel(managerid, blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure, messprovide, geezerflag)
+    values(p_ManagerId, p_BlockNo, p_HouseNo, p_HostelType, p_isParking, p_NumRooms, p_NumFloors, p_WaterTimings,       p_CleanlinessTenure, p_IssueResolvingTenure, p_MessProvide, p_GeezerFlag);
+    return true;
+  End if;
+
+  return false;
+End;
+$$ LANGUAGE plpgsql;
+
+--11, Update Hostel Details (Hostel Manager can update his hostel details)
+Create or Replace function UpdateHostelDetails(
+  p_ManagerId int,
+  p_BlockNo int,
+  p_HouseNo int,
+  p_HostelType varchar(50),
+  p_isParking boolean,
+  p_NumRooms int,
+  p_NumFloors int,
+  p_WaterTimings Time,
+  p_CleanlinessTenure int,
+  p_IssueResolvingTenure int,
+  p_MessProvide boolean,
+  p_GeezerFlag boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from HostelManager where Managerid = p_ManagerId) then
+    return false;
+  End if;
+
+  if p_HostelType in ('Portion','Building') then
+    Update Hostel
+    set blockno = p_BlockNo,
+        houseno = p_HouseNo,
+        hosteltype = p_HostelType,
+        isparking = p_isParking,
+        numrooms = p_NumRooms,
+        numfloors = p_NumFloors,
+        watertimings = p_WaterTimings,
+        cleanlinesstenure = p_CleanlinessTenure,
+        issueresolvingtenure = p_IssueResolvingTenure,
+        messprovide = p_MessProvide,
+        geezerflag =  p_GeezerFlag
+    where managerid = p_ManagerId;
+    return true;
+  End if;
+
+  return false;
+End;
+$$ LANGUAGE plpgsql;
