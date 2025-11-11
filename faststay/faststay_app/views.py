@@ -33,7 +33,7 @@ def signup_view(request):
 
         # 4️⃣ Call Supabase stored function
         result = register_user(
-            "signin",
+            "signup",
             [usertype, fname, lname, age, gender, city, email, password]
         )
 
