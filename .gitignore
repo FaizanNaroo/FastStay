@@ -1,1 +1,2 @@
-
+# Ignore Django settings or config files with secrets
+settings.py
