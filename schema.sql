@@ -51,8 +51,8 @@ Alter column PhoneNo Type char(11);
 Create Table Hostel(
   HostelId Serial Primary Key,
   ManagerId int references HostelManager(ManagerId) On delete cascade On update cascade,
-  BlockNo int,
-  HouseNo int,
+  BlockNo int,           -- Changed to varchar(100)
+  HouseNo int,           -- Changed to varchar(100)
   HostelType varchar(50) CHECK(HostelType in ('Portion','Building')),
   isParking boolean,
   NumRooms int,
@@ -63,6 +63,12 @@ Create Table Hostel(
   MessProvide boolean,
   GeezerFlag boolean
 );
+
+Alter table hostel
+Alter column BlockNo Type varchar(100);
+
+Alter table hostel
+Alter column HouseNo Type varchar(100);
 
 Create Table HostelPics(
   PicId Serial,
@@ -162,7 +168,7 @@ GRANT SELECT ON ALL TABLES IN SCHEMA public TO authenticated;
 -- Procedures for Insertion and Deletion and no return data
 -- Functions in case need to return something
 
--- 1, User Sigin i.e. Creating an acount
+-- 1, User Signup i.e. Creating an acount
 Create or Replace function Signup(
   UserType varchar(10),
   Fname varchar(50),
@@ -357,7 +363,7 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from AddManagerDetails(1,'someurl','03324434300','BS CS','Owner',8);
+Select * from AddManagerDetails(2,'someurl','03324434300','BS CS','Owner',8);
 
 --8, Update HostelManager Details
 Create or Replace function UpdateManagerDetails(
@@ -388,7 +394,7 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from UpdateManagerDetails(1,'someurl','03324434300','BS CS','Owner',8);
+Select * from UpdateManagerDetails(2,'someurl','03324434300','BS CS','Owner',7);
 Select * from hostelmanager;
 
 --9, Delete HostelManager (Used by SuperAdmin)
@@ -412,15 +418,15 @@ Select * from DeleteHostelManager(1);
 --10, Add Hostel Details (Hostel Manager can add his hostel details)
 Create or Replace function AddHostelDetails(
   p_ManagerId int,
-  p_BlockNo int,
-  p_HouseNo int,
+  p_BlockNo varchar(100),
+  p_HouseNo varchar(100),
   p_HostelType varchar(50),
   p_isParking boolean,
   p_NumRooms int,
   p_NumFloors int,
   p_WaterTimings Time,
-  p_CleanlinessTenure int,
-  p_IssueResolvingTenure int,
+  p_CleanlinessTenure int,       -- In Days
+  p_IssueResolvingTenure int,    -- In Days
   p_MessProvide boolean,
   p_GeezerFlag boolean
 ) Returns boolean as $$
@@ -442,15 +448,15 @@ $$ LANGUAGE plpgsql;
 --11, Update Hostel Details (Hostel Manager can update his hostel details)
 Create or Replace function UpdateHostelDetails(
   p_ManagerId int,
-  p_BlockNo int,
-  p_HouseNo int,
+  p_BlockNo varchar(100),
+  p_HouseNo varchar(100),
   p_HostelType varchar(50),
   p_isParking boolean,
   p_NumRooms int,
   p_NumFloors int,
   p_WaterTimings Time,
-  p_CleanlinessTenure int,
-  p_IssueResolvingTenure int,
+  p_CleanlinessTenure int,      -- In Days
+  p_IssueResolvingTenure int,   -- In Days
   p_MessProvide boolean,
   p_GeezerFlag boolean
 ) Returns boolean as $$
@@ -477,5 +483,78 @@ Begin
   End if;
 
   return false;
+End;
+$$ LANGUAGE plpgsql;
+
+--12, Delete Hostel Details (Hostel Manager can delete his hostel)
+Create or Replace function DeleteHostelDetails(
+  p_HostelId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return false;
+  End if;
+I
+  Delete from hostel
+  where hostelid = p_HostelId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--13, Add Hostel Pictures (Note: Not room pictures just hostel pictures)
+Create or Replace function AddHostelPics(
+  p_Hosteld int,
+  p_PhotoLink text
+) Returns boolean as $$
+Declare
+  p_isHostelPic boolean;
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_Hosteld) then
+    return false;
+  End if;
+
+  set p_isHostelPic = true;
+  Insert into HostelPics(hostelid, photolink, ishostelpic)
+  values(p_HostelId, p_PhotoLink, p_isHostelPic);
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--14, Add Room Pictures (Manager can specify room seaterno and add its pictures)
+Create or Replace function AddRoomPics(
+  p_Hosteld int,
+  p_PhotoLink text,
+  p_RoomSeaterNo int        --Range from 1 to 6
+) Returns boolean as $$
+Declare
+  p_isHostelPic boolean;
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_Hosteld) then
+    return false;
+  End if;
+
+  set p_isHostelPic = false;
+  Insert into HostelPics(hostelid, photolink, ishostelpic, roomseaterno)
+  values(p_HostelId, p_PhotoLink, p_isHostelPic, p_RoomSeaterNo);
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--15, Delete Hostel Picture (Manager can Delete hostel pictures)
+Create or Replace function DeleteHostelPic(
+  p_PicId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostelpics where picid = p_PicId) then
+    return false;
+  End if;
+
+  Delete from hostelpics
+  where picid = p_PicId;
+
+  return true;
 End;
 $$ LANGUAGE plpgsql;
