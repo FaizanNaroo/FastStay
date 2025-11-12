@@ -18,7 +18,7 @@ class Update_Student_Detail_view(APIView):
     Returns:
     {
         "message": "Details entered successfully",
-        "Success": Boolean
+        "result": Boolean
     }
     """
 
@@ -36,4 +36,4 @@ class Update_Student_Detail_view(APIView):
             return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         
         #success
-        return Response({'message': 'Data Entered Successfully'}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Data Entered Successfully', 'result': success}, status=status.HTTP_201_CREATED)

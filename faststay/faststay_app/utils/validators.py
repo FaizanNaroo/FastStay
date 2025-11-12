@@ -17,7 +17,7 @@ def validate_password(password: str) -> bool:
         return False
     if not re.search(r'[a-z]', password):
         return False
-    if not re.search(r'^[a-zA-Z0-9]', password):
+    if not re.search(r'[^a-zA-Z0-9]', password):
         return False
     return True
 
@@ -36,3 +36,11 @@ def validate_name(name: str) -> bool:
 
 def validate_age(age: int) -> bool:
     return age >= 18
+
+def validate_PhoneNum(Num: str) -> bool:
+    pattern = r'^03[0-9]{9}$'
+
+    return bool(re.fullmatch(pattern, Num))
+
+def validate_OperatingHours(hours: int) -> bool:
+    return 1 <= hours <= 24

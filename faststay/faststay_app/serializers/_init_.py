@@ -1,2 +1,6 @@
 from .SignUp_Serializer import SignUp_Serializer
 from .Student_Details_Serializer import Student_Details_Serializer
+from .Update_StudentDetail_Serializer import Update_StudentDetails_Serializer
+from .Add_App_Suggestion_Serializer import Add_App_Suggestions_serializer
+from .Add_Manager_Details_Serializer import Add_Manager_Details_Serializer
+from .Update_Manager_Details_serializer import Update_Manager_Details_Serializer

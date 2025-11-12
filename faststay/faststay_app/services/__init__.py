@@ -1,2 +1,6 @@
 from .Register_service import register_user
 from .Student_Detail_service import Student_Detail_Service
+from .Update_Student_Detail_service import Update_Student_Detail_Service
+from .Add_App_Suggestion_service import add_app_suggestion_service
+from .Add_Manager_Details_Service import Add_Manager_Detail_Service
+from .Update_Manager_Details_service import Update_Manager_Detail_Service
