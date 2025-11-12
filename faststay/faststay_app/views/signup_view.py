@@ -2,7 +2,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.auth_service import register_user
+from faststay_app.services.Register_service import register_user
 from faststay_app.serializers.SignUp_Serializer import SignUp_Serializer
 
 class SignupView(APIView):

@@ -1,0 +1,2 @@
+from .signup_view import SignupView
+from .Student_Detail_Entry_view import Student_Detail_Entry_view

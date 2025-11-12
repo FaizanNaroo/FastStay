@@ -1,7 +1,7 @@
 from django.db import connection
 
 def register_user(function_name, data):
-    """Generic helper to call a PostgreSQL stored function."""
+    """Helper to Register a user"""
     try:
         # Extract fields in the order the stored function expects
         params = [

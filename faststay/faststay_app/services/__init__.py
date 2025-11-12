@@ -1,0 +1,2 @@
+from .Register_service import register_user
+from .Student_Detail_service import Student_Detail_Service

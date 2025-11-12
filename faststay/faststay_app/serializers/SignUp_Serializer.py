@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from faststay_app.utils.validators import validate_email, validate_password, validate_username, validate_name, validate_age
+from faststay_app.utils.validators import (validate_email,
+     validate_password, validate_username, validate_name,
+     validate_age)
+
 
 class SignUp_Serializer(serializers.Serializer):
     usertype = serializers.ChoiceField(choices=['Student','Hostel Manager','Admin'])
