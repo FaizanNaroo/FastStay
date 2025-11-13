@@ -15,6 +15,9 @@ Create Table Users(
   City varchar(100)
 );
 
+Alter table Users
+Alter column UserType Type varchar(50);
+
 Create Table StudentDemoGraphics(
   StudentId int Primary Key references Users(UserId) On delete cascade On update cascade,
   Semester int CHECK(Semester>=1 AND Semester<=8),
@@ -86,9 +89,11 @@ Add Column RoomSeaterNo int Default -1;
 
 Create Table MessDetails(
   MessId int Primary Key references Hostel(HostelId) On delete cascade On update cascade,
-  MessMeals int CHECK(MessMeals>=1 AND MessMeals<=3),
-  Dishes Text
+  MessMeals int CHECK(MessMeals>=1 AND MessMeals<=3)
 );
+
+Alter table MessDetails
+Add column Dishes text[];
 
 Create Table KitchenDetails(
   KitchenId int Primary Key references Hostel(HostelId) On delete cascade On update cascade,
@@ -494,7 +499,7 @@ Begin
   if not exists(Select 1 from hostel where hostelid = p_HostelId) then
     return false;
   End if;
-I
+
   Delete from hostel
   where hostelid = p_HostelId;
 
@@ -558,3 +563,149 @@ Begin
   return true;
 End;
 $$ LANGUAGE plpgsql;
+
+--16, Add Mess Details (Hostel Manager can add mess details)
+Create or Replace function AddMessDetails(
+  p_HostelId int,
+  p_MessTimeCount int,        -- Range (1 to 3)
+  p_Dishes text[]             -- Input Array of strings
+) Returns int as $$
+Declare
+  isMessProvide boolean;
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return -1;    -- Error: Hostel Does not exists
+  End if;
+
+  Select messprovide into isMessProvide from Hostel
+  where hostelid = p_HostelId;
+
+  if not isMessProvide then
+    return 0;     -- Error: Hostel does not provide Mess
+  End if;
+
+  if p_MessTimeCount>=1 and p_MessTimeCount<=3 then
+    Insert into MessDetails(messid, messmeals, dishes)
+    values(p_HostelId, p_MessTimeCount, p_Dishes);
+    return 1;     -- Mess Details Added Successfuly
+  End if;
+
+  return -2;      -- Error: Mess Meal Count Ranges from( 1 to 3)
+End;
+$$ LANGUAGE plpgsql;
+
+--17, Update Mess Details (Manager can Update Mess Details)
+Create or Replace function UpdateMessDetails(
+  p_MessId int,
+  p_MessTimeCount int,        -- Range (1 to 3)
+  p_Dishes text[]             -- Input Array of strings
+) Returns int as $$
+Begin
+  if not exists(Select 1 from messdetails where messid = p_MessId) then
+    return -1;    -- Error: Mess Info Does not exists
+  End if;
+
+  if p_MessTimeCount>=1 and p_MessTimeCount<=3 then
+    Update MessDetails
+    set messmeals = p_MessTimeCount,
+        dishes = p_Dishes
+    where messid = p_MessId;
+    return 1;     -- Mess Details Updated Successfuly
+  End if;
+
+  return 0;      -- Error: Mess Meal Count Ranges from( 1 to 3)
+End;
+$$ LANGUAGE plpgsql;
+
+--18, Add new Dish to Hostel Mess (Manager can Update his mess to add a dish)
+Create or Replace function AddNewDish(
+  p_MessId int,
+  p_Dish text
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from messdetails where messid = p_MessId) then
+    return false;
+  End if;
+
+  Update messdetails
+  set dishes = array_append(dishes, p_Dish)
+  where messid = p_MessId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--19, Delete Hostel Mess Details (Manager can delete mess details)
+Create or Replace function DeleteMessDetails(
+  p_MessId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from messdetails where messid = p_MessId) then
+    return false;
+  End if;
+
+  Delete from messdetails
+  where messid = p_MessId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--20, Add Hostel Kitchen Details (Hostel Manager can add Kitchen Details)
+Create or Replace function AddKitchenDetails(
+  p_HostelId int,
+  p_isFridge boolean,
+  p_isMicrowave boolean,
+  p_isGas boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return false;
+  End if;
+
+  Insert into kitchendetails(kitchenid, isfridge, ismicrowave, isgas)
+  values(p_HostelId, p_isFridge, p_isMicrowave, p_isGas);
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--21, Update Kitchen Details (Hostel Manager can update Kitchen Details)
+Create or Replace function UpdateKitchenDetails(
+  p_KitchenId int,
+  p_isFridge boolean,
+  p_isMicrowave boolean,
+  p_isGas boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from kitchendetails where kitchenid = p_KitchenId) then
+    return false;
+  End if;
+
+  Update kitchendetails
+  set isfridge = p_isFridge,
+      ismicrowave = p_isMicrowave,
+      isgas = p_isGas
+  where kitchenid = p_KitchenId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--22, Delete Kitchen Details
+Create or Replace function DeleteKitchenDetails(
+  p_KitchenId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from kitchendetails where kitchenid = p_KitchenId) then
+    return false;
+  End if;
+
+  Delete from kitchendetails
+  where kitchenid = p_KitchenId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--23, Add Room into hostel (Manager Can add RoomInfo in hostel)
