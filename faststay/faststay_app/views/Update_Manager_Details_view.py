@@ -7,19 +7,30 @@ from faststay_app.serializers.Update_Manager_Details_serializer import Update_Ma
 
 class Update_Manager_Details_view(APIView):
     """
-    Adds Manager Details
-    
+    Update hostel manager Detail.
+
     POST:
     Accepts JSON:
     {
-        "p_UserId": "int",
-        ...
+        "p_UserId": int,           # Required, must exist in Users table
+        "p_PhotoLink": str,        # Optional, URL/path to photo
+        "p_PhoneNo": str,          # Required, 11-digit phone number
+        "p_Education": str,        # Optional
+        "p_ManagerType": str,      # Required, 'Owner' or 'Employee'
+        "p_OperatingHours": int    # Required, 1–24
     }
+
     Returns:
     {
-        "message": "Data successfully Entered",
-        "result": boolean
+        "message": str,  # "Manager added successfully" or error message
+        "result": bool   # True if added successfully, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `AddManagerDetails`.
+    - Validates that `p_UserId` exists and is not already a student.
+    - Returns 400 if input is invalid or constraints fail.
+    - Returns 201 Created if successfully added.
     """
 
     @swagger_auto_schema(request_body=Update_Manager_Details_Serializer)

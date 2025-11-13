@@ -7,19 +7,27 @@ from faststay_app.serializers.Add_App_Suggestion_Serializer import Add_App_Sugge
 
 class Add_App_Suggestion_view(APIView):
     """
-    Input User Complaints and suggestion
-    
+    Register a new app suggestion from a user (student or manager).
+
     POST:
     Accepts JSON:
     {
-        "userId": "int",
-        ...
+        "p_UserId": int,         # Required, must exist in Users table
+        "p_Improvements": str,   # Optional, description of suggested improvements
+        "p_Defects": str         # Optional, description of defects/issues faced
     }
+
     Returns:
     {
-        "message": "Complaint registered",
-        "result": bool
+        "message": str,          # "Suggestion registered" or error message
+        "result": bool           # True if suggestion successfully stored, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `AddAppSuggestion`.
+    - Validates that `p_UserId` exists.
+    - Returns 400 if input is invalid or user does not exist.
+    - Returns 201 Created if successfully registered.
     """
 
     @swagger_auto_schema(request_body=Add_App_Suggestions_serializer)

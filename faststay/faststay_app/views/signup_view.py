@@ -7,20 +7,34 @@ from faststay_app.serializers.SignUp_Serializer import SignUp_Serializer
 
 class SignupView(APIView):
     """
-    Handles user signup.
-    
+    Summary: Register a new user account (Student or Hostel Manager).
+
     POST:
     Accepts JSON:
     {
-        "email": "string",
-        ...
+        "UserType": str,   # Required, must be "Student" or "HostelManager"
+        "Fname": str,      # Required, first name
+        "Lname": str,      # Optional, last name
+        "Age": int,        # Required, must be >= 1
+        "Gender": str,     # Optional, gender
+        "City": str,       # Optional, city of residence
+        "email": str,      # Required, must be unique
+        "password": str    # Required, raw password
     }
+
     Returns:
     {
-        "message": "User created successfully",
-        "user_id": int
+        "message": str,    # "User registered" or error message
+        "result": bool     # True if successfully registered, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `Signup`.
+    - Validates that email is unique and age is >= 1.
+    - Returns 400 if input is invalid or email already exists.
+    - Returns 201 Created if successfully registered.
     """
+
 
     @swagger_auto_schema(request_body=SignUp_Serializer)
     def post(self, request):

@@ -7,20 +7,36 @@ from faststay_app.serializers.Student_Details_Serializer import Student_Details_
 
 class Student_Detail_Entry_view(APIView):
     """
-    Handles student details entry
-    
+    Summary: Register student demographic details.
+
     POST:
     Accepts JSON:
     {
-        "userid": "int",
-        ...
+        "UserId": int,          # Required, must exist in Users table
+        "Semester": int,        # Required, 1-8
+        "Department": str,      # Optional, department name
+        "Batch": int,           # Optional, batch number
+        "RoomateCount": int,    # Required, 1-6
+        "UniDistance": float,   # Optional, distance to university in km
+        "isAcRoom": bool,       # Optional, AC room flag
+        "isMess": bool,         # Optional, mess flag
+        "BedType": str,         # Required, 'Bed', 'Mattress', 'Anyone'
+        "WashroomType": str     # Required, 'RoomAttached' or 'Community'
     }
+
     Returns:
     {
-        "message": "Details entered successfully",
-        "result": Boolean
+        "message": str,         # "Details registered" or error message
+        "result": bool          # True if successfully stored, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `EnterStudentDetails`.
+    - Validates `UserId` exists and input values are within allowed ranges.
+    - Returns 400 if input is invalid or `UserId` does not exist.
+    - Returns 201 Created if successfully registered.
     """
+
 
     @swagger_auto_schema(request_body=Student_Details_Serializer)
     def post(self, request):

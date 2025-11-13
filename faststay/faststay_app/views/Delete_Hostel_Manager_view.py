@@ -7,20 +7,27 @@ from faststay_app.serializers.Delete_Hostel_Manager_Serializer import Delete_Hos
 
 class delete_Hostel_Manager_view(APIView):
     """
-    Deletes a Manager account
-    
+    Delete an existing hostel manager (SuperAdmin only).
+
     DELETE:
     Accepts JSON:
     {
-        "p_ManagerId": "int",
-        ...
+        "p_ManagerId": int  # Required, must exist in HostelManager table
     }
+
     Returns:
     {
-        "message": "Manager Successfully Deleted",
-        "result": bool
+        "message": str,  # "Manager deleted successfully" or error message
+        "result": bool   # True if deleted successfully, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `DeleteHostelManager`.
+    - Validates that `p_ManagerId` exists.
+    - Returns 400 if input is invalid or manager does not exist.
+    - Returns 201 Created if successfully deleted.
     """
+
 
     @swagger_auto_schema(request_body=Delete_Hostel_Manager_Serializer)
     def delete(self, request):

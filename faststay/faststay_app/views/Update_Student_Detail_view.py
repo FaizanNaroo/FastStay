@@ -7,20 +7,36 @@ from faststay_app.serializers.Update_StudentDetail_Serializer import Update_Stud
 
 class Update_Student_Detail_view(APIView):
     """
-    Handles student details entry
-    
-    POST:
+    Update existing student demographic details.
+
+    PUT:
     Accepts JSON:
     {
-        "userid": "int",
-        ...
+        "p_StudentId": int,       # Required, must exist in StudentDemographics table
+        "p_Semester": int,        # Required, 1-8
+        "p_Department": str,      # Optional
+        "p_Batch": int,           # Optional
+        "p_RoomateCount": int,    # Required, 1-6
+        "p_UniDistance": float,   # Optional
+        "p_isAcRoom": bool,       # Optional
+        "p_isMess": bool,         # Optional
+        "p_BedType": str,         # Required, 'Bed', 'Mattress', or 'Anyone'
+        "p_WashroomType": str     # Required, 'RoomAttached' or 'Community'
     }
+
     Returns:
     {
-        "message": "Details entered successfully",
-        "result": Boolean
+        "message": str,           # "Details updated successfully" or error message
+        "result": bool            # True if update succeeded, False otherwise
     }
+
+    Notes:
+    - Calls stored procedure `UpdateStudentDetails`.
+    - Validates that `p_StudentId` exists.
+    - Returns 400 if input is invalid or student does not exist.
+    - Returns 201 Created if successfully updated.
     """
+
 
     @swagger_auto_schema(request_body=Update_StudentDetails_Serializer)
     def post(self, request):
