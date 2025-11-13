@@ -1,0 +1,41 @@
+from django.db import connection
+
+def save_hostel_details(data, operation='add'):
+    """
+    operation: 'add' -> call AddHostelDetails
+               'update' -> call UpdateHostelDetails
+    """
+    try:
+        function_name = 'AddHostelDetails' if operation=='add' else 'UpdateHostelDetails'
+        params = [
+            data['p_ManagerId'],
+            data['p_BlockNo'],
+            data['p_HouseNo'],
+            data['p_HostelType'],
+            data['p_isParking'],
+            data['p_NumRooms'],
+            data['p_NumFloors'],
+            data['p_WaterTimings'],
+            data['p_CleanlinessTenure'],
+            data['p_IssueResolvingTenure'],
+            data['p_MessProvide'],
+            data['p_GeezerFlag']
+        ]
+        with connection.cursor() as cursor:
+            placeholders = ','.join(['%s'] * len(params))
+            query = f"SELECT * FROM {function_name}({placeholders})"
+            cursor.execute(query, params)
+            result = cursor.fetchone()
+
+        if not result:
+            return False, 'Database Returned no values.'
+        if not result[0]:
+            return False, "Operation failed. Check Manager ID or data."
+        return True, "Operation successful."
+    
+    except KeyError as e:
+        return False, f'Missing field: {str(e)}' 
+    
+    except Exception as e:
+        print(f"DB Error in {function_name}: {e}")
+        return False, str(e)

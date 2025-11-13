@@ -44,3 +44,9 @@ def validate_PhoneNum(Num: str) -> bool:
 
 def validate_OperatingHours(hours: int) -> bool:
     return 1 <= hours <= 24
+
+def validate_NNums(num: int) -> bool:
+    return num >= 1
+
+def validate_Nums(num: int) -> bool:
+    return num >= 0

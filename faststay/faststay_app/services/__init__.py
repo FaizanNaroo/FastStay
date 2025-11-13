@@ -4,3 +4,5 @@ from .Update_Student_Detail_service import Update_Student_Detail_Service
 from .Add_App_Suggestion_service import add_app_suggestion_service
 from .Add_Manager_Details_Service import Add_Manager_Detail_Service
 from .Update_Manager_Details_service import Update_Manager_Detail_Service
+from .Delete_Hostel_Manager_service import delete_Hostel_Manager_service
+from .save_Hostel_Details_Service import save_hostel_details

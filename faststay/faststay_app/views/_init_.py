@@ -4,3 +4,4 @@ from .Update_Student_Detail_view import Update_Student_Detail_view
 from .Add_App_Suggestion_view import Add_App_Suggestion_view
 from .Add_Manager_Details_view import Add_Manager_Details_view
 from .Update_Manager_Details_view import Update_Manager_Details_view
+from .Add_Hostel_Detail_view import Add_Hostel_Details_view

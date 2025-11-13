@@ -8,6 +8,9 @@ from faststay_app.views.Update_Student_Detail_view import Update_Student_Detail_
 from faststay_app.views.Add_App_Suggestion_view import Add_App_Suggestion_view
 from faststay_app.views.Add_Manager_Details_view import Add_Manager_Details_view
 from faststay_app.views.Update_Manager_Details_view import Update_Manager_Details_view
+from faststay_app.views.Delete_Hostel_Manager_view import delete_Hostel_Manager_view
+from faststay_app.views.Add_Hostel_Detail_view import Add_Hostel_Details_view
+from faststay_app.views.Update_Hostel_Details_view import Update_Hostel_Details_view
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -21,11 +24,15 @@ schema_view = get_schema_view(
 
 urlpatterns=[
     path('signup/', SignupView.as_view(), name='signup'),
-    path('UserDetail/', Student_Detail_Entry_view.as_view(), name='DetailEntry'),
-    path('UpdateUserDetail/', Update_Student_Detail_view.as_view(), name='UpdateStudentDetail'),
+    path('UserDetail/add/', Student_Detail_Entry_view.as_view(), name='DetailEntry'),
+    path('UserDetail/update/', Update_Student_Detail_view.as_view(), name='UpdateStudentDetail'),
     path('addAppSuggestion/', Add_App_Suggestion_view.as_view(), name='Add_App_Suggestion'),
-    path('AddManagerDetails/', Add_Manager_Details_view.as_view(), name='Add_Manager_Details'),
-    path('UpdateManagerDetails/', Update_Manager_Details_view.as_view(), name='Update_Manager_Details'),
+    path('ManagerDetails/add/', Add_Manager_Details_view.as_view(), name='Add_Manager_Details'),
+    path('ManagerDetails/update', Update_Manager_Details_view.as_view(), name='Update_Manager_Details'),
+    path('ManagerDetails/delete', delete_Hostel_Manager_view.as_view(), name='Delete_Hostel_Manager'),
+    path('hostel/add/', Add_Hostel_Details_view.as_view(), name='add_hostel'),
+    path('hostel/update/', Update_Hostel_Details_view.as_view(), name='update_hostel'),
+
 
     # Swagger URLs
     re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
