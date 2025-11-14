@@ -4,4 +4,12 @@ from .Update_Student_Detail_view import Update_Student_Detail_view
 from .Add_App_Suggestion_view import Add_App_Suggestion_view
 from .Add_Manager_Details_view import Add_Manager_Details_view
 from .Update_Manager_Details_view import Update_Manager_Details_view
+from .Delete_Hostel_Manager_view import delete_Hostel_Manager_view
 from .Add_Hostel_Detail_view import Add_Hostel_Details_view
+from .Update_Hostel_Details_view import Update_Hostel_Details_view
+from .Add_Kitchen_Detail_view import Add_Kitchen_Details_view
+from .Update_Kitchen_Detail_view import Update_Kitchen_Details_view
+from .Add_MessDetail_View import Add_Mess_Details
+from .Update_Mess_Details import Update_Mess_Details
+from .Delete_Mess_Details_view import Delete_Mess_Details_view
+from .Add_New_Dish_view import Add_New_Dish_View

@@ -11,6 +11,12 @@ from faststay_app.views.Update_Manager_Details_view import Update_Manager_Detail
 from faststay_app.views.Delete_Hostel_Manager_view import delete_Hostel_Manager_view
 from faststay_app.views.Add_Hostel_Detail_view import Add_Hostel_Details_view
 from faststay_app.views.Update_Hostel_Details_view import Update_Hostel_Details_view
+from faststay_app.views.Add_Kitchen_Detail_view import Add_Kitchen_Details_view
+from faststay_app.views.Update_Kitchen_Detail_view import Update_Kitchen_Details_view
+from faststay_app.views.Add_MessDetail_View import Add_Mess_Details
+from faststay_app.views.Update_Mess_Details import Update_Mess_Details
+from faststay_app.views.Delete_Mess_Details_view import Delete_Mess_Details_view
+from faststay_app.views.Add_New_Dish_view import Add_New_Dish_View
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -28,10 +34,16 @@ urlpatterns=[
     path('UserDetail/update/', Update_Student_Detail_view.as_view(), name='UpdateStudentDetail'),
     path('addAppSuggestion/', Add_App_Suggestion_view.as_view(), name='Add_App_Suggestion'),
     path('ManagerDetails/add/', Add_Manager_Details_view.as_view(), name='Add_Manager_Details'),
-    path('ManagerDetails/update', Update_Manager_Details_view.as_view(), name='Update_Manager_Details'),
-    path('ManagerDetails/delete', delete_Hostel_Manager_view.as_view(), name='Delete_Hostel_Manager'),
+    path('ManagerDetails/update/', Update_Manager_Details_view.as_view(), name='Update_Manager_Details'),
+    path('ManagerDetails/delete/', delete_Hostel_Manager_view.as_view(), name='Delete_Hostel_Manager'),
     path('hostel/add/', Add_Hostel_Details_view.as_view(), name='add_hostel'),
     path('hostel/update/', Update_Hostel_Details_view.as_view(), name='update_hostel'),
+    path('kitchenDetails/add/', Add_Kitchen_Details_view.as_view(), name='Add_Kitchen_Detail'),
+    path('kitchenDetails/update/', Update_Kitchen_Details_view.as_view(), name='Update_Kitchen_Detail'),
+    path('messDetails/add/', Add_Mess_Details.as_view(), name='Add_Mess_Detail'),
+    path('messDetails/update/', Update_Mess_Details.as_view(), name='Update_Mess_Detail'),
+    path('messDetails/delete/', Delete_Mess_Details_view.as_view(), name='Delete_Mess_Detail'),
+    path('messDetails/AddNewDish/', Add_New_Dish_View.as_view(), name='Add_Mess_Dish'),
 
 
     # Swagger URLs
