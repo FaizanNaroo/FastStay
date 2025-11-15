@@ -1,0 +1,1 @@
+from .Hostel_Details_Serializer import Hostel_Details_serializer

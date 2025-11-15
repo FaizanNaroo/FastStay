@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Manager_Services.Update_Manager_Details_service import Update_Manager_Detail_Service
-from faststay_app.serializers.Manager_Serializers.Update_Manager_Details_serializer import Update_Manager_Details_Serializer
+from faststay_app.services import Update_Manager_Detail_Service
+from faststay_app.serializers import Update_Manager_Details_Serializer
 
 class Update_Manager_Details_view(APIView):
     """

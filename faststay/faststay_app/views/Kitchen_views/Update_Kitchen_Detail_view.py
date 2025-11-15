@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from faststay_app.services.Kitchen_Services.Update_Kitchen_Detail_service import Update_Kitchen_Detail_service
-from faststay_app.serializers.Kitchen_Serializers.Update_Kitchen_Details_Serializer import Update_Kitchen_Details_Serializer
+from faststay_app.serializers.Kitchen_Serializers.Update_Kitchen_Details_Serializer import Update_Kitchen_Details_serializer
 
 class Update_Kitchen_Details_view(APIView):
     """
@@ -30,9 +30,9 @@ class Update_Kitchen_Details_view(APIView):
     - Returns 201 Created if kitchen details were updated successfully.
     """
 
-    @swagger_auto_schema(request_body=Update_Kitchen_Details_Serializer)
+    @swagger_auto_schema(request_body=Update_Kitchen_Details_serializer)
     def put(self, request):
-        serializer = Update_Kitchen_Details_Serializer(data=request.data)
+        serializer = Update_Kitchen_Details_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():

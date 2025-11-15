@@ -1,6 +1,6 @@
 from django.db import connection
 
-def Add_New_Dish_service(data):
+def Add_New_Dish_Service(data):
     try:
         function_name = 'AddNewDish'
 
@@ -27,4 +27,4 @@ def Add_New_Dish_service(data):
         return False, f'Missing field: {str(e)}' 
     except Exception as e:
         print(f"DB error in {function_name}: {e}")
-        return None
+        return False, f'Database Error: {e}'

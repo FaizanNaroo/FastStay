@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.App_Services.Add_App_Suggestion_service import add_app_suggestion_service
-from faststay_app.serializers.App_Serializers.Add_App_Suggestion_Serializer import Add_App_Suggestions_serializer
+from faststay_app.services import add_app_suggestion_service
+from faststay_app.serializers import Add_App_Suggestions_serializer
 
 class Add_App_Suggestion_view(APIView):
     """

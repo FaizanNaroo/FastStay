@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Mess_Services.Update_Mess_Details_service import Update_Mess_Detail_service
-from faststay_app.serializers.Mess_Serializers.Update_Mess_Details_Serializer import Update_Mess_Detail_Serializer
+from faststay_app.services import Update_Mess_Detail_service
+from faststay_app.serializers import Update_Mess_Detail_serializer
 
 class Update_Mess_Details(APIView):
     """
@@ -33,9 +33,9 @@ class Update_Mess_Details(APIView):
         -1 -> Mess details do not exist
     """
 
-    @swagger_auto_schema(request_body=Update_Mess_Detail_Serializer)
+    @swagger_auto_schema(request_body=Update_Mess_Detail_serializer)
     def put(self, request):
-        serializer = Update_Mess_Detail_Serializer(data=request.data)
+        serializer = Update_Mess_Detail_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():

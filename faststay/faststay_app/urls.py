@@ -2,21 +2,13 @@ from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-from faststay_app.views.User_views.signup_view import SignupView
-from faststay_app.views.Student_views.Student_Detail_Entry_view import Student_Detail_Entry_view
-from faststay_app.views.Student_views.Update_Student_Detail_view import Update_Student_Detail_view
-from faststay_app.views.App_views.Add_App_Suggestion_view import Add_App_Suggestion_view
-from faststay_app.views.Manager_views.Add_Manager_Details_view import Add_Manager_Details_view
-from faststay_app.views.Manager_views.Update_Manager_Details_view import Update_Manager_Details_view
-from faststay_app.views.Manager_views.Delete_Hostel_Manager_view import delete_Hostel_Manager_view
-from faststay_app.views.Hostel_views.Add_Hostel_Detail_view import Add_Hostel_Details_view
-from faststay_app.views.Hostel_views.Update_Hostel_Details_view import Update_Hostel_Details_view
-from faststay_app.views.Kitchen_views.Add_Kitchen_Detail_view import Add_Kitchen_Details_view
-from faststay_app.views.Kitchen_views.Update_Kitchen_Detail_view import Update_Kitchen_Details_view
-from faststay_app.views.Mess_views.Add_MessDetail_View import Add_Mess_Details
-from faststay_app.views.Mess_views.Update_Mess_Details import Update_Mess_Details
-from faststay_app.views.Mess_views.Delete_Mess_Details_view import Delete_Mess_Details_view
-from faststay_app.views.Mess_views.Add_New_Dish_view import Add_New_Dish_View
+from faststay_app.views import SignupView
+from faststay_app.views import Add_App_Suggestion_view
+from faststay_app.views import Student_Detail_Entry_view, Update_Student_Detail_view
+from faststay_app.views import Add_Manager_Details_view, Update_Manager_Details_view, delete_Hostel_Manager_view
+from faststay_app.views import Add_Hostel_Details_view, Update_Hostel_Details_view
+from faststay_app.views import Add_Kitchen_Details_view, Update_Kitchen_Details_view
+from faststay_app.views import Add_Mess_Details, Update_Mess_Details, Delete_Mess_Details_view, Add_New_Dish_View
 
 schema_view = get_schema_view(
     openapi.Info(

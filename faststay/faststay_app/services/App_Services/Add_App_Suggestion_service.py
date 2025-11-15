@@ -21,9 +21,8 @@ def add_app_suggestion_service(data):
             if not result:
                 return False, 'Database returned no result'
             
-            if result:
-                if result[0]:
-                    return True, 'Data Entered Successfully'
+            if result[0]:
+                return True, 'Data Entered Successfully'
             else:
                 return False, 'Invalid User'
 
@@ -31,4 +30,4 @@ def add_app_suggestion_service(data):
         return False, f'Missing field: {str(e)}' 
     except Exception as e:
         print(f"DB error in {function_name}: {e}")
-        return None
+        return False, f'Database Error: {e}'

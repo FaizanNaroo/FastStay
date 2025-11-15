@@ -5,7 +5,7 @@ def validate_p_MessTimeCount(value):
         raise serializers.ValidationError("Incorrect Mess Count Range.")
     return value
 
-class Update_Mess_Detail_Serializer(serializers.Serializer):
+class Update_Mess_Detail_serializer(serializers.Serializer):
     p_MessId = serializers.IntegerField()
     p_MessTimeCount = serializers.IntegerField(validators=[validate_p_MessTimeCount])
     p_Dishes = serializers.ListField(

@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Mess_Services.Add_New_Dish_service import Add_New_Dish_service
-from faststay_app.serializers.Mess_Serializers.Add_New_Dish_Serializer import Add_New_Dish_Serializer
+from faststay_app.services import Add_New_Dish_Service
+from faststay_app.serializers import Add_New_Dish_serializer
 
 class Add_New_Dish_View(APIView):
     """
@@ -28,16 +28,16 @@ class Add_New_Dish_View(APIView):
     - Returns 201 Created if the dish was added successfully.
     """
 
-    @swagger_auto_schema(request_body=Add_New_Dish_Serializer)
+    @swagger_auto_schema(request_body=Add_New_Dish_serializer)
     def put(self, request):
-        serializer = Add_New_Dish_Serializer(data=request.data)
+        serializer = Add_New_Dish_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():
             return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
-        success, result = Add_New_Dish_service(serializer.validated_data)
+        success, result = Add_New_Dish_Service(serializer.validated_data)
         if not success:
             return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         

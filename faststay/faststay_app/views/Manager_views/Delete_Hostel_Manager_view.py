@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Manager_Services.Delete_Hostel_Manager_service import delete_Hostel_Manager_service
-from faststay_app.serializers.Manager_Serializers.Delete_Hostel_Manager_Serializer import Delete_Hostel_Manager_Serializer
+from faststay_app.services import delete_Hostel_Manager_service
+from faststay_app.serializers import Delete_Hostel_Manager_serializer
 
 class delete_Hostel_Manager_view(APIView):
     """
@@ -29,9 +29,9 @@ class delete_Hostel_Manager_view(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=Delete_Hostel_Manager_Serializer)
+    @swagger_auto_schema(request_body=Delete_Hostel_Manager_serializer)
     def delete(self, request):
-        serializer = Delete_Hostel_Manager_Serializer(data=request.data)
+        serializer = Delete_Hostel_Manager_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():

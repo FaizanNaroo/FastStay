@@ -26,4 +26,4 @@ def delete_Hostel_Manager_service(data):
         return False, f'Missing field: {str(e)}' 
     except Exception as e:
         print(f"DB error in {function_name}: {e}")
-        return None
+        return False, f'Database Error: {e}'

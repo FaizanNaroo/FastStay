@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Student_Services.Update_Student_Detail_service import Update_Student_Detail_Service
-from faststay_app.serializers.Student_Serializers.Update_StudentDetail_Serializer import Update_StudentDetails_Serializer
+from faststay_app.services import Update_Student_Detail_Service
+from faststay_app.serializers import Update_StudentDetails_serializer
 
 class Update_Student_Detail_view(APIView):
     """
@@ -38,9 +38,9 @@ class Update_Student_Detail_view(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=Update_StudentDetails_Serializer)
-    def post(self, request):
-        serializer = Update_StudentDetails_Serializer(data=request.data)
+    @swagger_auto_schema(request_body=Update_StudentDetails_serializer)
+    def put(self, request):
+        serializer = Update_StudentDetails_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():

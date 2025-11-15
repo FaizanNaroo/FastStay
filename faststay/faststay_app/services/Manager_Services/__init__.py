@@ -1,0 +1,3 @@
+from .Add_Manager_Details_Service import Add_Manager_Detail_Service
+from .Delete_Hostel_Manager_service import delete_Hostel_Manager_service
+from .Update_Manager_Details_service import Update_Manager_Detail_Service

@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Mess_Services.Add_Mess_Details_Service import Add_Mess_Detail_service
-from faststay_app.serializers.Mess_Serializers.Add_Mess_Detail_Serializer import Add_Mess_Detail_Serializer
+from faststay_app.services import Add_Mess_Detail_service
+from faststay_app.serializers import Add_Mess_Detail_serializer
 
 class Add_Mess_Details(APIView):
     """
@@ -34,9 +34,9 @@ class Add_Mess_Details(APIView):
         -2 -> Mess Meal Count must be between 1 and 3
     """
 
-    @swagger_auto_schema(request_body=Add_Mess_Detail_Serializer)
+    @swagger_auto_schema(request_body=Add_Mess_Detail_serializer)
     def post(self, request):
-        serializer = Add_Mess_Detail_Serializer(data=request.data)
+        serializer = Add_Mess_Detail_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():

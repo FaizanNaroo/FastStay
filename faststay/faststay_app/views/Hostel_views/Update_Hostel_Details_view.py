@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Hostel_Services.save_Hostel_Details_Service import save_hostel_details
-from faststay_app.serializers.Hostel_Serializers.Hostel_Details_Serializer import Hostel_Details_serializer
+from faststay_app.services import save_hostel_details
+from faststay_app.serializers import Hostel_Details_serializer
    
 class Update_Hostel_Details_view(APIView):
     """

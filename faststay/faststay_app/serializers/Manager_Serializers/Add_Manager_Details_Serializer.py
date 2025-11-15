@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from faststay_app.utils.validators import validate_PhoneNum, validate_OperatingHours
 
-class Add_Manager_Details_Serializer(serializers.Serializer):
+class Add_Manager_Details_serializer(serializers.Serializer):
     p_UserId = serializers.IntegerField()
     p_PhotoLink = serializers.CharField(max_length=1024)
     p_PhoneNo = serializers.CharField(max_length=11)

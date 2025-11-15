@@ -1,14 +1,24 @@
-from .App_Services.Add_App_Suggestion_service import add_app_suggestion_service
-from .Hostel_Services.save_Hostel_Details_Service import save_hostel_details
-from .Kitchen_Services.Add_Kitchen_Detail_Services import Add_Kitchen_Detail_service
-from .Kitchen_Services.Update_Kitchen_Detail_service import Update_Kitchen_Detail_service
-from .Manager_Services.Add_Manager_Details_Service import Add_Manager_Detail_Service
-from .Manager_Services.Delete_Hostel_Manager_service import delete_Hostel_Manager_service
-from .Manager_Services.Update_Manager_Details_service import Update_Manager_Detail_Service
-from .Mess_Services.Add_Mess_Details_Service import Add_Mess_Detail_service
-from .Mess_Services.Add_New_Dish_service import Add_New_Dish_service
-from .Mess_Services.Delete_Mess_Details_service import Delete_Mess_Detail_service
-from .Mess_Services.Update_Mess_Details_service import Update_Mess_Detail_service
-from .Student_Services.Student_Detail_service import Student_Detail_Service
-from .Student_Services.Update_Student_Detail_service import Update_Student_Detail_Service
-from .User_Services.Register_service import register_user
+from .App_Services import add_app_suggestion_service
+from .Hostel_Services import save_hostel_details
+from .Kitchen_Services import Add_Kitchen_Detail_service, Update_Kitchen_Detail_service
+from .Manager_Services import Add_Manager_Detail_Service, Update_Manager_Detail_Service, delete_Hostel_Manager_service
+from .Mess_Services import Add_Mess_Detail_service, Add_New_Dish_Service, Update_Mess_Detail_service, Delete_Mess_Detail_service
+from .Student_Services import Student_Detail_Service, Update_Student_Detail_Service
+from .User_Services import register_user
+
+__all__ = [
+    "add_app_suggestion_service",
+    "save_hostel_details",
+    "Add_Kitchen_Detail_service",
+    "Update_Kitchen_Detail_service",
+    "Add_Manager_Detail_Service",
+    "Update_Manager_Detail_Service",
+    "delete_Hostel_Manager_service",
+    "Add_Mess_Detail_service",
+    "Add_New_Dish_Service",
+    "Update_Mess_Detail_service",
+    "Delete_Mess_Detail_service",
+    "Student_Detail_Service",
+    "Update_Student_Detail_Service",
+    "register_user",
+]

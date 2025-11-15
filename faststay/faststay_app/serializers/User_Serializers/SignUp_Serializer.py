@@ -4,7 +4,7 @@ from faststay_app.utils.validators import (validate_email,
      validate_age)
 
 
-class SignUp_Serializer(serializers.Serializer):
+class SignUp_serializer(serializers.Serializer):
     usertype = serializers.ChoiceField(choices=['Student','Hostel Manager','Admin'])
     fname = serializers.CharField(max_length=50)
     lname = serializers.CharField(max_length=50)

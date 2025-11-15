@@ -1,0 +1,2 @@
+from .Student_Detail_Entry_view import Student_Detail_Entry_view
+from .Update_Student_Detail_view import Update_Student_Detail_view

@@ -1,0 +1,1 @@
+from .save_Hostel_Details_Service import save_hostel_details

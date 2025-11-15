@@ -1,0 +1,2 @@
+from .Add_Kitchen_Detail_Services import Add_Kitchen_Detail_service
+from .Update_Kitchen_Detail_service import Update_Kitchen_Detail_service

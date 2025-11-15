@@ -1,0 +1,2 @@
+from .Student_Detail_service import Student_Detail_Service
+from .Update_Student_Detail_service import Update_Student_Detail_Service

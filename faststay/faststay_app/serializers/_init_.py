@@ -1,7 +1,0 @@
-from .App_Serializers import Add_App_Suggestion_Serializer
-from .Hostel_Serializers import Hostel_Details_Serializer
-from .Kitchen_Serializers import Add_Kitchen_Details_Serializer, Update_Kitchen_Details_Serializer
-from .Manager_Serializers import Add_Manager_Details_Serializer, Update_Manager_Details_serializer, Delete_Hostel_Manager_Serializer
-from .Mess_Serializers import Add_Mess_Detail_Serializer, Add_New_Dish_Serializer, Update_Mess_Details_Serializer, Delete_Mess_Details_Serializer
-from .Student_Serializers import Student_Details_Serializer, Update_StudentDetail_Serializer
-from .User_Serializers import SignUp_Serializer

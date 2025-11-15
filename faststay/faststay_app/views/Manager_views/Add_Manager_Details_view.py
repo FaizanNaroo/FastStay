@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.Manager_Services.Add_Manager_Details_Service import Add_Manager_Detail_Service
-from faststay_app.serializers.Manager_Serializers.Add_Manager_Details_Serializer import Add_Manager_Details_Serializer
+from faststay_app.services import Add_Manager_Detail_Service
+from faststay_app.serializers import Add_Manager_Details_serializer
 
 class Add_Manager_Details_view(APIView):
     """
@@ -34,9 +34,9 @@ class Add_Manager_Details_view(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=Add_Manager_Details_Serializer)
+    @swagger_auto_schema(request_body=Add_Manager_Details_serializer)
     def post(self, request):
-        serializer = Add_Manager_Details_Serializer(data=request.data)
+        serializer = Add_Manager_Details_serializer(data=request.data)
 
         # Validate Input
         if not serializer.is_valid():

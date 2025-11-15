@@ -1,0 +1,2 @@
+from .Add_Kitchen_Detail_view import Add_Kitchen_Details_view
+from .Update_Kitchen_Detail_view import Update_Kitchen_Details_view

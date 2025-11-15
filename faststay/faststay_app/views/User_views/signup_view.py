@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services.User_Services.Register_service import register_user
-from faststay_app.serializers.User_Serializers.SignUp_Serializer import SignUp_Serializer
+from faststay_app.services import register_user
+from faststay_app.serializers import SignUp_serializer
 
 class SignupView(APIView):
     """
@@ -36,9 +36,9 @@ class SignupView(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=SignUp_Serializer)
+    @swagger_auto_schema(request_body=SignUp_serializer)
     def post(self, request):
-        serializer = SignUp_Serializer(data=request.data)  # DRF automatically parses JSON
+        serializer = SignUp_serializer(data=request.data)  # DRF automatically parses JSON
 
         # Validate Input
         if not serializer.is_valid():

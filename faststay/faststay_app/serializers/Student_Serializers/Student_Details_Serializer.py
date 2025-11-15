@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 
-class Student_Details_Serializer(serializers.Serializer):
+class Student_Details_serializer(serializers.Serializer):
     UserId = serializers.IntegerField()
     Semester = serializers.IntegerField()
     Department = serializers.CharField(max_length=100)
