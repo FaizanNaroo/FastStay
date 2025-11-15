@@ -1,0 +1,7 @@
+from .App_views import Add_App_Suggestion_view
+from .Hostel_views import Add_Hostel_Detail_view, Update_Hostel_Details_view
+from .Kitchen_views import Add_Kitchen_Detail_view, Update_Kitchen_Detail_view
+from .Hostel_views import Add_Hostel_Detail_view, Update_Hostel_Details_view
+from .Mess_views import Add_MessDetail_View, Add_New_Dish_view, Update_Mess_Details, Delete_Mess_Details_view
+from .Student_views import Student_Detail_Entry_view, Update_Student_Detail_view
+from .User_views import signup_view
