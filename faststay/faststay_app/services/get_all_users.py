@@ -1,5 +1,3 @@
-# faststay_app/services/profile_service.py
-
 from django.db import connection
 
 class ProfileService:
