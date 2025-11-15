@@ -1,2 +1,3 @@
 # Ignore Django settings or config files with secrets
 faststay/faststay/settings.py
+__pycache__/
