@@ -269,3 +269,156 @@ Updates hostel details for a manager.
 - Returns 201 Created on success, 400 Bad Request on error.
 
 ---
+
+## 16. AddMessDetails - Add Mess Details for a Hostel
+
+**Description:**  
+Adds mess-related details for a hostel, including the number of meal timings and the dishes offered.
+
+**Input Parameters:**
+
+| Parameter          | Type    | Required | Description |
+|--------------------|---------|----------|-------------|
+| p_HostelId         | int     | Yes      | Must exist in the `Hostel` table |
+| p_MessTimeCount    | int     | Yes      | Meal count (1–3) |
+| p_Dishes           | text[]  | Yes      | Array of dish names |
+
+**Return Type:**  
+- **int** (Return Code):
+  - **1** → Mess details added successfully  
+  - **0** → Error: Hostel does not provide mess  
+  - **-1** → Error: Hostel does not exist  
+  - **-2** → Error: Meal count must be between 1 and 3  
+
+**Usage Notes:**  
+- Validates `p_HostelId` exists in the `Hostel` table.  
+- Checks if hostel provides mess (`messprovide = true`).  
+- Inserts into `MessDetails` when all validations pass.  
+- Returns appropriate error codes based on validation failures.
+
+---
+
+## 17. UpdateMessDetails - Update Mess Details for a Hostel
+
+**Description:**  
+Updates existing mess details for a hostel, including meal count and list of dishes.
+
+**Input Parameters:**
+
+| Parameter          | Type    | Required | Description |
+|--------------------|---------|----------|-------------|
+| p_MessId           | int     | Yes      | Must exist in the `MessDetails` table |
+| p_MessTimeCount    | int     | Yes      | Meal count (1–3) |
+| p_Dishes           | text[]  | Yes      | Array of dish names |
+
+**Return Type:**  
+- **int** (Return Code):
+  - **1** → Mess details updated successfully  
+  - **0** → Error: Meal count must be between 1 and 3  
+  - **-1** → Error: Mess details do not exist  
+
+**Usage Notes:**  
+- Validates that `p_MessId` exists.  
+- Updates `MessDetails` table if validation passes.  
+- Returns meaningful error codes for invalid input.
+
+---
+
+## 18. AddNewDish - Add a New Dish to Hostel Mess
+
+**Description:**  
+Adds a new dish to the list of dishes for a hostel's mess.
+
+**Input Parameters:**
+
+| Parameter   | Type   | Required | Description |
+|-------------|--------|----------|-------------|
+| p_MessId    | int    | Yes      | Must exist in the `MessDetails` table |
+| p_Dish      | text   | Yes      | Dish name to be added |
+
+**Return Type:**  
+- **boolean**:
+  - **true** → Dish added successfully  
+  - **false** → Mess entry does not exist  
+
+**Usage Notes:**  
+- Validates that `p_MessId` exists in the `MessDetails` table.  
+- Appends the new dish to the existing `dishes` array using `array_append`.  
+- No duplicate-check is performed—same dish can be added multiple times.
+
+---
+
+## 19. DeleteMessDetails - Delete Hostel Mess Details
+
+**Description:**  
+Deletes existing mess details for a hostel.
+
+**Input Parameters:**
+
+| Parameter   | Type   | Required | Description |
+|-------------|--------|----------|-------------|
+| p_MessId    | int    | Yes      | Must exist in the `MessDetails` table |
+
+**Return Type:**  
+- **boolean**:
+  - **true** → Mess details deleted successfully  
+  - **false** → Mess details do not exist  
+
+**Usage Notes:**  
+- Validates that `p_MessId` exists in the `MessDetails` table.  
+- Deletes the mess record from `MessDetails`.  
+- Returns `false` if no mess entry exists for the given `p_MessId`.
+
+---
+
+## 20. AddKitchenDetails - Add Kitchen Details for a Hostel
+
+**Description:**  
+Adds kitchen facility details for a hostel.
+
+**Input Parameters:**
+
+| Parameter      | Type    | Required | Description |
+|----------------|---------|----------|-------------|
+| p_HostelId     | int     | Yes      | Must exist in `Hostel` table |
+| p_isFridge     | boolean | Yes      | Fridge availability |
+| p_isMicrowave  | boolean | Yes      | Microwave availability |
+| p_isGas        | boolean | Yes      | Gas availability |
+
+**Return Type:**  
+- **boolean**:
+  - **true** → Kitchen details added successfully  
+  - **false** → Hostel does not exist  
+
+**Usage Notes:**  
+- Validates that `p_HostelId` exists.  
+- Inserts record into `KitchenDetails`.  
+- Returns `false` if hostel does not exist.
+
+---
+
+## 21. UpdateKitchenDetails - Update Kitchen Details for a Hostel
+
+**Description:**  
+Updates existing kitchen facility details for a hostel.
+
+**Input Parameters:**
+
+| Parameter      | Type    | Required | Description |
+|----------------|---------|----------|-------------|
+| p_KitchenId    | int     | Yes      | Must exist in `KitchenDetails` table |
+| p_isFridge     | boolean | Yes      | Fridge availability |
+| p_isMicrowave  | boolean | Yes      | Microwave availability |
+| p_isGas        | boolean | Yes      | Gas availability |
+
+**Return Type:**  
+- **boolean**:
+  - **true** → Kitchen details updated successfully  
+  - **false** → Kitchen details do not exist  
+
+**Usage Notes:**  
+- Validates that `p_KitchenId` exists.  
+- Updates `KitchenDetails` record with new values.  
+- Returns `false` if kitchen record does not exist.
+
+---
