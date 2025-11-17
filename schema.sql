@@ -299,23 +299,25 @@ Begin
     return false;
   End if;
 
-  Update studentdemographics
-  set semester = p_Semester,
-      department = p_Department,
-      batch = p_Batch,
-      roomatecount = p_RoomateCount,
-      unidistance = p_UniDistance,
-      isacroom = p_isAcRoom,
-      ismess = p_isMess,
-      bedtype = p_BedType,
-      washroomtype = p_WashroomType
-  where studentid = p_StudentId;
+  UPDATE studentdemographics
+  SET
+    semester      = COALESCE(p_semester, semester),
+    department    = COALESCE(p_department, department),
+    batch         = COALESCE(p_batch, batch),
+    roomatecount  = COALESCE(p_roomatecount, roomatecount),
+    unidistance   = COALESCE(p_unidistance, unidistance),
+    isacroom      = COALESCE(p_isacroom, isacroom),
+    ismess        = COALESCE(p_ismess, ismess),
+    bedtype       = COALESCE(p_bedtype, bedtype),
+    washroomtype  = COALESCE(p_washroomtype, washroomtype)
+  WHERE studentid = p_studentid;
 
   return true;
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from updatestudentdetails(1,5,'CS','2023',3,15.5,true,false,'Bed','RoomAttached');
+Select * from updatestudentdetails(1,5,'CS','2023',3,16.5,true,false,'Bed','RoomAttached');
+Select * from updatestudentdetails(1,NULL,NULL,NULL,NULL,16.5,NULL,NULL,'Mattress',NULL);
 Select * from studentdemographics;
 
 -- 6, Enter App Suggestions by User(Student/Manager)
@@ -386,11 +388,11 @@ Begin
 
   if p_ManagerType in ('Owner','Employee') and (p_OperatingHours>=1 AND p_OperatingHours<=24) then
     Update HostelManager
-    set photolink = p_PhotoLink,
-        phoneno = p_PhoneNo,
-        education = p_Education,
-        managertype = p_ManagerType,
-        operatinghours = p_OperatingHours
+    set photolink = COALESCE(p_PhotoLink, photolink),
+        phoneno = COALESCE(p_PhoneNo, phoneno),
+        education = COALESCE(p_Education, education),
+        managertype = COALESCE(p_ManagerType, managertype),
+        operatinghours = COALESCE(p_OperatingHours, operatinghours)
     where managerid = p_ManagerId;
     return true;
   End if;
@@ -434,25 +436,32 @@ Create or Replace function AddHostelDetails(
   p_IssueResolvingTenure int,    -- In Days
   p_MessProvide boolean,
   p_GeezerFlag boolean
-) Returns boolean as $$
+) Returns int as $$
 Begin
   if not exists(Select 1 from HostelManager where Managerid = p_ManagerId) then
-    return false;
+    return 0;           -- Error: Manager with this id does not exists
+  End if;
+
+  if exists(Select 1 from hostel where blockno = p_BlockNo and houseno = p_HouseNo) then
+    return -1;          -- Error: Hostel with this BlockNo and HouseNo already exists
   End if;
 
   if p_HostelType in ('Portion','Building') then
     Insert into Hostel(managerid, blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure, messprovide, geezerflag)
     values(p_ManagerId, p_BlockNo, p_HouseNo, p_HostelType, p_isParking, p_NumRooms, p_NumFloors, p_WaterTimings,       p_CleanlinessTenure, p_IssueResolvingTenure, p_MessProvide, p_GeezerFlag);
-    return true;
+    return 1;           -- Hostel Added Successfully
   End if;
 
-  return false;
+  return -2;            -- Error: Invalid Hostel Type
 End;
 $$ LANGUAGE plpgsql;
 
+Select * from addhosteldetails(9, 'Block A', 'House no 11', 'Portion', true, 6, 2, '11:30', 7, 7, true, true);
+Select * from hostel;
+
 --11, Update Hostel Details (Hostel Manager can update his hostel details)
 Create or Replace function UpdateHostelDetails(
-  p_ManagerId int,
+  p_HostelId int,
   p_BlockNo varchar(100),
   p_HouseNo varchar(100),
   p_HostelType varchar(50),
@@ -466,24 +475,24 @@ Create or Replace function UpdateHostelDetails(
   p_GeezerFlag boolean
 ) Returns boolean as $$
 Begin
-  if not exists(Select 1 from HostelManager where Managerid = p_ManagerId) then
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
     return false;
   End if;
 
   if p_HostelType in ('Portion','Building') then
     Update Hostel
-    set blockno = p_BlockNo,
-        houseno = p_HouseNo,
-        hosteltype = p_HostelType,
-        isparking = p_isParking,
-        numrooms = p_NumRooms,
-        numfloors = p_NumFloors,
-        watertimings = p_WaterTimings,
-        cleanlinesstenure = p_CleanlinessTenure,
-        issueresolvingtenure = p_IssueResolvingTenure,
-        messprovide = p_MessProvide,
-        geezerflag =  p_GeezerFlag
-    where managerid = p_ManagerId;
+    set blockno = COALESCE(p_BlockNo, blockno),
+        houseno = COALESCE(p_HouseNo, houseno),
+        hosteltype = COALESCE(p_HostelType, hosteltype),
+        isparking = COALESCE(p_isParking, isparking),
+        numrooms = COALESCE(p_NumRooms, numrooms),
+        numfloors = COALESCE(p_NumFloors, numfloors),
+        watertimings = COALESCE(p_WaterTimings, watertimings),
+        cleanlinesstenure = COALESCE(p_CleanlinessTenure, cleanlinesstenure),
+        issueresolvingtenure = COALESCE(p_IssueResolvingTenure, issueresolvingtenure),
+        messprovide = COALESCE(p_MessProvide, messprovide),
+        geezerflag =  COALESCE(p_GeezerFlag, geezerflag)
+    where hostelid = p_HostelId;
     return true;
   End if;
 
@@ -509,17 +518,17 @@ $$ LANGUAGE plpgsql;
 
 --13, Add Hostel Pictures (Note: Not room pictures just hostel pictures)
 Create or Replace function AddHostelPics(
-  p_Hosteld int,
+  p_HostelId int,
   p_PhotoLink text
 ) Returns boolean as $$
 Declare
   p_isHostelPic boolean;
 Begin
-  if not exists(Select 1 from hostel where hostelid = p_Hosteld) then
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
     return false;
   End if;
 
-  set p_isHostelPic = true;
+  p_isHostelPic := true;
   Insert into HostelPics(hostelid, photolink, ishostelpic)
   values(p_HostelId, p_PhotoLink, p_isHostelPic);
 
@@ -529,18 +538,18 @@ $$ LANGUAGE plpgsql;
 
 --14, Add Room Pictures (Manager can specify room seaterno and add its pictures)
 Create or Replace function AddRoomPics(
-  p_Hosteld int,
+  p_HostelId int,
   p_PhotoLink text,
   p_RoomSeaterNo int        --Range from 1 to 6
 ) Returns boolean as $$
 Declare
   p_isHostelPic boolean;
 Begin
-  if not exists(Select 1 from hostel where hostelid = p_Hosteld) then
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
     return false;
   End if;
 
-  set p_isHostelPic = false;
+  p_isHostelPic := false;
   Insert into HostelPics(hostelid, photolink, ishostelpic, roomseaterno)
   values(p_HostelId, p_PhotoLink, p_isHostelPic, p_RoomSeaterNo);
 
@@ -607,8 +616,8 @@ Begin
 
   if p_MessTimeCount>=1 and p_MessTimeCount<=3 then
     Update MessDetails
-    set messmeals = p_MessTimeCount,
-        dishes = p_Dishes
+    set messmeals = COALESCE(p_MessTimeCount, messmeals),
+        dishes = COALESCE(p_Dishes, messmeals)
     where messid = p_MessId;
     return 1;     -- Mess Details Updated Successfuly
   End if;
@@ -683,9 +692,9 @@ Begin
   End if;
 
   Update kitchendetails
-  set isfridge = p_isFridge,
-      ismicrowave = p_isMicrowave,
-      isgas = p_isGas
+  set isfridge = COALESCE(p_isFridge, isfridge),
+      ismicrowave = COALESCE(p_isMicrowave, ismicrowave),
+      isgas = COALESCE(p_isGas, ismicrowave)
   where kitchenid = p_KitchenId;
 
   return true;
