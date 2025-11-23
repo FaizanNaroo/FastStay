@@ -717,4 +717,262 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
---23, Add Room into hostel (Manager Can add RoomInfo in hostel)
+--23, Add Room into hostel (Manager Can add Rooms in his hostel)
+Create or Replace function AddRoom(
+  p_RoomNo int,
+  p_HostelId int,
+  p_FloorNo int,
+  p_SeaterNo int,
+  p_RoomRent float,
+  p_BedType varchar(20),
+  p_WashroomType varchar(20),
+  p_CupboardType varchar(20),
+  p_isVentilated boolean,
+  p_isCarpet boolean,
+  p_isMiniFridge boolean
+) Returns int as $$
+Declare
+  TotalRooms int;
+  CurrentRooms int;
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return 0;       -- Error: Hostel does not exists
+  End if;
+
+  if exists(Select 1 from RoomInfo where roomid = p_RoomNo) then
+    return -1;      -- Error: Room with this id already exists
+  End if;
+
+  -- Check Hostel Room Limit is not full
+  Select numrooms into TotalRooms from hostel
+  where hostelid = p_HostelId;
+
+  Select Count(*) into CurrentRooms from RoomInfo
+  where hostelid = p_HostelId;
+
+  if CurrentRooms >= TotalRooms then
+      return -3;    -- Error: Hostel Room Limit is Full (Update Number of Rooms of Hostel)
+  End if;
+
+  if p_BedType in ('Bed','Mattress') and p_WashroomType in ('RoomAttached','Community')
+     and p_CupboardType in ('PerPerson','Shared') then
+
+     Insert into RoomInfo(hostelid, roomid, floorno, seaterno, roomrent, bedtype, washroomtype, cupboardtype, isventilated, iscarpet, isminifridge)
+     values(p_HostelId, p_RoomNo, p_FloorNo, p_SeaterNo, p_RoomRent, p_BedType, p_WashroomType,
+     p_CupboardType, p_isVentilated, p_isCarpet, p_isMiniFridge);
+
+     return 1;     -- Room Added Successfully
+  End if;
+
+  return -2;       -- Error: Invalid Data Types
+End;
+$$ LANGUAGE plpgsql;
+
+--24, Update Room Details
+Create or Replace function UpdateRoom(
+  p_RoomNo int,
+  p_HostelId int,
+  p_FloorNo int,
+  p_SeaterNo int,
+  p_RoomRent float,
+  p_BedType varchar(20),
+  p_WashroomType varchar(20),
+  p_CupboardType varchar(20),
+  p_isVentilated boolean,
+  p_isCarpet boolean,
+  p_isMiniFridge boolean
+) Returns int as $$
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return 0;          -- Error: Hostel does not exists
+  End if;
+
+  if not exists(Select 1 from RoomInfo where roomid = p_RoomNo and hostelid = p_HostelId) then
+    return -1;         -- Error: Room with this id does not exists
+  End if;
+
+  Update RoomInfo
+  set floorno = coalesce(p_FloorNo, floorno),
+      seaterno = coalesce(p_SeaterNo, seaterno),
+      roomrent = coalesce(p_RoomRent, roomrent),
+      bedtype = coalesce(p_BedType, bedtype),
+      washroomtype = coalesce(p_WashroomType, washroomtype),
+      cupboardtype = coalesce(p_CupboardType, cupboardtype),
+      isventilated = coalesce(p_isVentilated, isventilated),
+      iscarpet = coalesce(p_isCarpet, iscarpet),
+      isminifridge = coalesce(p_isMiniFridge, isminifridge)
+  where roomid = p_RoomNo and hostelid = p_HostelId;
+
+  return 1;         -- Room Details Updated Successfully
+
+End;
+$$ LANGUAGE plpgsql;
+
+--25, Delete Room Details
+Create or Replace function DeleteRoom(
+  p_HostelId int,
+  p_RoomNo int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from RoomInfo where hostelid = p_HostelId and roomid = p_RoomNo) then
+    return false;
+  End if;
+
+  Delete from RoomInfo
+  where hostelid = p_HostelId and roomid = p_RoomNo;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--26, Display Single Room Details
+Create or Replace function DisplaySingleRoom(
+  p_HostelId int,
+  p_RoomNo int
+)
+Returns Table(
+  p_FloorNo int,
+  p_SeaterNo int,
+  p_BedType varchar(20),
+  p_WashroomType varchar(20),
+  p_CupboardType varchar(20),
+  p_RoomRent float,
+  p_isVentilated boolean,
+  p_isCarpet boolean,
+  p_isMiniFridge boolean
+) As $$
+Begin
+  Return Query
+  Select floorno, seaterno, bedtype, washroomtype, cupboardtype, roomrent,
+         isventilated, iscarpet, isminifridge from RoomInfo
+  where hostelid = p_HostelId and roomid = p_RoomNo;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displaysingleroom(5,1);
+
+--27, Display All Rooms of as Hostel
+Create or Replace function DisplayHostelRooms(
+  p_HostelId int
+)
+Returns Table(
+  p_FloorNo int,
+  p_SeaterNo int,
+  p_BedType varchar(20),
+  p_WashroomType varchar(20),
+  p_CupboardType varchar(20),
+  p_RoomRent float,
+  p_isVentilated boolean,
+  p_isCarpet boolean,
+  p_isMiniFridge boolean
+) As $$
+Begin
+  Return Query
+  Select floorno, seaterno, bedtype, washroomtype, cupboardtype, roomrent,
+         isventilated, iscarpet, isminifridge from RoomInfo
+  where hostelid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayhostelrooms(5);
+
+--28, Display all Rooms of all Hostels
+Create or Replace function DisplayAllRooms()
+Returns Table(
+  p_FloorNo int,
+  p_SeaterNo int,
+  p_BedType varchar(20),
+  p_WashroomType varchar(20),
+  p_CupboardType varchar(20),
+  p_RoomRent float,
+  p_isVentilated boolean,
+  p_isCarpet boolean,
+  p_isMiniFridge boolean
+) As $$
+Begin
+  Return Query
+  Select floorno, seaterno, bedtype, washroomtype, cupboardtype, roomrent,
+         isventilated, iscarpet, isminifridge from RoomInfo;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayallrooms();
+
+--29, Add Security Details of a Hostel
+Create or Replace function AddSecurityInfo(
+  p_HostelId int,
+  p_GateTimings Time,
+  p_isCameras boolean,
+  p_isGuard boolean,
+  p_isOutsiderVerification boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return false;
+  End if;
+
+  Insert into securityinfo(securityid, gatetimings, iscameras, isguard, isoutsiderverification)
+  values(p_HostelId, p_GateTimings, p_isCameras, p_isGuard, p_isOutsiderVerification);
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--30, Update Security Details of Hostel
+Create or Replace function UpdateSecurityInfo(
+  p_SecurityId int,
+  p_GateTimings Time,
+  p_isCameras boolean,
+  p_isGuard boolean,
+  p_isOutsiderVerification boolean
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from SecurityInfo where securityid = p_SecurityId) then
+    return false;
+  End if;
+
+  Update SecurityInfo
+  set gatetimings = coalesce(p_GateTimings, gatetimings),
+      iscameras = coalesce(p_isCameras, iscameras),
+      isguard = coalesce(p_isGuard, isguard),
+      isoutsiderverification = coalesce(p_isOutsiderVerification, isoutsiderverification)
+  where securityid = p_SecurityId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--31, Delete Security Details of Hostel
+Create or Replace function DeleteSecurityInfo(
+  p_SecurityId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from SecurityInfo where securityid = p_SecurityId) then
+    return false;
+  End if;
+
+  Delete from SecurityInfo
+  where securityid = p_SecurityId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--32, Display Security Details of a Single Hostel
+Create or Replace function DisplayHostelSecurityInfo(
+  p_HostelId int
+)
+Returns Table(
+  p_GateTimings Time,
+  p_isCameras boolean,
+  p_isGuard boolean,
+  p_isOutsiderVerification boolean
+) as $$
+Begin
+  Return Query
+  Select gatetimings, iscameras, isguard, isoutsiderverification from SecurityInfo
+  where securityid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayhostelsecurityinfo(1);
