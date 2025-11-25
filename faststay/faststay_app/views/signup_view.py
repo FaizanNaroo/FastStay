@@ -8,20 +8,14 @@ import json
 
 @csrf_exempt 
 def signup_view(request):
-    """Handles user signup by calling Supabase stored function 'signin'."""
     if request.method != "POST":
         return JsonResponse({'error': 'Only POST method allowed'}, status=405)
 
     try:
-        # 1️⃣ Parse incoming data
         data = json.loads(request.body)
-
-        # 2️⃣ Validate input
         is_valid, error = validate_signup_data(data)
         if not is_valid:
             return JsonResponse({'error': error}, status=400)
-
-        # 3️⃣ Extract data fields
         email = data['email']
         password = data['password']
         fname = data['fname']
@@ -30,20 +24,18 @@ def signup_view(request):
         gender = data['gender']
         city = data['city']
         age = data['age']
-
-        # 4️⃣ Call Supabase stored function
         result = register_user(
             "signup",
             [usertype, fname, lname, age, gender, city, email, password]
         )
-
-        # 5️⃣ Handle result (assuming your function returns user_id or error code)
         if not result:
             return JsonResponse({'error': 'Database returned no result'}, status=500)
-
+        
         user_id = result[0]
-        if user_id == -1:
+        if user_id == 0:
             return JsonResponse({'error': 'Email already exists'}, status=400)
+        elif user_id==-1:
+            return JsonResponse({'error': 'Invalid Credentials'}, status=400)
 
         return JsonResponse({'message': 'User created successfully', 'user_id': user_id})
 

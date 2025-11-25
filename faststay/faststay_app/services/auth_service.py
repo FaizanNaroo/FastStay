@@ -1,7 +1,6 @@
 from django.db import connection
 
 def register_user(function_name, params):
-    """Generic helper to call a PostgreSQL stored function."""
     try:
         with connection.cursor() as cursor:
             placeholders = ','.join(['%s'] * len(params))
