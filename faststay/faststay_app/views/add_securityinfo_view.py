@@ -1,7 +1,7 @@
 from django.http import JsonResponse
 from django.views import View
 import json
-from faststay_app.services.display_securityinfo_service import SecurityInfo
+from faststay_app.services.add_securityinfo_service import SecurityInfo
 from faststay_app.utils.add_securityinfo_validator import validate_security_info 
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -43,3 +43,4 @@ class AddSecurityInfoView(View):
         except Exception as e:
             print(f"Error adding security info: {e}")
             return JsonResponse({'error': 'Internal server error'}, status=500)
+        
