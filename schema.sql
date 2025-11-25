@@ -132,13 +132,14 @@ Create Table SecurityInfo(
 Create Table Expenses(
   ExpenseId int Primary Key references Hostel(HostelId) On delete cascade On update cascade,
   isIncludedInRoomCharges boolean,
-  RoomCharges float[],               --include the charges based on RoomSeaterNo 
+  RoomCharges float[],               -- include the charges based on RoomSeaterNo 
   SecurityCharges float,
   MessCharges float Default 0,
   KitchenCharges float Default 0,
   InternetCharges float Default 0,
   AcServiceCharges float Default 0,
-  ElectricitybillType Text CHECK(ElectricitybillType in ('FixedCharges','PerMonth')),
+  -- These Types will be translated in frontend
+  ElectricitybillType Text CHECK(ElectricitybillType in ('RoomMeterFull','RoomMeterACOnly','ACSubmeter','UnitBased')),
   ElectricityCharges float Default 0
 );
 
@@ -976,3 +977,148 @@ End;
 $$ LANGUAGE plpgsql;
 
 Select * from displayhostelsecurityinfo(1);
+
+-- Manager can Add Expenses Details of Hostel
+--33, This function will be called when manager selects Expenses included in RoomRent
+Create or Replace function AddExpenses_RoomIncluded(
+  p_HostelId int,
+  p_SecurityCharges float
+) Returns boolean as $$
+Declare
+  RoomRents float[];
+Begin
+  if not exists(Select 1 from Hostel where hostelid = p_HostelId) then
+    return false;
+  End if;
+
+  -- Extract Room Charges per unique Seator Number and insert into Expense Table
+  Select Array(
+    Select AVG(RoomRent) from RoomInfo
+    where hostelid = p_HostelId
+    Group by seaterno
+    Order by seaterno
+  ) Into RoomRents;
+
+  Insert into Expenses(expenseid, securitycharges, electricitybilltype, roomcharges, isincludedinroomcharges)
+  values(p_HostelId, p_SecurityCharges, 'RoomMeterACOnly', RoomRents, true);
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from addexpenses_roomincluded(5, 32000);
+Select * from expenses;
+
+--34, This function will be called when manager does not select Expenses included in RoomRent
+Create or Replace function AddExpenses(
+  p_HostelId int,
+  p_SecurityCharges float,
+  p_MessCharges float,
+  p_KitchenCharges float,
+  p_InternetCharges float,
+  p_AcServiceCharges float,
+  p_ElectricitybillType Text,
+  p_ElectricityCharges float
+) Returns int as $$
+Declare
+  RoomRents float[];
+Begin
+  if not exists(Select 1 from Hostel where hostelid = p_HostelId) then
+    return 0;            -- Error: Hostel does not exists
+  End if;
+
+  if p_ElectricitybillType in ('RoomMeterFull','RoomMeterACOnly','ACSubmeter','UnitBased') then
+  -- Extract Room Charges per unique Seator Number and insert into Expense Table
+    Select Array(
+      Select AVG(RoomRent) from RoomInfo
+      where hostelid = p_HostelId
+      Group by seaterno
+      Order by seaterno
+    ) Into RoomRents;
+
+    Insert into Expenses(expenseid, securitycharges, messcharges, kitchencharges, internetcharges, acservicecharges, electricitybilltype, electricitycharges, roomcharges, isincludedinroomcharges)
+    values(p_HostelId, p_SecurityCharges, p_MessCharges, p_KitchenCharges, p_InternetCharges, p_AcServiceCharges, p_ElectricitybillType, p_ElectricityCharges, RoomRents, false);
+
+    return 1;             -- Successfully inserted
+  End if;
+
+  return -1;              -- Error: Wrong Electricity Bill Type Selected
+End;
+$$ LANGUAGE plpgsql;
+
+--35, Update Hostel Expenses
+Create or Replace function UpdateHostelExpenses(
+  p_ExpenseId int,
+  p_isIncludedInRoomCharges boolean,
+  p_RoomCharges float[],
+  p_SecurityCharges float,
+  p_MessCharges float,
+  p_KitchenCharges float,
+  p_InternetCharges float,
+  p_AcServiceCharges float,
+  p_ElectricitybillType Text,
+  p_ElectricityCharges float
+) Returns int as $$
+Begin
+  if not exists(Select 1 from Expenses where expenseid = p_ExpenseId) then
+    return 0;            -- Error: Hostel does not exists
+  End if;
+
+  if p_ElectricitybillType in ('RoomMeterFull','RoomMeterACOnly','ACSubmeter','UnitBased') then
+    Update Expenses
+    set isincludedinroomcharges = coalesce(p_isIncludedInRoomCharges, isincludedinroomcharges),
+        roomcharges = coalesce(p_RoomCharges, roomcharges),
+        securitycharges = coalesce(p_SecurityCharges, securitycharges),
+        messcharges = coalesce(p_MessCharges, messcharges),
+        kitchencharges = coalesce(p_KitchenCharges, kitchencharges),
+        internetcharges = coalesce(p_InternetCharges, internetcharges),
+        acservicecharges = coalesce(p_AcServiceCharges, acservicecharges),
+        electricitybilltype = coalesce(p_ElectricitybillType, electricitybilltype),
+        electricitycharges = coalesce(p_ElectricityCharges, electricitycharges)
+    where expenseid = p_ExpenseId;
+    return 1;             -- Successfully updated
+  End if;
+
+  return -1;              -- Error: Wrong Electricity Bill Type Selected
+End;
+$$ LANGUAGE plpgsql;
+
+--36, Delete Hostel Expenses
+Create or Replace function DeleteExpenses(
+  p_ExpenseId int
+) returns boolean as $$
+Begin
+  if not exists(Select 1 from expenses where expenseid = p_ExpenseId) then
+    return false;
+  End if;
+
+  Delete from Expenses
+  where expenseid = p_ExpenseId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--37, Display Expenses of a Hostel
+Create or Replace function DisplayExpenses(
+  p_HostelId int
+)
+Returns Table(
+  p_isIncludedInRoomCharges boolean,
+  p_RoomCharges float[],
+  p_SecurityCharges float,
+  p_MessCharges float,
+  p_KitchenCharges float,
+  p_InternetCharges float,
+  p_AcServiceCharges float,
+  p_ElectricitybillType Text,
+  p_ElectricityCharges float
+) as $$
+Begin
+  Return Query
+  Select isincludedinroomcharges, roomcharges, securitycharges, messcharges, kitchencharges, internetcharges,
+         acservicecharges, electricitybilltype, electricitycharges from Expenses
+  where expenseid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayexpenses(5);
