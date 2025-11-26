@@ -150,7 +150,7 @@ Create Table HostelRating(
   Primary Key(HostelId, StudentId, RatingId),
   RatingStar int CHECK(RatingStar>=1 AND RatingStar<=5),
   MaintenanceRating int Check(MaintenanceRating>=1 AND MaintenanceRating<=5),
-  IssueResolvingRate float,
+  IssueResolvingRate int,
   ManagerBehaviour int Check(ManagerBehaviour>=1 AND ManagerBehaviour<=5),
   Challenges Text
 );
@@ -1122,3 +1122,112 @@ End;
 $$ LANGUAGE plpgsql;
 
 Select * from displayexpenses(5);
+
+--38, Students can Add Ratings on hostel
+Create or Replace function AddHostelRating(
+  p_HostelId int,
+  p_StudentId int,
+  p_RatingStar int,
+  p_MaintenanceRating int,
+  p_IssueResolvingRate int,     -- Number of days
+  p_ManagerBehaviour int,
+  p_Challenges Text
+) Returns int as $$
+Begin
+  if not exists(Select 1 from hostel where hostelid = p_HostelId) then
+    return 0;     -- Error: Hostel does not exists
+  End if;
+
+  if not exists(Select 1 from studentdemographics where studentid = p_StudentId) then
+    return -1;    -- Error: Student does not exists
+  End if;
+
+  if p_RatingStar>=1 and p_RatingStar<=5
+  and p_MaintenanceRating>=1 and p_MaintenanceRating<=5
+  and p_ManagerBehaviour>=1 and p_ManagerBehaviour<=5
+  then
+    Insert into HostelRating(hostelid, studentid, ratingstar, maintenancerating, issueresolvingrate, managerbehaviour, challenges)
+    values(p_HostelId, p_StudentId, p_RatingStar, p_MaintenanceRating, p_IssueResolvingRate, p_ManagerBehaviour, p_Challenges);
+
+    return 1;        -- Rating Added Successfuly
+  End if;
+
+  return -2;         -- Error: Invalid Data Types
+End;
+$$ LANGUAGE plpgsql;
+
+--39, Students can Update Rating on Hostel
+Create or Replace function AddHostelRating(
+  p_RatingId int,
+  p_HostelId int,
+  p_StudentId int,
+  p_RatingStar int,
+  p_MaintenanceRating int,
+  p_IssueResolvingRate int,     -- Number of days
+  p_ManagerBehaviour int,
+  p_Challenges Text
+) Returns int as $$
+Begin
+  if not exists(Select 1 from hostelrating where ratingid = p_RatingId and studentid = p_StudentId and hostelid = p_HostelId) 
+  then
+    return 0;     -- Error: Rating Info Does not Exists
+  End if;
+
+  if p_RatingStar>=1 and p_RatingStar<=5
+  and p_MaintenanceRating>=1 and p_MaintenanceRating<=5
+  and p_ManagerBehaviour>=1 and p_ManagerBehaviour<=5
+  then
+    Update HostelRating
+    set ratingstar = coalesce(p_RatingStar, ratingstar),
+        maintenancerating = coalesce(p_MaintenanceRating, maintenancerating),
+        issueresolvingrate = coalesce(p_IssueResolvingRate, issueresolvingrate),
+        managerbehaviour = coalesce(p_ManagerBehaviour, managerbehaviour),
+        challenges = coalesce(p_Challenges, challenges)
+    where ratingid = p_RatingId and studentid = p_StudentId and hostelid = p_HostelId;
+
+    return 1;        -- Rating Updated Successfuly
+  End if;
+
+  return -1;         -- Error: Invalid Data Types
+End;
+$$ LANGUAGE plpgsql;
+
+--40, Students can Delete their Hostel Rating
+Create or Replace function DeleteHostelRating(
+  p_RatingId int,
+  p_HostelId int,
+  p_StudentId int
+) Returns boolean as $$
+Begin
+  if not exists(Select 1 from hostelrating where ratingid = p_RatingId and studentid = p_StudentId and hostelid = p_HostelId) 
+  then
+    return false;     -- Error: Rating Info Does not Exists
+  End if;
+
+  Delete from hostelrating
+  where ratingid = p_RatingId;
+
+  return true;
+End;
+$$ LANGUAGE plpgsql;
+
+--41, Display All Rating Stars
+Create or Replace function DisplayRatings()
+Returns Table(
+  p_RatingId int,
+  p_HostelId int,
+  p_StudentId int,
+  p_RatingStar int,
+  p_MaintenanceRating int,
+  p_IssueResolvingRate int,     -- Number of days
+  p_ManagerBehaviour int,
+  p_Challenges Text
+) as $$
+Begin
+  Return Query
+  Select ratingid, hostelid, studentid, ratingstar, maintenancerating, issueresolvingrate, managerbehaviour, challenges
+  from HostelRating;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayratings();
