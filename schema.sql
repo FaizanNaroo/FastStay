@@ -73,6 +73,9 @@ Alter column BlockNo Type varchar(100);
 Alter table hostel
 Alter column HouseNo Type varchar(100);
 
+Alter table hostel
+Add column Name text default 'Student Hostel';
+
 Create Table HostelPics(
   PicId Serial,
   HostelId int references Hostel(HostelId) On delete cascade On update cascade,
@@ -436,7 +439,8 @@ Create or Replace function AddHostelDetails(
   p_CleanlinessTenure int,       -- In Days
   p_IssueResolvingTenure int,    -- In Days
   p_MessProvide boolean,
-  p_GeezerFlag boolean
+  p_GeezerFlag boolean,
+  p_name text
 ) Returns int as $$
 Begin
   if not exists(Select 1 from HostelManager where Managerid = p_ManagerId) then
@@ -448,8 +452,8 @@ Begin
   End if;
 
   if p_HostelType in ('Portion','Building') then
-    Insert into Hostel(managerid, blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure, messprovide, geezerflag)
-    values(p_ManagerId, p_BlockNo, p_HouseNo, p_HostelType, p_isParking, p_NumRooms, p_NumFloors, p_WaterTimings,       p_CleanlinessTenure, p_IssueResolvingTenure, p_MessProvide, p_GeezerFlag);
+    Insert into Hostel(managerid, blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure, messprovide, geezerflag, name)
+    values(p_ManagerId, p_BlockNo, p_HouseNo, p_HostelType, p_isParking, p_NumRooms, p_NumFloors, p_WaterTimings,       p_CleanlinessTenure, p_IssueResolvingTenure, p_MessProvide, p_GeezerFlag, p_name);
     return 1;           -- Hostel Added Successfully
   End if;
 
@@ -457,7 +461,7 @@ Begin
 End;
 $$ LANGUAGE plpgsql;
 
-Select * from addhosteldetails(9, 'Block A', 'House no 11', 'Portion', true, 6, 2, '11:30', 7, 7, true, true);
+Select * from addhosteldetails(9, 'Block A', 'House no 11', 'Portion', true, 6, 2, '11:30', 7, 7, true, true, 'Bhatti Club');
 Select * from hostel;
 
 --11, Update Hostel Details (Hostel Manager can update his hostel details)
@@ -473,7 +477,8 @@ Create or Replace function UpdateHostelDetails(
   p_CleanlinessTenure int,      -- In Days
   p_IssueResolvingTenure int,   -- In Days
   p_MessProvide boolean,
-  p_GeezerFlag boolean
+  p_GeezerFlag boolean,
+  p_name text
 ) Returns boolean as $$
 Begin
   if not exists(Select 1 from hostel where hostelid = p_HostelId) then
@@ -492,7 +497,8 @@ Begin
         cleanlinesstenure = COALESCE(p_CleanlinessTenure, cleanlinesstenure),
         issueresolvingtenure = COALESCE(p_IssueResolvingTenure, issueresolvingtenure),
         messprovide = COALESCE(p_MessProvide, messprovide),
-        geezerflag =  COALESCE(p_GeezerFlag, geezerflag)
+        geezerflag =  COALESCE(p_GeezerFlag, geezerflag),
+        name = COALESCE(p_name, name)
     where hostelid = p_HostelId;
     return true;
   End if;
@@ -1231,3 +1237,225 @@ End;
 $$ LANGUAGE plpgsql;
 
 Select * from displayratings();
+
+--42, Display Details of Single Student
+Create or Replace function DisplayStudent(
+  p_StudentId int
+)
+Returns Table(
+  p_Semester int,
+  p_Department Text,
+  p_Batch int,
+  p_RoomateCount int,
+  p_UniDistance float,
+  p_isAcRoom boolean,
+  p_isMess boolean,
+  p_BedType varchar(50),
+  p_WashroomType varchar(50)
+) as $$
+Begin
+  Return Query
+  Select semester, department, batch, roomatecount, unidistance, isacroom, ismess, bedtype, washroomtype
+  from studentdemographics
+  where studentid = p_StudentId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displaystudent(1);
+
+--43, Display All Stduents (By Admin)
+Create or Replace function DisplayAllStudents()
+Returns Table(
+  p_Semester int,
+  p_Department Text,
+  p_Batch int,
+  p_RoomateCount int,
+  p_UniDistance float,
+  p_isAcRoom boolean,
+  p_isMess boolean,
+  p_BedType varchar(50),
+  p_WashroomType varchar(50)
+) as $$
+Begin
+  Return Query
+  Select semester, department, batch, roomatecount, unidistance, isacroom, ismess, bedtype, washroomtype
+  from studentdemographics;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayallstudents();
+
+--44, Display App Suggestion (On Admin Page)
+Create or Replace function DisplayUserSuggestions()
+Returns Table(
+  p_userid int,
+  p_improvements text,
+  p_defects text
+) as $$
+Begin
+  Return Query
+  Select userid, improvements, defects from appsuggestions;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayusersuggestions();
+
+--45, Display Details of a Hostel Manager
+Create or Replace function DisplayManager(
+  p_ManagerId int
+)
+Returns Table(
+  p_PhotoLink Text,
+  p_PhoneNo char(11),
+  p_Education varchar(50),
+  p_ManagerType varchar(50),
+  p_OperatingHours int
+) as $$
+Begin
+  Return Query
+  Select photolink, phoneno, education, managertype, operatinghours
+  from hostelmanager where managerid = p_ManagerId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displaymanager(9);
+
+--46, Display Details of All Managers (Used by Admin)
+Create or Replace function DisplayAllManagers()
+Returns Table(
+  p_ManagerId int,
+  p_PhotoLink Text,
+  p_PhoneNo char(11),
+  p_Education varchar(50),
+  p_ManagerType varchar(50),
+  p_OperatingHours int
+) as $$
+Begin
+  Return Query
+  Select managerid, photolink, phoneno, education, managertype, operatinghours
+  from hostelmanager;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayallmanagers();
+
+--47, Display Details of a Hostel
+Create or Replace function DisplayHostel(
+  p_HostelId int
+)
+Returns Table(
+  p_BlockNo varchar(100),
+  p_HouseNo varchar(100),
+  p_HostelType varchar(50),
+  p_isParking boolean,
+  p_NumRooms int,
+  p_NumFloors int,
+  p_WaterTimings Time,
+  p_CleanlinessTenure int,      -- In Days
+  p_IssueResolvingTenure int,   -- In Days
+  p_MessProvide boolean,
+  p_GeezerFlag boolean,
+  p_name text
+) as $$
+Begin
+  Return Query
+  Select blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure,
+  messprovide, geezerflag, name from hostel
+  where hostelid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayhostel(5);
+
+--48, Display Details of All Hostels
+Create or Replace function DisplayAllHostels()
+Returns Table(
+  p_BlockNo varchar(100),
+  p_HouseNo varchar(100),
+  p_HostelType varchar(50),
+  p_isParking boolean,
+  p_NumRooms int,
+  p_NumFloors int,
+  p_WaterTimings Time,
+  p_CleanlinessTenure int,      -- In Days
+  p_IssueResolvingTenure int,   -- In Days
+  p_MessProvide boolean,
+  p_GeezerFlag boolean,
+  p_name text
+) as $$
+Begin
+  Return Query
+  Select blockno, houseno, hosteltype, isparking, numrooms, numfloors, watertimings, cleanlinesstenure, issueresolvingtenure,
+  messprovide, geezerflag, name from hostel;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayallhostels();
+
+--49, Display Pics of a Hostel
+Create or Replace function DisplayHostelPics(
+  p_HostelId int
+)
+Returns Table(
+  p_PhotoLink text
+) as $$
+Begin
+  Return Query
+  Select photolink from hostelpics
+  where hostelid = p_HostelId and ishostelpic = true;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayhostelpics(5);
+
+--50, Display pics of a Room
+Create or Replace function DisplayRoomPics(
+  p_HostelId int
+)
+Returns Table(
+  p_PhotoLink text,
+  p_RoomSeaterNo int
+) as $$
+Begin
+  Return Query
+  Select photolink, roomseaterno from hostelpics
+  where hostelid = p_HostelId and ishostelpic = false;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displayroompics(5);
+
+--51, Display Details of a HostelMess
+Create or Replace function DisplayMessInfo(
+  p_HostelId int
+)
+Returns Table(
+  p_MessTimeCount int,
+  p_Dishes text[]
+) as $$
+Begin
+  Return Query
+  Select messmeals, dishes from messdetails
+  where messid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displaymessinfo(5);
+
+--52, Display Kitchen Details
+Create or Replace function DisplayKitchenDetails(
+  p_HostelId int
+)
+Returns Table(
+  p_isFridge boolean,
+  p_isMicrowave boolean,
+  p_isGas boolean
+) as $$
+Begin
+  Return Query
+  Select isfridge, ismicrowave, isgas from kitchendetails
+  where kitchenid = p_HostelId;
+End;
+$$ LANGUAGE plpgsql;
+
+Select * from displaykitchendetails(5);
