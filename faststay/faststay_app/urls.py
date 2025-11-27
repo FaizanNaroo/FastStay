@@ -12,6 +12,10 @@ from faststay_app.views.add_securityinfo_view import AddSecurityInfoView
 from faststay_app.views.delete_securityinfo_view import DeleteSecurityInfoView
 from faststay_app.views.display_securityinfo_view import DisplayHostelSecurityInfoView
 from faststay_app.views.update_securityinfo_view import UpdateSecurityInfoView
+from faststay_app.views.rating_views.add import AddHostelRatingView
+from faststay_app.views.rating_views.update import UpdateHostelRatingView
+from faststay_app.views.rating_views.delete import DeleteHostelRatingView
+from faststay_app.views.rating_views.display import DisplayRatingsView
 urlpatterns={
     path('signup/', SignupView.as_view(), name='signup'),
     path('users/all/', GetAllUsersView.as_view(), name='get_all_users'),
@@ -26,4 +30,8 @@ urlpatterns={
     path('delete/security_info', DeleteSecurityInfoView.as_view(), name='delete_security_info'),
     path('display/security_info', DisplayHostelSecurityInfoView.as_view(), name='display_security_info'),
     path('update/security_info', UpdateSecurityInfoView.as_view(), name='update_security_info'),
+    path('add/hostel_rating', AddHostelRatingView.as_view(), name='add_hostel_rating'),
+    path('update/hostel_rating', UpdateHostelRatingView.as_view(), name='update_hostel_rating'),
+    path('delete/hostel_rating', DeleteHostelRatingView.as_view(), name='delete_hostel_rating'),
+    path('display/hostel_rating', DisplayRatingsView.as_view(), name='display_hostel_rating'),
 }
