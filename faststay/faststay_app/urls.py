@@ -16,6 +16,11 @@ from faststay_app.views.rating_views.add import AddHostelRatingView
 from faststay_app.views.rating_views.update import UpdateHostelRatingView
 from faststay_app.views.rating_views.delete import DeleteHostelRatingView
 from faststay_app.views.rating_views.display import DisplayRatingsView
+from faststay_app.views.display_views.detail_all_hostels import DisplayAllHostelsView
+from faststay_app.views.display_views.details_hostel_mess import DetailsHostelMess
+from faststay_app.views.display_views.details_kitchen import DetailsKitchen
+from faststay_app.views.display_views.hostel_pic import HostelPicView
+from faststay_app.views.display_views.room_pic import RoomPicView
 urlpatterns={
     path('signup/', SignupView.as_view(), name='signup'),
     path('users/all/', GetAllUsersView.as_view(), name='get_all_users'),
@@ -34,4 +39,9 @@ urlpatterns={
     path('update/hostel_rating', UpdateHostelRatingView.as_view(), name='update_hostel_rating'),
     path('delete/hostel_rating', DeleteHostelRatingView.as_view(), name='delete_hostel_rating'),
     path('display/hostel_rating', DisplayRatingsView.as_view(), name='display_hostel_rating'),
+    path('display/all_hostels', DisplayAllHostelsView.as_view(), name='display_all_hostels'),
+    path('display/hostel_mess', DetailsHostelMess.as_view(), name='display_details_mess'),
+    path('display/details_kitchen', DetailsKitchen.as_view(), name='display_details_kitchen'),
+    path('display/hostel_pic',HostelPicView.as_view(), name='display_hostel_pic'),
+    path('display/room_pic',RoomPicView.as_view(), name='display_room_pic'),
 }

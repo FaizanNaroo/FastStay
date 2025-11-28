@@ -42,3 +42,4 @@ def _execute_display_function(function_name, params=None):
     except Exception as e:
         print(f"DB error in {function_name}: {e}")
         return []
+
