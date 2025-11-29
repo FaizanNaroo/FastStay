@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -63,3 +64,14 @@ urlpatterns=[
 ]
 
 
+=======
+from django.urls import path
+from faststay_app.views.signup_view import signup_view
+from faststay_app.views.get_all_users_view import get_all_users_view 
+from faststay_app.views.login_view import login_view 
+urlpatterns={
+    path('signup/', signup_view, name='signup'),
+    path('users/all/', get_all_users_view, name='get_all_users'),
+    path('login/', login_view, name='login'),
+}
+>>>>>>> 669c20bad84078176170c5b87e5801f99a4ad6d8
