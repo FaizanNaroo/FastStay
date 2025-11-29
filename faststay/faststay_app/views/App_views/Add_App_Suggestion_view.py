@@ -36,7 +36,7 @@ class Add_App_Suggestion_view(APIView):
 
         #Validate Input
         if not serializer.is_valid():
-            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
         success, result = add_app_suggestion_service(serializer.validated_data)

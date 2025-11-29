@@ -1,1 +1,3 @@
-from .save_Hostel_Details_Service import save_hostel_details
+from .Add_Hostel_Details_Service import Add_hostel_details_service
+from .Update_Hostel_Details_Service import Update_hostel_details_service
+from .Display_Hostel_Service import Display_Hostel_service

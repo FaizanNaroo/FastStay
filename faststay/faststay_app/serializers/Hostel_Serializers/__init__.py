@@ -1,1 +1,3 @@
-from .Hostel_Details_Serializer import Hostel_Details_serializer
+from .Add_Hostel_Details_Serializer import Add_Hostel_Details_serializer
+from .Update_Hostel_Details_Serializer import Update_Hostel_Details_serializer
+from .Display_Hostel_Serializer import Display_Hostel_serializer

@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services import save_hostel_details
-from faststay_app.serializers import Hostel_Details_serializer
+from faststay_app.services import Add_hostel_details_service
+from faststay_app.serializers import Add_Hostel_Details_serializer
 
 class Add_Hostel_Details_view(APIView):
     """
@@ -40,16 +40,16 @@ class Add_Hostel_Details_view(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=Hostel_Details_serializer)
+    @swagger_auto_schema(request_body=Add_Hostel_Details_serializer)
     def post(self, request):
-        serializer = Hostel_Details_serializer(data=request.data)
+        serializer = Add_Hostel_Details_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():
-            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
-        success, result = save_hostel_details(serializer.validated_data, 'add')
+        success, result = Add_hostel_details_service(serializer.validated_data)
         if not success:
             return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         

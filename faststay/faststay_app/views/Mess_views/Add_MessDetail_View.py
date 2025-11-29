@@ -40,7 +40,7 @@ class Add_Mess_Details(APIView):
 
         #Validate Input
         if not serializer.is_valid():
-            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
         success, result = Add_Mess_Detail_service(serializer.validated_data)

@@ -1,2 +1,3 @@
 from .Add_Hostel_Detail_view import Add_Hostel_Details_view
 from .Update_Hostel_Details_view import Update_Hostel_Details_view
+from .Display_Hostel_view import Display_Hostel_View

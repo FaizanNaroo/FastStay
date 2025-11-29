@@ -2,8 +2,8 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from faststay_app.services import save_hostel_details
-from faststay_app.serializers import Hostel_Details_serializer
+from faststay_app.services import Update_hostel_details_service
+from faststay_app.serializers import Update_Hostel_Details_serializer
    
 class Update_Hostel_Details_view(APIView):
     """
@@ -12,18 +12,18 @@ class Update_Hostel_Details_view(APIView):
     PUT:
     Accepts JSON:
     {
-        "p_ManagerId": int,           # Required, must exist in HostelManager table
-        "p_BlockNo": str,             # Required
-        "p_HouseNo": str,             # Required
-        "p_HostelType": str,          # Required, 'Portion' or 'Building'
-        "p_isParking": bool,          # Required
-        "p_NumRooms": int,            # Required, >= 1
-        "p_NumFloors": int,           # Required, >= 1
-        "p_WaterTimings": str,        # Required, HH:MM:SS format
-        "p_CleanlinessTenure": int,   # Required, >= 1
-        "p_IssueResolvingTenure": int,# Required, >= 1
-        "p_MessProvide": bool,        # Required
-        "p_GeezerFlag": bool          # Required
+        "p_HostelId": int,           # Required, must exist in HHostel table
+        "p_BlockNo": str,             # Optional
+        "p_HouseNo": str,             # Optional
+        "p_HostelType": str,          # Optional, 'Portion' or 'Building'
+        "p_isParking": bool,          # Optional
+        "p_NumRooms": int,            # Optional, >= 1
+        "p_NumFloors": int,           # Optional, >= 1
+        "p_WaterTimings": str,        # Optional, HH:MM:SS format
+        "p_CleanlinessTenure": int,   # Optional, >= 1
+        "p_IssueResolvingTenure": int,# Optional, >= 1
+        "p_MessProvide": bool,        # Optional
+        "p_GeezerFlag": bool          # Optional
     }
 
     Returns:
@@ -40,16 +40,16 @@ class Update_Hostel_Details_view(APIView):
     """
 
 
-    @swagger_auto_schema(request_body=Hostel_Details_serializer)
+    @swagger_auto_schema(request_body=Update_Hostel_Details_serializer)
     def put(self, request):
-        serializer = Hostel_Details_serializer(data=request.data)
+        serializer = Update_Hostel_Details_serializer(data=request.data)
 
         #Validate Input
         if not serializer.is_valid():
-            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
-        success, result = save_hostel_details(serializer.validated_data, 'update')
+        success, result = Update_hostel_details_service(serializer.validated_data)
         if not success:
             return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         

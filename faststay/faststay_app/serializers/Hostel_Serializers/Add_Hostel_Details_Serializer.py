@@ -5,7 +5,7 @@ def natural_number_validator(value):
     if not validate_NNums(value):
         raise serializers.ValidationError("Value must be at least 1.")
     
-class Hostel_Details_serializer(serializers.Serializer):
+class Add_Hostel_Details_serializer(serializers.Serializer):
     p_ManagerId = serializers.IntegerField()
     p_BlockNo = serializers.CharField(max_length=100)
     p_HouseNo = serializers.CharField(max_length=100)
@@ -18,6 +18,7 @@ class Hostel_Details_serializer(serializers.Serializer):
     p_IssueResolvingTenure = serializers.IntegerField()
     p_MessProvide = serializers.BooleanField()
     p_GeezerFlag = serializers.BooleanField()
+    p_name = serializers.CharField()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

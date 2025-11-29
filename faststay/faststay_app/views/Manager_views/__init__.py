@@ -1,3 +1,5 @@
 from .Add_Manager_Details_view import Add_Manager_Details_view
 from .Delete_Hostel_Manager_view import delete_Hostel_Manager_view
 from .Update_Manager_Details_view import Update_Manager_Details_view
+from .Display_Manager_view import Display_Manager_View
+from .Display_All_Managers_view import Display_All_Managers_View

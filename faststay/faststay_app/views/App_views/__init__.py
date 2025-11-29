@@ -1,1 +1,3 @@
 from .Add_App_Suggestion_view import Add_App_Suggestion_view
+from .Display_Ratings_view import Display_Ratings_View
+from .Display_User_Suggestions_view import Display_User_Suggestions_View

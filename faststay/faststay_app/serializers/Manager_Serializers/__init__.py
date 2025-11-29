@@ -1,3 +1,4 @@
 from .Add_Manager_Details_Serializer import Add_Manager_Details_serializer
 from .Delete_Hostel_Manager_Serializer import Delete_Hostel_Manager_serializer
 from .Update_Manager_Details_serializer import Update_Manager_Details_Serializer
+from .Display_Manager_Serializer import Display_Manager_serializer

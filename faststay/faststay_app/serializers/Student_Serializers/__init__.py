@@ -1,2 +1,3 @@
 from .Student_Details_Serializer import Student_Details_serializer
 from .Update_StudentDetail_Serializer import Update_StudentDetails_serializer
+from .Display_Student_Serializer import Display_Student_serializer

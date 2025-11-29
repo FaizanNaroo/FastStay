@@ -44,7 +44,7 @@ class Update_Student_Detail_view(APIView):
 
         #Validate Input
         if not serializer.is_valid():
-            return Response(serializer._errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
         success, result = Update_Student_Detail_Service('UpdateStudentDetails', serializer.validated_data)

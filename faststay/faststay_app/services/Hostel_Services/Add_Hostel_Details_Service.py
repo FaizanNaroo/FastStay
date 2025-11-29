@@ -1,12 +1,8 @@
 from django.db import connection
 
-def save_hostel_details(data, operation='add'):
-    """
-    operation: 'add' -> call AddHostelDetails
-               'update' -> call UpdateHostelDetails
-    """
+def Add_hostel_details_service(data):
     try:
-        function_name = 'AddHostelDetails' if operation=='add' else 'UpdateHostelDetails'
+        function_name = 'AddHostelDetails'
         params = [
             data['p_ManagerId'],
             data['p_BlockNo'],
@@ -19,7 +15,8 @@ def save_hostel_details(data, operation='add'):
             data['p_CleanlinessTenure'],
             data['p_IssueResolvingTenure'],
             data['p_MessProvide'],
-            data['p_GeezerFlag']
+            data['p_GeezerFlag'],
+            data['p_name'],
         ]
         with connection.cursor() as cursor:
             placeholders = ','.join(['%s'] * len(params))
