@@ -1,45 +1,48 @@
-from django.shortcuts import render
 from django.http import JsonResponse
-from faststay_app.services.auth_service import register_user
-from faststay_app.utils.validators import validate_signup_data
+from django.views import View
+from faststay_app.services.signup_service import DBService
+from faststay_app.utils.signup_validator import validate_signup_data 
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 import json
 
+@method_decorator(csrf_exempt, name='dispatch')
+class SignupView(View):
+    auth_service = DBService()
 
-@csrf_exempt 
-def signup_view(request):
-    if request.method != "POST":
-        return JsonResponse({'error': 'Only POST method allowed'}, status=405)
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            is_valid, error = validate_signup_data(data)
+            if not is_valid:
+                return JsonResponse({'error': error}, status=400)
 
-    try:
-        data = json.loads(request.body)
-        is_valid, error = validate_signup_data(data)
-        if not is_valid:
-            return JsonResponse({'error': error}, status=400)
-        email = data['email']
-        password = data['password']
-        fname = data['fname']
-        lname = data['lname']
-        usertype = data['usertype']
-        gender = data['gender']
-        city = data['city']
-        age = data['age']
-        result = register_user(
-            "signup",
-            [usertype, fname, lname, age, gender, city, email, password]
-        )
-        if not result:
-            return JsonResponse({'error': 'Database returned no result'}, status=500)
-        
-        user_id = result[0]
-        if user_id == 0:
-            return JsonResponse({'error': 'Email already exists'}, status=400)
-        elif user_id==-1:
-            return JsonResponse({'error': 'Invalid Credentials'}, status=400)
+            email = data['email']
+            password = data['password']
+            fname = data['fname']
+            lname = data['lname']
+            usertype = data['usertype']
+            gender = data['gender']
+            city = data['city']
+            age = data['age']
 
-        return JsonResponse({'message': 'User created successfully', 'user_id': user_id})
+            result_tuple = self.auth_service.register_user(
+               "signup", [usertype, fname, lname, age, gender, city, email, password]
+            )
+            if not result_tuple:
+                return JsonResponse({'error': 'Database returned no result'}, status=500)
+            
+            user_id = result_tuple[0]
 
-    except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON input'}, status=400)
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+            if user_id == 0:
+                return JsonResponse({'error': 'Email already exists'}, status=400)
+            elif user_id == -1:
+                return JsonResponse({'error': 'Invalid input parameters sent to database'}, status=400)
+            
+            return JsonResponse({'message': 'User created successfully', 'user_id': user_id}, status=201)
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON input'}, status=400)
+        except Exception as e:
+            print(f"Signup view server error: {e}")
+            return JsonResponse({'error': f'Internal Server Error: {str(e)}'}, status=500)
