@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from django.urls import path, re_path
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
@@ -12,6 +11,28 @@ from faststay_app.views import Add_Kitchen_Details_view, Update_Kitchen_Details_
 from faststay_app.views import Add_Mess_Details, Update_Mess_Details, Delete_Mess_Details_view, Add_New_Dish_View
 from faststay_app.views import Add_Room_View, Update_Room_View, Delete_Room_View, Display_Room_View, Display_Hostel_Rooms_View
 from faststay_app.views import Add_Expenses_View, AddExpenses_RoomIncluded_View, Update_Expenses_View, Delete_Expenses_View, Display_Expenses_View
+from faststay_app.views.signup_view import SignupView
+from faststay_app.views.get_all_users_view import GetAllUsersView
+from faststay_app.views.login_view import LoginView 
+from faststay_app.views.delete_hostel_details import DeleteHostelDetailsView
+from faststay_app.views.add_hostel_pics_view import AddHostelPics
+from faststay_app.views.add_room_pics_view import AddRoomPics
+from faststay_app.views.delete_hostel_pics_view import DeleteHostelPics
+from faststay_app.views.delete_kitchen_details_view import DeleteKitchenDetails
+from faststay_app.views.display_allrooms_view import DisplayAllRoomsView
+from faststay_app.views.add_securityinfo_view import AddSecurityInfoView
+from faststay_app.views.delete_securityinfo_view import DeleteSecurityInfoView
+from faststay_app.views.display_securityinfo_view import DisplayHostelSecurityInfoView
+from faststay_app.views.update_securityinfo_view import UpdateSecurityInfoView
+from faststay_app.views.rating_views.add import AddHostelRatingView
+from faststay_app.views.rating_views.update import UpdateHostelRatingView
+from faststay_app.views.rating_views.delete import DeleteHostelRatingView
+from faststay_app.views.rating_views.display import DisplayRatingsView
+from faststay_app.views.display_views.detail_all_hostels import DisplayAllHostelsView
+from faststay_app.views.display_views.details_hostel_mess import DetailsHostelMess
+from faststay_app.views.display_views.details_kitchen import DetailsKitchen
+from faststay_app.views.display_views.hostel_pic import HostelPicView
+from faststay_app.views.display_views.room_pic import RoomPicView
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -56,40 +77,6 @@ urlpatterns=[
     path("Expenses/update/", Update_Expenses_View.as_view(), name='Update_Expenses'),
     path("Expenses/delete/", Delete_Expenses_View.as_view(), name='Delete_Expenses'),
     path("Expenses/display/", Display_Expenses_View.as_view(), name='Display_Expenses'),
-
-
-    # Swagger URLs
-    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-]
-
-
-=======
-from django.urls import path
-from faststay_app.views.signup_view import SignupView
-from faststay_app.views.get_all_users_view import GetAllUsersView
-from faststay_app.views.login_view import LoginView 
-from faststay_app.views.delete_hostel_details import DeleteHostelDetailsView
-from faststay_app.views.add_hostel_pics_view import AddHostelPics
-from faststay_app.views.add_room_pics_view import AddRoomPics
-from faststay_app.views.delete_hostel_pics_view import DeleteHostelPics
-from faststay_app.views.delete_kitchen_details_view import DeleteKitchenDetails
-from faststay_app.views.display_allrooms_view import DisplayAllRoomsView
-from faststay_app.views.add_securityinfo_view import AddSecurityInfoView
-from faststay_app.views.delete_securityinfo_view import DeleteSecurityInfoView
-from faststay_app.views.display_securityinfo_view import DisplayHostelSecurityInfoView
-from faststay_app.views.update_securityinfo_view import UpdateSecurityInfoView
-from faststay_app.views.rating_views.add import AddHostelRatingView
-from faststay_app.views.rating_views.update import UpdateHostelRatingView
-from faststay_app.views.rating_views.delete import DeleteHostelRatingView
-from faststay_app.views.rating_views.display import DisplayRatingsView
-from faststay_app.views.display_views.detail_all_hostels import DisplayAllHostelsView
-from faststay_app.views.display_views.details_hostel_mess import DetailsHostelMess
-from faststay_app.views.display_views.details_kitchen import DetailsKitchen
-from faststay_app.views.display_views.hostel_pic import HostelPicView
-from faststay_app.views.display_views.room_pic import RoomPicView
-urlpatterns={
-    path('signup/', SignupView.as_view(), name='signup'),
     path('users/all/', GetAllUsersView.as_view(), name='get_all_users'),
     path('login/', LoginView.as_view(), name='login'),
     path('hosteldetails/delete', DeleteHostelDetailsView.as_view(), name='delete_hostel_details'),
@@ -111,5 +98,9 @@ urlpatterns={
     path('display/details_kitchen', DetailsKitchen.as_view(), name='display_details_kitchen'),
     path('display/hostel_pic',HostelPicView.as_view(), name='display_hostel_pic'),
     path('display/room_pic',RoomPicView.as_view(), name='display_room_pic'),
-}
->>>>>>> 669c20bad84078176170c5b87e5801f99a4ad6d8
+
+
+    # Swagger URLs
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+]
