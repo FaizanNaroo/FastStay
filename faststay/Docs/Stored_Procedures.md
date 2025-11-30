@@ -479,6 +479,20 @@ Allows a Hostel Manager to add a new room to their hostel.
   "p_isMiniFridge": true
 }
 ```
+**Example Response (Success):**
+
+```json
+{
+  "message": "Room added successfully",
+  "result": true
+}
+```
+**Example Response (Error):**
+```json
+{
+  "error": "Room with this ID already exists"
+}
+```
 
 ---
 
@@ -535,6 +549,21 @@ Allows a Hostel Manager to update details of an existing room in their hostel.
   "p_isMiniFridge": false
 }
 ```
+**Example Response (Success):**
+
+```json
+{
+  "message": "Room details updated successfully",
+  "result": true
+}
+
+```
+**Example Response (Error):**
+```json
+{
+  "error": "Room with this ID does not exist"
+}
+```
 
 ---
 
@@ -573,7 +602,7 @@ Allows a Hostel Manager to delete a room from their hostel.
 
 ---
 
-```markdown
+
 ## 26. Display Single Room Details - Hostel Manager / Student
 
 **Description:**  
@@ -611,6 +640,20 @@ Retrieves details of a specific room in a hostel.
 {
   "p_HostelId": 5,
   "p_RoomNo": 101
+}
+```
+**Example Response (Success):**
+```json
+{
+  "message": "Room deleted successfully",
+  "result": true
+}
+
+```
+**Example Response (Error):**
+```json
+{
+  "error": "Room does not exist"
 }
 ```
 
@@ -653,6 +696,44 @@ Retrieves details of all rooms in a specific hostel.
   "p_HostelId": 5
 }
 ```
+**Example Response (Success):**
+
+```json
+{
+  "success": true,
+  "result": [
+    {
+      "p_FloorNo": 1,
+      "p_SeaterNo": 2,
+      "p_BedType": "Bed",
+      "p_WashroomType": "Community",
+      "p_CupboardType": "Shared",
+      "p_RoomRent": 15000.0,
+      "p_isVentilated": true,
+      "p_isCarpet": false,
+      "p_isMiniFridge": true
+    },
+    {
+      "p_FloorNo": 2,
+      "p_SeaterNo": 3,
+      "p_BedType": "Mattress",
+      "p_WashroomType": "RoomAttached",
+      "p_CupboardType": "PerPerson",
+      "p_RoomRent": 18000.0,
+      "p_isVentilated": true,
+      "p_isCarpet": true,
+      "p_isMiniFridge": false
+    }
+  ]
+}
+```
+**Example Response (Error):**
+```json
+{
+  "success": false,
+  "error": "No rooms found for this hostel"
+}
+```
 
 ---
 
@@ -687,6 +768,20 @@ Called when a hostel manager selects "Expenses included in RoomRent". Adds secur
 {
   "p_HostelId": 5,
   "p_SecurityCharges": 2000.0
+}
+```
+**Example Response (Success):**
+
+```json
+{
+  "message": "Data Entered Successfully",
+  "result": true
+}
+```
+**Example Response (Error):**
+```json
+{
+  "error": "Hostel does not exist"
 }
 ```
 
@@ -738,6 +833,26 @@ Called when a hostel manager does NOT select "Expenses included in RoomRent". Ad
   "p_ElectricityCharges": 1500.0
 }
 ```
+**Example Response (Success):**
+
+```json
+{
+  "message": "Data Entered Successfully",
+  "result": true
+}
+```
+**Example Response (Error – Hostel Not Found):**
+```json
+{
+  "error": "Hostel does not exist"
+}
+```
+**Example Response(Error – Wrong Electricity Bill Type):**
+```json
+{
+  "error": "Wrong electricity bill type selected"
+}
+```
 
 ---
 
@@ -787,6 +902,25 @@ Updates existing hostel expense details.
   "p_ElectricityCharges": 1400.0
 }
 ```
+**Example Response (Success):**
+```json
+{
+  "message": "Data Entered Successfully",
+  "result": true
+}
+```
+**Example Response (Error – Expense Not Found):**
+```json
+{
+  "error": "Expense record does not exist"
+}
+```
+**Example Response (Error – Wrong Electricity Bill Type):**
+```json
+{
+  "error": "Wrong electricity bill type selected"
+}
+```
 
 ---
 
@@ -818,6 +952,19 @@ Deletes an existing hostel expense record.
 ```json
 {
   "p_ExpenseId": 5
+}
+```
+**Example Response (Success):**
+```json
+{
+  "message": "Data Entered Successfully",
+  "result": true
+}
+```
+**Example Response (Error – Expense Not Found):**
+```json
+{
+  "error": "Expense record does not exist"
 }
 ```
 
@@ -858,6 +1005,29 @@ Retrieves the expenses of a given hostel, including room charges, security charg
 ```json
 {
   "p_HostelId": 5
+}
+```
+**Example Response (Success):**
+```json
+{
+  "success": true,
+  "result": {
+    "p_isIncludedInRoomCharges": true,
+    "p_RoomCharges": [5000.0, 6000.0],
+    "p_SecurityCharges": 2000.0,
+    "p_MessCharges": 5000.0,
+    "p_KitchenCharges": 1000.0,
+    "p_InternetCharges": 800.0,
+    "p_AcServiceCharges": 1200.0,
+    "p_ElectricitybillType": "RoomMeterACOnly",
+    "p_ElectricityCharges": 1500.0
+  }
+}
+```
+**Example Response (Error – Hostel Not Found):**
+```json
+{
+  "error": "Expenses not found for the given hostel"
 }
 ```
 
@@ -964,10 +1134,32 @@ Retrieves detailed information of a single student, including semester, departme
   "p_StudentId": 101
 }
 ```
+**Example Response (Success):**
+```json
+{
+  "success": true,
+  "result": {
+    "p_Semester": 5,
+    "p_Department": "Computer Science",
+    "p_Batch": 2022,
+    "p_RoomateCount": 3,
+    "p_UniDistance": 2.5,
+    "p_isAcRoom": true,
+    "p_isMess": false,
+    "p_BedType": "Bed",
+    "p_WashroomType": "RoomAttached"
+  }
+}
+```
+**Example Response (Error – Student Not Found):**
+```json
+{
+  "error": "Student not found for the given ID"
+}
+```
 
 ---
 
-```markdown
 ## 43. Display All Students (By Admin)
 
 **Description:**  
