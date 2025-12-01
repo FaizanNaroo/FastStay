@@ -1,10 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
 import "../styles/Login.css";
-import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
-  const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -22,13 +20,9 @@ const Login: React.FC = () => {
         password,
       });
 
-      console.log("Login Data:", response.data);
-
-      localStorage.setItem("user_id", response.data.user_id);
-      localStorage.setItem("usertype", response.data.usertype);
-
-      navigate("/dashboard");
-    } catch (err: any) {
+      window.location.href = `/manager/dashboard?user_id=${response.data.user_id}?user_type=${response.data.usertype}`;
+    } 
+    catch (err: any) {
       if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else {
@@ -49,7 +43,6 @@ const Login: React.FC = () => {
         <p className="subtitle">Your trusted hostel companion</p>
 
         <form onSubmit={handleLogin}>
-          {error && <p style={{ color: "red", marginBottom: "10px" }}>{error}</p>}
 
           <div className="input-group">
             <i className="fa-solid fa-envelope"></i>
@@ -92,6 +85,10 @@ const Login: React.FC = () => {
             <a href="/signup"> Create Account</a>
           </p>
         </form>
+
+        <div className="error-space">
+          {error && <p className="Error">{error}</p>}
+        </div>
       </div>
     </div>
   );

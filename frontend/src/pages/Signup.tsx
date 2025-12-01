@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import "./Signup.css";
+import "../styles/Signup.css";
 
 interface SignupForm {
   fname: string;
@@ -27,6 +27,7 @@ const Signup: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageType, setMessageType] = useState<"success" | "error" | "">("");
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -39,24 +40,36 @@ const Signup: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setMessageType("");
 
     try {
       const res = await fetch("http://127.0.0.1:8000/faststay_app/signup/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
       });
 
       const data = await res.json();
 
       if (!res.ok) {
+        setMessageType("error");
         setMessage(data.error || "Signup failed");
-      } else {
+      }
+      else {
+        setMessageType("success");
         setMessage("Account created successfully!");
+
+        const userType = form.usertype.trim().toLowerCase();
+
+        if (userType === "student") {
+          setTimeout(() => window.location.href = `/studentdemographics?user_id=${data.user_id}`, 1200);
+        }
+        else if (userType === "hostel manager") {
+          setTimeout(() => window.location.href = `/managerdemographics?user_id=${data.user_id}`, 1200);
+        }
       }
     } catch (err) {
+      setMessageType("error");
       setMessage("Something went wrong");
     }
 
@@ -70,12 +83,6 @@ const Signup: React.FC = () => {
         <h2 className="title">
           <i className="fa-solid fa-user-plus"></i> Create Account
         </h2>
-
-        {message && (
-          <p style={{ textAlign: "center", color: "#8d5f3a", marginBottom: "10px" }}>
-            {message}
-          </p>
-        )}
 
         <form onSubmit={handleSubmit}>
 
@@ -186,14 +193,21 @@ const Signup: React.FC = () => {
           </div>
 
           <button className="btn" type="submit" disabled={loading}>
-            {loading ? "Creating..." : "Create Account"}
+            {loading ? <div className="spinner"></div> : "Create Account"}
           </button>
 
         </form>
 
         <p className="bottom-text">
-          Already have an account? <a href="/login">Login</a>
+          Already have an account? <a href="/">Login</a>
         </p>
+
+        {/* Toast Message */}
+        {message && (
+          <div className={`toast ${messageType}`}>
+            {message}
+          </div>
+        )}
 
       </div>
     </div>

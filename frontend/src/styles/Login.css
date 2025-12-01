@@ -114,6 +114,16 @@
     font-weight: 500;
 }
 
+.error-space {
+    min-height: 25px;
+}
+
+.Error {
+    color: #c62828;
+    margin-top: 10px;
+    margin-bottom: -15px;
+}
+
 /* -------- MOBILE RESPONSIVE -------- */
 @media (max-width: 480px) {
     .login-card {
