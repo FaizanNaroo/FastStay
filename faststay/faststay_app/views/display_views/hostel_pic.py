@@ -11,12 +11,13 @@ class HostelPicView(View):
     hostel_service = HostelPic()
 
     def get(self, request, *args, **kwargs):
-        
-        data = json.loads(request.body)
-        hostel_id_str = data.get("p_HostelId")
+
+        # GET parameters come from request.GET, NOT request.body
+        hostel_id_str = request.GET.get("p_HostelId")
+
         if not hostel_id_str:
-            return JsonResponse({'error': 'Missing required query parameter:  p_HostelId'}, status=400)
-            
+            return JsonResponse({'error': 'Missing required query parameter: p_HostelId'}, status=400)
+
         try:
             hostel_id = int(hostel_id_str)
         except ValueError:
@@ -24,12 +25,18 @@ class HostelPicView(View):
 
         try:
             info_list = self.hostel_service.hostel_pic(hostel_id)
-            if info_list:
 
+            if info_list:
                 return JsonResponse(info_list[0], status=200)
             else:
-                return JsonResponse({'error': f'information not found for Hostel ID {hostel_id}'}, status=404)
+                return JsonResponse(
+                    {'error': f'information not found for Hostel ID {hostel_id}'},
+                    status=404
+                )
 
         except Exception as e:
             print(f"Error fetching info: {e}")
-            return JsonResponse({'error': 'Internal server error while fetching details'}, status=500)
+            return JsonResponse(
+                {'error': 'Internal server error while fetching details'}, 
+                status=500
+            )

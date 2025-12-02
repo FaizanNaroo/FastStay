@@ -20,8 +20,16 @@ const Login: React.FC = () => {
         password,
       });
 
-      window.location.href = `/manager/dashboard?user_id=${response.data.user_id}?user_type=${response.data.usertype}`;
-    } 
+      if (response.data.usertype === "Hostel Manager") {
+        window.location.href = `/manager/dashboard?user_id=${response.data.user_id}`
+      }
+      else if (response.data.usertype === "Student") {
+        window.location.href = `/student/dashboard?user_id=${response.data.user_id}`
+      }
+      else if (response.data.usertype === "Admin") {
+        window.location.href = `/admin/dashboard?user_id=${response.data.user_id}`
+      }
+    }
     catch (err: any) {
       if (err.response?.data?.error) {
         setError(err.response.data.error);

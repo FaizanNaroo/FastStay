@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import StudentDemographics from "./pages/StudentDemographics";
 import ManagerDemographics from "./pages/ManagerDemographics";
+import HostelDashboard from "./pages/HostelDashboard";
 
 localStorage.clear();
 
@@ -11,7 +12,9 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
-        <Route path="/manager/dashboard" element={<h1>Dashboard</h1>} />
+        <Route path="/manager/dashboard" element={<HostelDashboard />} />
+        <Route path="/student/dashboard" element={<h1>Dashboard</h1>} />
+        <Route path="/admin/dashboard" element={<h1>Dashboard</h1>} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/studentdemographics" element={<StudentDemographics />} />
         <Route path="/managerdemographics" element={<ManagerDemographics />} />
