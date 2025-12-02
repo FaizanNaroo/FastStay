@@ -68,108 +68,110 @@ const StudentDemographics: React.FC = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <h2 className={styles.title}>
-                    <i className="fa-solid fa-user-graduate"></i> Student Demographics
-                </h2>
-                <p className={styles.subtitle}>Help us personalize hostel recommendations</p>
+        <div className={styles.screen}>
+            <div className={styles.container}>
+                <div className={styles.card}>
+                    <h2 className={styles.title}>
+                        <i className="fa-solid fa-user-graduate"></i> Student Demographics
+                    </h2>
+                    <p className={styles.subtitle}>Help us personalize hostel recommendations</p>
 
-                <form onSubmit={handleSubmit}>
-                    {/* University Info Section */}
-                    <h3 className={styles.sectionTitle}>
-                        <i className="fa-solid fa-building-columns"></i> University Information
-                    </h3>
+                    <form onSubmit={handleSubmit}>
+                        {/* University Info Section */}
+                        <h3 className={styles.sectionTitle}>
+                            <i className="fa-solid fa-building-columns"></i> University Information
+                        </h3>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Semester</label>
-                            <input type="number" placeholder="e.g., 3" value={semester} onChange={e => setSemester(e.target.value)} required />
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Semester</label>
+                                <input type="number" placeholder="e.g., 3" value={semester} onChange={e => setSemester(e.target.value)} required />
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Department</label>
+                                <select value={department} onChange={e => setDepartment(e.target.value)}>
+                                    <option value="">Select Department</option>
+                                    <option>CS</option>
+                                    <option>SE</option>
+                                    <option>EE</option>
+                                    <option>BBA</option>
+                                </select>
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Department</label>
-                            <select value={department} onChange={e => setDepartment(e.target.value)}>
-                                <option value="">Select Department</option>
-                                <option>CS</option>
-                                <option>SE</option>
-                                <option>EE</option>
-                                <option>BBA</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Batch</label>
-                            <input type="number" placeholder="e.g., 2023" value={batch} onChange={e => setBatch(e.target.value)} />
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Batch</label>
+                                <input type="number" placeholder="e.g., 2023" value={batch} onChange={e => setBatch(e.target.value)} />
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Hostel Preferences */}
-                    <h3 className={styles.sectionTitle}>
-                        <i className="fa-solid fa-bed"></i> Hostel Preferences
-                    </h3>
+                        {/* Hostel Preferences */}
+                        <h3 className={styles.sectionTitle}>
+                            <i className="fa-solid fa-bed"></i> Hostel Preferences
+                        </h3>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Roommate Count</label>
-                            <input type="number" placeholder="0, 1, 2..." value={roommateCount} onChange={e => setRoommateCount(e.target.value)} required />
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Roommate Count</label>
+                                <input type="number" placeholder="0, 1, 2..." value={roommateCount} onChange={e => setRoommateCount(e.target.value)} required />
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Preferred Distance</label>
+                                <input type="number" step="0.1" placeholder="e.g., 1.5 km" value={distance} onChange={e => setDistance(e.target.value)} />
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Preferred Distance</label>
-                            <input type="number" step="0.1" placeholder="e.g., 1.5 km" value={distance} onChange={e => setDistance(e.target.value)} />
-                        </div>
-                    </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>AC Room</label>
-                            <select value={acRoom} onChange={e => setAcRoom(e.target.value)} required>
-                                <option value="">Select</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                            </select>
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>AC Room</label>
+                                <select value={acRoom} onChange={e => setAcRoom(e.target.value)} required>
+                                    <option value="">Select</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Bed Type</label>
+                                <select value={bedType} onChange={e => setBedType(e.target.value)} required>
+                                    <option value="">Select</option>
+                                    <option>Bed</option>
+                                    <option>Mattress</option>
+                                    <option>Anyone</option>
+                                </select>
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Bed Type</label>
-                            <select value={bedType} onChange={e => setBedType(e.target.value)} required>
-                                <option value="">Select</option>
-                                <option>Bed</option>
-                                <option>Mattress</option>
-                                <option>Anyone</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Washroom Type</label>
-                            <select value={washroomType} onChange={e => setWashroomType(e.target.value)} required>
-                                <option value="">Select</option>
-                                <option value="RoomAttached">Attached</option>
-                                <option value="Community">Joint</option>
-                            </select>
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Washroom Type</label>
+                                <select value={washroomType} onChange={e => setWashroomType(e.target.value)} required>
+                                    <option value="">Select</option>
+                                    <option value="RoomAttached">Attached</option>
+                                    <option value="Community">Joint</option>
+                                </select>
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Mess Required</label>
+                                <select value={mess} onChange={e => setMess(e.target.value)} required>
+                                    <option value="">Select</option>
+                                    <option>Yes</option>
+                                    <option>No</option>
+                                </select>
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Mess Required</label>
-                            <select value={mess} onChange={e => setMess(e.target.value)} required>
-                                <option value="">Select</option>
-                                <option>Yes</option>
-                                <option>No</option>
-                            </select>
-                        </div>
-                    </div>
 
-                    <button type="submit" className={styles.btn} disabled={loading}>
-                        {loading ? "Saving..." : "Save Preferences"}
-                    </button>
+                        <button type="submit" className={styles.btn} disabled={loading}>
+                            {loading ? "Saving..." : "Save Preferences"}
+                        </button>
 
-                    {message && (
-                        <div className={`${styles.msg} ${messageType === "success" ? styles.success : styles.error}`}>
-                            {message}
-                        </div>
-                    )}
-                </form>
+                        {message && (
+                            <div className={`${styles.msg} ${messageType === "success" ? styles.success : styles.error}`}>
+                                {message}
+                            </div>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     );

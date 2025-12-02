@@ -9,9 +9,5 @@
 
 body {
     background: #3b2c24; /* Deep Coffee Brown */
-    display: flex;
-    justify-content: center;
-    align-items: center;
     min-height: 100vh;
-    padding: 20px;
 }

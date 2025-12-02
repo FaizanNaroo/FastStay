@@ -1,3 +1,11 @@
+.screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    min-height: 100vh;
+}
+
 .container {
     width: 100%;
     max-width: 850px;
@@ -6,7 +14,7 @@
 }
 
 .card {
-    width: 800px;
+    width: 100%;
     background: #f8f3e7;
     padding: 30px;
     border-radius: 18px;
@@ -110,9 +118,6 @@
 
 /* Mobile responsive */
 @media (max-width: 640px) {
-    .card {
-        width: 100%;
-    }
     .row {
         flex-direction: column;
     }

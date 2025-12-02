@@ -45,26 +45,6 @@ export default function HostelDashboard() {
         };
     }
 
-    // In order to override the "display flex" in index.css
-    useEffect(() => {
-        const originalDisplay = document.body.style.display;
-        const originalJustify = document.body.style.justifyContent;
-        const originalAlign = document.body.style.alignItems;
-        const originalPadding = document.body.style.padding;
-
-        document.body.style.display = "block";
-        document.body.style.justifyContent = "unset";
-        document.body.style.alignItems = "unset";
-        document.body.style.padding = "0";
-
-        return () => {
-            document.body.style.display = originalDisplay;
-            document.body.style.justifyContent = originalJustify;
-            document.body.style.alignItems = originalAlign;
-            document.body.style.padding = originalPadding;
-        };
-    }, []);
-
     // Fetch all hostels
     useEffect(() => {
         async function fetchHostels() {
@@ -94,18 +74,22 @@ export default function HostelDashboard() {
     async function fetchPics(hostelId: number) {
         try {
             const res = await fetch(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`,
-                { method: "GET" }
+                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`
             );
-
             const data = await res.json();
 
-            if (data?.p_photolink) {
+            let images: string[] = [];
+
+            if (Array.isArray(data)) {
+                images = data.map((item: any) => item.p_photolink);
+            } else if (data?.p_photolink) {
+                images = [data.p_photolink];
+            }
+
+            if (images.length > 0) {
                 setPics((prev) => ({
                     ...prev,
-                    [hostelId]: Array.isArray(data.p_photolink)
-                        ? data.p_photolink
-                        : [data.p_photolink],
+                    [hostelId]: images,
                 }));
             }
         } catch (err) {
@@ -136,7 +120,6 @@ export default function HostelDashboard() {
 
     return (
         <>
-            {/* NAVBAR */}
             <nav className={styles.navbar}>
                 <div className={styles.logo}>
                     <i className="fa-solid fa-building-user"></i> FastStay
@@ -150,91 +133,93 @@ export default function HostelDashboard() {
                 </div>
             </nav>
 
-            <div className={styles.container}>
+            <div className={styles.screen}>
+                <div className={styles.container}>
 
-                <h2 className={styles.pageTitle}>Manager Dashboard</h2>
-                <p className={styles.subtitle}>Manage your hostels and rooms easily.</p>
+                    <h2 className={styles.pageTitle}>Manager Dashboard</h2>
+                    <p className={styles.subtitle}>Manage your hostels and rooms easily.</p>
 
-                {/* ACTION CARDS */}
-                <div className={styles.actions}>
-                    <a href="/add_hostel" className={styles.actionCard}>
-                        <i className="fa-solid fa-plus"></i>
-                        <h3>Add Hostel</h3>
-                    </a>
-                    <a href="/add_room" className={styles.actionCard}>
-                        <i className="fa-solid fa-bed"></i>
-                        <h3>Add Room</h3>
-                    </a>
-                    <a href="/analytics" className={styles.actionCard}>
-                        <i className="fa-solid fa-chart-line"></i>
-                        <h3>Analytics</h3>
-                    </a>
-                </div>
+                    {/* ACTION CARDS */}
+                    <div className={styles.actions}>
+                        <a href="/add_hostel" className={styles.actionCard}>
+                            <i className="fa-solid fa-plus"></i>
+                            <h3>Add Hostel</h3>
+                        </a>
+                        <a href="/add_room" className={styles.actionCard}>
+                            <i className="fa-solid fa-bed"></i>
+                            <h3>Add Room</h3>
+                        </a>
+                        <a href="/analytics" className={styles.actionCard}>
+                            <i className="fa-solid fa-chart-line"></i>
+                            <h3>Analytics</h3>
+                        </a>
+                    </div>
 
-                {/* HOSTEL LIST */}
-                <h3 className={styles.sectionTitle}>Your Hostels</h3>
+                    {/* HOSTEL LIST */}
+                    <h3 className={styles.sectionTitle}>Your Hostels</h3>
 
-                <div className={styles.hostelList}>
-                    {hostels.length === 0 && (
-                        <p>No hostels found for this manager.</p>
-                    )}
+                    <div className={styles.hostelList}>
+                        {hostels.length === 0 && (
+                            <p>No hostels found for this manager.</p>
+                        )}
 
-                    {hostels.map((h) => (
-                        <div key={h.p_HostelId} className={styles.hostelCard}>
+                        {hostels.map((h) => (
+                            <div key={h.p_HostelId} className={styles.hostelCard}>
 
-                            {/* IMAGE SLIDER */}
-                            <div className={styles.imageWrapper}>
-                                {pics[h.p_HostelId]?.length > 0 ? (
-                                    <>
+                                {/* IMAGE SLIDER */}
+                                <div className={styles.imageWrapper}>
+                                    {pics[h.p_HostelId]?.length > 0 ? (
+                                        <>
+                                            <img
+                                                src={pics[h.p_HostelId][slideIndex[h.p_HostelId] || 0]}
+                                                className={styles.cardImg}
+                                            />
+
+                                            {/* Only show arrows if more than 1 image */}
+                                            {pics[h.p_HostelId].length > 1 && (
+                                                <>
+                                                    <button
+                                                        className={styles.leftArrow}
+                                                        onClick={() => prevPic(h.p_HostelId)}
+                                                    >
+                                                        &#10094;
+                                                    </button>
+
+                                                    <button
+                                                        className={styles.rightArrow}
+                                                        onClick={() => nextPic(h.p_HostelId)}
+                                                    >
+                                                        &#10095;
+                                                    </button>
+                                                </>
+                                            )}
+                                        </>
+                                    ) : (
                                         <img
-                                            src={pics[h.p_HostelId][slideIndex[h.p_HostelId] || 0]}
+                                            src="https://via.placeholder.com/350x200"
                                             className={styles.cardImg}
                                         />
+                                    )}
+                                </div>
 
-                                        {/* Only show arrows if more than 1 image */}
-                                        {pics[h.p_HostelId].length > 1 && (
-                                            <>
-                                                <button
-                                                    className={styles.leftArrow}
-                                                    onClick={() => prevPic(h.p_HostelId)}
-                                                >
-                                                    &#10094;
-                                                </button>
 
-                                                <button
-                                                    className={styles.rightArrow}
-                                                    onClick={() => nextPic(h.p_HostelId)}
-                                                >
-                                                    &#10095;
-                                                </button>
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <img
-                                        src="https://via.placeholder.com/350x200"
-                                        className={styles.cardImg}
-                                    />
-                                )}
+                                <div className={styles.info}>
+                                    <h3>{h.p_name}</h3>
+                                    <p><b>House:</b> {h.p_HouseNo}</p>
+                                    <p><b>Block:</b> {h.p_BlockNo}</p>
+                                    <p><b>Type:</b> {h.p_HostelType}</p>
+                                </div>
+
+                                <div className={styles.buttons}>
+                                    <button className={`${styles.btn} ${styles.view}`}>View</button>
+                                    <button className={`${styles.btn} ${styles.edit}`}>Edit</button>
+                                    <button className={`${styles.btn} ${styles.delete}`}>Delete</button>
+                                </div>
                             </div>
+                        ))}
+                    </div>
 
-
-                            <div className={styles.info}>
-                                <h3>{h.p_name}</h3>
-                                <p><b>House:</b> {h.p_HouseNo}</p>
-                                <p><b>Block:</b> {h.p_BlockNo}</p>
-                                <p><b>Type:</b> {h.p_HostelType}</p>
-                            </div>
-
-                            <div className={styles.buttons}>
-                                <button className={`${styles.btn} ${styles.view}`}>View</button>
-                                <button className={`${styles.btn} ${styles.edit}`}>Edit</button>
-                                <button className={`${styles.btn} ${styles.delete}`}>Delete</button>
-                            </div>
-                        </div>
-                    ))}
                 </div>
-
             </div>
         </>
     );

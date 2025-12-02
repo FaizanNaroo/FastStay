@@ -77,67 +77,69 @@ const ManagerDemographics: React.FC = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.card}>
-                <h2 className={styles.title}>
-                    <i className="fa-solid fa-id-badge"></i> Hostel Manager Details
-                </h2>
-                <p className={styles.subtitle}>Provide your personal & professional details</p>
+        <div className={styles.screen}>
+            <div className={styles.container}>
+                <div className={styles.card}>
+                    <h2 className={styles.title}>
+                        <i className="fa-solid fa-id-badge"></i> Hostel Manager Details
+                    </h2>
+                    <p className={styles.subtitle}>Provide your personal & professional details</p>
 
-                <form onSubmit={handleSubmit}>
+                    <form onSubmit={handleSubmit}>
 
-                    <div className={styles.photoSection}>
-                        <div className={styles.photoBox}>
-                            {photoPreview ? (
-                                <img src={photoPreview} alt="Profile Preview" className={styles.photoPreview} />
-                            ) : (
-                                <i className="fa-solid fa-user"></i>
-                            )}
+                        <div className={styles.photoSection}>
+                            <div className={styles.photoBox}>
+                                {photoPreview ? (
+                                    <img src={photoPreview} alt="Profile Preview" className={styles.photoPreview} />
+                                ) : (
+                                    <i className="fa-solid fa-user"></i>
+                                )}
+                            </div>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                className={styles.fileInput}
+                                onChange={e => handlePhotoChange(e.target.files?.[0] || null)}
+                            />
                         </div>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            className={styles.fileInput}
-                            onChange={e => handlePhotoChange(e.target.files?.[0] || null)}
-                        />
-                    </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Phone Number</label>
-                            <input type="text" placeholder="03001234567" value={phone} onChange={e => setPhone(e.target.value)} required />
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Phone Number</label>
+                                <input type="text" placeholder="03001234567" value={phone} onChange={e => setPhone(e.target.value)} required />
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Education</label>
+                                <input type="text" placeholder="BBA (PU)" value={education} onChange={e => setEducation(e.target.value)} />
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Education</label>
-                            <input type="text" placeholder="BBA (PU)" value={education} onChange={e => setEducation(e.target.value)} />
-                        </div>
-                    </div>
 
-                    <div className={styles.row}>
-                        <div className={styles.inputGroup}>
-                            <label>Manager Type</label>
-                            <select value={managerType} onChange={e => setManagerType(e.target.value)} required>
-                                <option value="">Select Type</option>
-                                <option>Owner</option>
-                                <option>Employee</option>
-                            </select>
+                        <div className={styles.row}>
+                            <div className={styles.inputGroup}>
+                                <label>Manager Type</label>
+                                <select value={managerType} onChange={e => setManagerType(e.target.value)} required>
+                                    <option value="">Select Type</option>
+                                    <option>Owner</option>
+                                    <option>Employee</option>
+                                </select>
+                            </div>
+                            <div className={styles.inputGroup}>
+                                <label>Operating Hours</label>
+                                <input type="number" min={1} max={24} placeholder="1-24" value={hours} onChange={e => setHours(e.target.value)} required />
+                            </div>
                         </div>
-                        <div className={styles.inputGroup}>
-                            <label>Operating Hours</label>
-                            <input type="number" min={1} max={24} placeholder="1-24" value={hours} onChange={e => setHours(e.target.value)} required />
-                        </div>
-                    </div>
 
-                    <button type="submit" className={styles.btn} disabled={loading}>
-                        {loading ? "Saving..." : "Save & Continue"}
-                    </button>
+                        <button type="submit" className={styles.btn} disabled={loading}>
+                            {loading ? "Saving..." : "Save & Continue"}
+                        </button>
 
-                    {message && (
-                        <div className={`${styles.msg} ${messageType === "success" ? styles.success : styles.error}`}>
-                            {message}
-                        </div>
-                    )}
-                </form>
+                        {message && (
+                            <div className={`${styles.msg} ${messageType === "success" ? styles.success : styles.error}`}>
+                                {message}
+                            </div>
+                        )}
+                    </form>
+                </div>
             </div>
         </div>
     );

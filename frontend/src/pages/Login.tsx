@@ -1,9 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
-import "../styles/Login.css";
+import styles from "../styles/Login.module.css";
 
 const Login: React.FC = () => {
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,16 +20,13 @@ const Login: React.FC = () => {
       });
 
       if (response.data.usertype === "Hostel Manager") {
-        window.location.href = `/manager/dashboard?user_id=${response.data.user_id}`
+        window.location.href = `/manager/dashboard?user_id=${response.data.user_id}`;
+      } else if (response.data.usertype === "Student") {
+        window.location.href = `/student/dashboard?user_id=${response.data.user_id}`;
+      } else if (response.data.usertype === "Admin") {
+        window.location.href = `/admin/dashboard?user_id=${response.data.user_id}`;
       }
-      else if (response.data.usertype === "Student") {
-        window.location.href = `/student/dashboard?user_id=${response.data.user_id}`
-      }
-      else if (response.data.usertype === "Admin") {
-        window.location.href = `/admin/dashboard?user_id=${response.data.user_id}`
-      }
-    }
-    catch (err: any) {
+    } catch (err: any) {
       if (err.response?.data?.error) {
         setError(err.response.data.error);
       } else {
@@ -42,60 +38,61 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="container">
-      <div className="login-card">
+    <div className={styles.screen}>
+      <div className={styles.container}>
+        <div className={styles.loginCard}>
 
-        <h2 className="title">
-          <i className="fa-solid fa-building-user"></i> FastStay
-        </h2>
-        <p className="subtitle">Your trusted hostel companion</p>
+          <h2 className={styles.title}>
+            <i className="fa-solid fa-building-user"></i> FastStay
+          </h2>
+          <p className={styles.subtitle}>Your trusted hostel companion</p>
 
-        <form onSubmit={handleLogin}>
+          <form onSubmit={handleLogin}>
+            <div className={styles.inputGroup}>
+              <i className="fa-solid fa-envelope"></i>
+              <input
+                type="email"
+                placeholder="Email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-          <div className="input-group">
-            <i className="fa-solid fa-envelope"></i>
-            <input
-              type="email"
-              placeholder="Email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
+            <div className={styles.inputGroup}>
+              <i className="fa-solid fa-lock"></i>
+              <input
+                type="password"
+                placeholder="Password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            <button className={styles.btn} type="submit" disabled={loading}>
+              {loading ? "Logging in..." : "Login"}
+            </button>
+
+            <div className={styles.divider}>or</div>
+
+            <button
+              className={styles.googleBtn}
+              type="button"
+              onClick={() => alert("Google login coming soon")}
+            >
+              <i className="fa-brands fa-google"></i> Login with Google
+            </button>
+
+            <p className={styles.bottomText}>
+              Don’t have an account?
+              <a href="/signup"> Create Account</a>
+            </p>
+          </form>
+
+          <div className={styles.errorSpace}>
+            {error && <p className={styles.error}>{error}</p>}
           </div>
-
-          <div className="input-group">
-            <i className="fa-solid fa-lock"></i>
-            <input
-              type="password"
-              placeholder="Password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
-          </button>
-
-          <div className="divider">or</div>
-
-          <button
-            className="google-btn"
-            type="button"
-            onClick={() => alert("Google login coming soon")}
-          >
-            <i className="fa-brands fa-google"></i> Login with Google
-          </button>
-
-          <p className="bottom-text">
-            Don’t have an account?
-            <a href="/signup"> Create Account</a>
-          </p>
-        </form>
-
-        <div className="error-space">
-          {error && <p className="Error">{error}</p>}
         </div>
       </div>
     </div>

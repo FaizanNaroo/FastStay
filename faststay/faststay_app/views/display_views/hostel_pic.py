@@ -12,7 +12,6 @@ class HostelPicView(View):
 
     def get(self, request, *args, **kwargs):
 
-        # GET parameters come from request.GET, NOT request.body
         hostel_id_str = request.GET.get("p_HostelId")
 
         if not hostel_id_str:
@@ -27,7 +26,7 @@ class HostelPicView(View):
             info_list = self.hostel_service.hostel_pic(hostel_id)
 
             if info_list:
-                return JsonResponse(info_list[0], status=200)
+                return JsonResponse(info_list, safe=False, status=200)
             else:
                 return JsonResponse(
                     {'error': f'information not found for Hostel ID {hostel_id}'},
