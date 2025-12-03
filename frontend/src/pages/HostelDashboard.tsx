@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "../styles/HostelDashboard.module.css";
+import { Link } from "react-router-dom";
 
 interface Hostel {
     p_HostelId: number;
@@ -125,12 +126,30 @@ export default function HostelDashboard() {
                     <i className="fa-solid fa-building-user"></i> FastStay
                 </div>
                 <div className={styles.navLinks}>
-                    <a href="#" className={styles.active}>Dashboard</a>
-                    <a href="/add_hostel">Add Hostel</a>
-                    <a href="/add_room">Add Room</a>
-                    <a href="/profile">Your Profile</a>
-                    <a href="/logout">Logout</a>
+                    <Link
+                        to={`/manager/dashboard?user_id=${managerId}`}
+                        className={styles.active}
+                    >
+                        Dashboard
+                    </Link>
+
+                    <Link to={`/manager/add_hostel?user_id=${managerId}`}>
+                        Add Hostel
+                    </Link>
+
+                    <Link to={`/manager/add_room?user_id=${managerId}`}>
+                        Add Room
+                    </Link>
+
+                    <Link to={`/manager/profile?user_id=${managerId}`}>
+                        Your Profile
+                    </Link>
+
+                    <Link to="/logout">
+                        Logout
+                    </Link>
                 </div>
+
             </nav>
 
             <div className={styles.screen}>
