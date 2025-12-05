@@ -11,7 +11,7 @@ interface Hostel {
     p_isParking: boolean;
     p_NumRooms: number;
     p_NumFloors: number;
-    p_WaterTimings: string;
+    p_WaterTimings: number;
     p_CleanlinessTenure: number;
     p_IssueResolvingTenure: number;
     p_MessProvide: boolean;

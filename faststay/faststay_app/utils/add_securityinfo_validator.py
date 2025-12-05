@@ -3,7 +3,7 @@ def validate_security_info(data):
 
     required_fields = [
         ("p_HostelId", "int"),
-        ("p_GateTimings", "time"),
+        ("p_GateTimings", "int"),
         ("p_isCameras", "bool"),
         ("p_isGuard", "bool"),
         ("p_isOutsiderVerification", "bool"),

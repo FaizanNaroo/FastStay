@@ -14,7 +14,6 @@ class DisplayAllHostelsView(View):
             hostels_list = hostel_service.detail_all_hostels()
 
             if hostels_list:
-                print(hostels_list)
                 return JsonResponse({
                     'hostels': hostels_list, 
                     'count': len(hostels_list)
