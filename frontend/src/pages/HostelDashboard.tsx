@@ -22,6 +22,9 @@ interface Hostel {
 export default function HostelDashboard() {
     const [hostels, setHostels] = useState<Hostel[]>([]);
     const [pics, setPics] = useState<Record<number, string[]>>({});
+    const [loading, setLoading] = useState(true);
+    const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
+    
     const params = new URLSearchParams(window.location.search);
     const managerId = Number(params.get("user_id"));
 
@@ -50,12 +53,12 @@ export default function HostelDashboard() {
     useEffect(() => {
         async function fetchHostels() {
             try {
+                setLoading(true);
                 const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
                 const data = await res.json();
 
                 if (data?.hostels) {
                     const mapped = data.hostels.map((h: any) => mapHostel(h));
-
                     const filtered = mapped.filter(
                         (h: Hostel) => h.p_ManagerId === managerId
                     );
@@ -66,6 +69,8 @@ export default function HostelDashboard() {
                 }
             } catch (error) {
                 console.log("Hostel fetch error", error);
+            } finally {
+                setLoading(false);
             }
         }
         fetchHostels();
@@ -99,8 +104,6 @@ export default function HostelDashboard() {
     }
 
     // Slide control
-    const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
-
     const nextPic = (id: number) => {
         const images = pics[id];
         if (!images) return;
@@ -149,42 +152,63 @@ export default function HostelDashboard() {
                         Logout
                     </Link>
                 </div>
-
             </nav>
 
             <div className={styles.screen}>
                 <div className={styles.container}>
-
                     <h2 className={styles.pageTitle}>Manager Dashboard</h2>
                     <p className={styles.subtitle}>Manage your hostels and rooms easily.</p>
 
                     {/* ACTION CARDS */}
                     <div className={styles.actions}>
-                        <a href="/add_hostel" className={styles.actionCard}>
+                        <Link 
+                            to={`/manager/add_hostel?user_id=${managerId}`} 
+                            className={styles.actionCard}
+                        >
                             <i className="fa-solid fa-plus"></i>
                             <h3>Add Hostel</h3>
-                        </a>
-                        <a href="/add_room" className={styles.actionCard}>
+                        </Link>
+                        <Link 
+                            to={`/manager/add_room?user_id=${managerId}`} 
+                            className={styles.actionCard}
+                        >
                             <i className="fa-solid fa-bed"></i>
                             <h3>Add Room</h3>
-                        </a>
-                        <a href="/analytics" className={styles.actionCard}>
+                        </Link>
+                        <Link 
+                            to={`/manager/analytics?user_id=${managerId}`} 
+                            className={styles.actionCard}
+                        >
                             <i className="fa-solid fa-chart-line"></i>
                             <h3>Analytics</h3>
-                        </a>
+                        </Link>
                     </div>
 
                     {/* HOSTEL LIST */}
                     <h3 className={styles.sectionTitle}>Your Hostels</h3>
 
                     <div className={styles.hostelList}>
-                        {hostels.length === 0 && (
-                            <p>No hostels found for this manager.</p>
+                        {loading && (
+                            <div className={styles.loadingContainer}>
+                                <div className={styles.loadingSpinner}></div>
+                                <p>Loading your hostels...</p>
+                            </div>
                         )}
 
-                        {hostels.map((h) => (
-                            <div key={h.p_HostelId} className={styles.hostelCard}>
+                        {!loading && hostels.length === 0 && (
+                            <div className={styles.noHostelsMessage}>
+                                <p>No hostels found for this manager.</p>
+                                <Link 
+                                    to={`/manager/add_hostel?user_id=${managerId}`}
+                                    className={styles.addHostelLink}
+                                >
+                                    Add your first hostel
+                                </Link>
+                            </div>
+                        )}
 
+                        {!loading && hostels.map((h) => (
+                            <div key={h.p_HostelId} className={styles.hostelCard}>
                                 {/* IMAGE SLIDER */}
                                 <div className={styles.imageWrapper}>
                                     {pics[h.p_HostelId]?.length > 0 ? (
@@ -192,6 +216,7 @@ export default function HostelDashboard() {
                                             <img
                                                 src={pics[h.p_HostelId][slideIndex[h.p_HostelId] || 0]}
                                                 className={styles.cardImg}
+                                                alt={h.p_name}
                                             />
 
                                             {/* Only show arrows if more than 1 image */}
@@ -214,30 +239,34 @@ export default function HostelDashboard() {
                                             )}
                                         </>
                                     ) : (
-                                        <img
-                                            src="https://via.placeholder.com/350x200"
-                                            className={styles.cardImg}
-                                        />
+                                        <div className={styles.noImagePlaceholder}>
+                                            <i className="fa-solid fa-building"></i>
+                                            <span>No image available</span>
+                                        </div>
                                     )}
                                 </div>
-
 
                                 <div className={styles.info}>
                                     <h3>{h.p_name}</h3>
                                     <p><b>House:</b> {h.p_HouseNo}</p>
                                     <p><b>Block:</b> {h.p_BlockNo}</p>
                                     <p><b>Type:</b> {h.p_HostelType}</p>
+                                    <p><b>Rooms:</b> {h.p_NumRooms}</p>
                                 </div>
 
                                 <div className={styles.buttons}>
-                                    <button className={`${styles.btn} ${styles.view}`}>View</button>
+                                    <Link 
+                                        to={`/manager/hostel/${h.p_HostelId}?user_id=${managerId}`}
+                                        className={`${styles.btn} ${styles.view}`}
+                                    >
+                                        View
+                                    </Link>
                                     <button className={`${styles.btn} ${styles.edit}`}>Edit</button>
                                     <button className={`${styles.btn} ${styles.delete}`}>Delete</button>
                                 </div>
                             </div>
                         ))}
                     </div>
-
                 </div>
             </div>
         </>

@@ -45,7 +45,7 @@ def validate_update_security_info(data):
 
     required_fields = [
         ("p_SecurityId", "int"),
-        ("p_GateTimings", "time"),
+        ("p_GateTimings", "int"),
         ("p_isCameras", "bool"),
         ("p_isGuard", "bool"),
         ("p_isOutsiderVerification", "bool"),
