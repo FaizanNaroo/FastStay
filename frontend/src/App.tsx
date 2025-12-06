@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminDashboard from './pages/admin_dashboard';
 import ViewHostels from './pages/admin_hostels';
 import ViewStudents from './pages/admin_student';
+import AdminViewManagers from './pages/admin_manager';
 
 function App() {
   return (
@@ -10,6 +11,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/hostels" element={<ViewHostels />} />
         <Route path="/students" element={<ViewStudents />} />
+        <Route path="/managers" element={<AdminViewManagers />} />
         {/* Add more routes as needed */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
       </Routes>
