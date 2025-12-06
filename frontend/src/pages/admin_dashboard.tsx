@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
+
+import { Link } from "react-router-dom"; 
+
 import { 
   getDashboardSummary, 
   getRecentUsersTableData, 
   type RecentUserAccount 
 } from "../api/admin_dashboard";
 
-import { getRecentHostelsTableData, type RecentHostel } from "../api/admin_dashboard"; // <-- imported hostel API
+import { getRecentHostelsTableData, type RecentHostel } from "../api/admin_dashboard";
 
 import styles from "../styles/admin_dashboard.module.css";
 
@@ -20,39 +23,57 @@ interface DashboardSummary {
 const AdminDashboard: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [recentUsers, setRecentUsers] = useState<RecentUserAccount[]>([]);
+  const [recentHostels, setRecentHostels] = useState<RecentHostel[]>([]);
   
-  const [recentHostels, setRecentHostels] = useState<RecentHostel[]>([]);   // <-- added for hostel list
+  const [error, setError] = useState<string | null>(null); // Keep error for global errors
   
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
+  // Individual loading states
+  const [summaryLoading, setSummaryLoading] = useState(true);
+  const [usersLoading, setUsersLoading] = useState(true);
+  const [hostelsLoading, setHostelsLoading] = useState(true); 
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const summaryData = await getDashboardSummary();
+        // Set individual loading states
+        setSummaryLoading(true);
+        setUsersLoading(true);
+        setHostelsLoading(true);
+        
+        // Fetch all data in parallel
+        const [summaryData, usersData, hostelData] = await Promise.all([
+          getDashboardSummary(),
+          getRecentUsersTableData(5),
+          getRecentHostelsTableData(5)
+        ]);
+        
         setSummary(summaryData);
-
-        const usersData = await getRecentUsersTableData(5);
+        setSummaryLoading(false);
+        
         setRecentUsers(usersData);
-
-        const hostelData = await getRecentHostelsTableData(5);     // <-- fetch 5 latest hostels
+        setUsersLoading(false);
+        
         setRecentHostels(hostelData);
-
-        setLoading(false);
+        setHostelsLoading(false);
+        
       } catch (err) {
         const errorMessage = err instanceof Error 
           ? `Failed to load dashboard data: ${err.message}`
           : "Failed to load dashboard data. Check backend connection.";
         setError(errorMessage);
-        setLoading(false);
+        
+        // Set all loading states to false on error
+        setSummaryLoading(false);
+        setUsersLoading(false);
+        setHostelsLoading(false);
       }
     };
     fetchData();
   }, []);
 
-  if (loading) return <h2 style={{ textAlign:"center", marginTop:"40px" }}>Loading Dashboard...</h2>;
-  if (error)   return <h2 style={{ textAlign:"center", marginTop:"40px", color:"red" }}>{error}</h2>;
+  if (error) return <h2 style={{ textAlign:"center", marginTop:"40px", color:"red" }}>{error}</h2>;
 
+  // Rest of your component remains the same...
   return (
     <>
       {/* NAVBAR */}
@@ -60,11 +81,11 @@ const AdminDashboard: React.FC = () => {
         <div className={styles.logo}><i className="fa-solid fa-user-shield"></i> FastStay Admin</div>
 
         <div className={styles.navLinks}>
-          <a className={styles.active}>Dashboard</a>
-          <a>Hostels</a>
-          <a>Students</a>
-          <a>Managers</a>
-          <a>Logout</a>
+          <Link to="/admin" className={styles.active}>Dashboard</Link>
+          <Link to="/admin/hostels">Hostels</Link>
+          <Link to="/admin/students">Students</Link>
+          <Link to="/admin/managers">Managers</Link>
+          <Link to="/admin/logout">Logout</Link>
         </div>
       </nav>
 
@@ -78,28 +99,35 @@ const AdminDashboard: React.FC = () => {
           <div className={styles.card}>
             <i className="fa-solid fa-users"></i>
             <p className={styles.cardTitle}>Total Students</p>
-            <p className={styles.cardValue}>{summary?.total_students}</p>
+            <p className={styles.cardValue}>
+              {summaryLoading ? "Loading..." : (summary?.total_students || "0")}
+            </p>
           </div>
           
           <div className={styles.card}>
             <i className="fa-solid fa-user-tie"></i>
             <p className={styles.cardTitle}>Hostel Managers</p>
-            <p className={styles.cardValue}>{summary?.total_managers}</p>
+            <p className={styles.cardValue}>
+              {summaryLoading ? "Loading..." : (summary?.total_managers || "0")}
+            </p>
           </div>
 
           <div className={styles.card}>
             <i className="fa-solid fa-hotel"></i>
             <p className={styles.cardTitle}>Hostels Listed</p>
-            <p className={styles.cardValue}>{summary?.total_hostels}</p>
+            <p className={styles.cardValue}>
+              {summaryLoading ? "Loading..." : (summary?.total_hostels || "0")}
+            </p>
           </div>
 
           <div className={styles.card}>
             <i className="fa-solid fa-bed"></i>
             <p className={styles.cardTitle}>Rooms</p>
-            <p className={styles.cardValue}>{summary?.total_rooms}</p>
+            <p className={styles.cardValue}>
+              {summaryLoading ? "Loading..." : (summary?.total_rooms || "0")}
+            </p>
           </div>
         </div>
-
 
         {/* RECENT STUDENTS */}
         <div className={styles.tableCard}>
@@ -116,7 +144,14 @@ const AdminDashboard: React.FC = () => {
             </thead>
 
             <tbody>
-              {recentUsers.length > 0 ? (
+              {usersLoading ? (
+                <tr>
+                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
+                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: "8px" }}></i>
+                    Loading users...
+                  </td>
+                </tr>
+              ) : recentUsers.length > 0 ? (
                 recentUsers.map(u => (
                   <tr key={u.userid}>
                     <td>{u.Name}</td>
@@ -126,15 +161,17 @@ const AdminDashboard: React.FC = () => {
                   </tr>
                 ))
               ) : (
-                <tr><td colSpan={4} style={{ textAlign:"center" }}>No users found.</td></tr>
+                <tr>
+                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
+                    No users found.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>
         </div>
 
-
-
-        {/* -------------------- RECENT HOSTELS TABLE -------------------- */}
+        {/* RECENT HOSTELS TABLE */}
         <div className={styles.tableCard}>
           <p className={styles.tableTitle}><i className="fa-solid fa-building"></i> Recently Added Hostels</p>
 
@@ -149,31 +186,45 @@ const AdminDashboard: React.FC = () => {
             </thead>
 
             <tbody>
-              {recentHostels.length > 0 ? (
+              {hostelsLoading ? (
+                <tr>
+                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
+                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: "8px" }}></i>
+                    Loading hostels...
+                  </td>
+                </tr>
+              ) : recentHostels.length > 0 ? (
                 recentHostels.map(h => (
                   <tr key={h.hostelId}>
                     <td>{h.hostelName}</td>
                     <td>{h.houseNo}</td>
                     <td>{h.managerName}</td>
                     <td>
-                      <button 
+                      <Link 
+                        to={`/admin/hostels/${h.hostelId}`}
                         className={styles.actionBtn}
-                        onClick={()=>console.log("Open Hostel ->",h.hostelId)}
+                        style={{
+                          display: 'inline-block',
+                          padding: '8px 16px',
+                          textDecoration: 'none',
+                          textAlign: 'center'
+                        }}
                       >
                         View
-                      </button>
+                      </Link>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={4} style={{ textAlign:"center" }}>No Hostels Found.</td>
+                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
+                    No Hostels Found.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-
       </div>
     </>
   );

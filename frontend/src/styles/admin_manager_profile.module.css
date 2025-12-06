@@ -1,0 +1,195 @@
+/* ----------- MANAGER PROFILE CARD ----------- */
+.managerProfileCard {
+  background: #f8f3e7;
+  color: #3b2c24;
+  padding: 30px;
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  margin-top: 20px;
+}
+
+.profileHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #e0d5c8;
+}
+
+.backButton {
+  background: #8d5f3a;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s;
+}
+
+.backButton:hover {
+  background: #704729;
+}
+
+.profileBox {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.profileImg {
+  width: 180px;
+  height: 180px;
+  border-radius: 15px;
+  object-fit: cover;
+  border: 3px solid #c3ae9d;
+  background: #e0d5c8;
+}
+
+.profileInfo {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 15px;
+}
+
+.infoItem {
+  background: #fff9f3;
+  border: 1px solid #dbc8b8;
+  padding: 16px 18px;
+  border-radius: 12px;
+}
+
+.label {
+  font-size: 14px;
+  color: #7b6a5e;
+  margin-bottom: 5px;
+}
+
+.value {
+  font-size: 17px;
+  font-weight: 500;
+  color: #3b2c24;
+}
+
+.photoLabel {
+  font-size: 14px;
+  color: #7b6a5e;
+  margin-bottom: 10px;
+}
+
+.managerActions {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 2px solid #e0d5c8;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.primaryButton {
+  background: #8d5f3a;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s;
+}
+
+.primaryButton:hover {
+  background: #704729;
+}
+
+.secondaryButton {
+  background: #2b211c;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s;
+}
+
+.secondaryButton:hover {
+  background: #1a1512;
+}
+
+.dangerButton {
+  background: #c0392b;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.3s;
+}
+
+.dangerButton:hover {
+  background: #a93226;
+}
+
+/* Loading and Error States */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  color: #f8f3e7;
+  font-size: 18px;
+}
+
+.errorContainer {
+  text-align: center;
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.1);
+  padding: 30px;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+/* ----------- MOBILE ----------- */
+@media (max-width: 768px) {
+  .profileBox {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .profileImg {
+    width: 150px;
+    height: 150px;
+  }
+  
+  .profileInfo {
+    grid-template-columns: 1fr;
+  }
+  
+  .managerActions {
+    justify-content: center;
+  }
+  
+  .profileHeader {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}

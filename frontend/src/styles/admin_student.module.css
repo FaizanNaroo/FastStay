@@ -1,0 +1,151 @@
+/*----------- GLOBAL RESET -----------*/
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+body {
+  background: #3b2c24;
+  color: #f8f3e7;
+}
+
+/* ----------- NAVBAR ----------- */
+.navbar {
+  width: 100%;
+  padding: 15px 35px;
+  background: #2b211c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 4px 18px rgba(0,0,0,0.3);
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.navLinks {
+  display: flex;
+  align-items: center;
+}
+
+.navLinks a {
+  margin-left: 25px;
+  text-decoration: none;
+  font-size: 15px;
+  color: #f8f3e7;
+}
+
+.navLinks a:hover,
+.navLinks .active {
+  color: #d4b498;
+}
+
+/* ----------- PAGE CONTAINER ----------- */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px;
+}
+
+.pageTitle {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.subtitle {
+  color: #d6c7ba;
+  margin-bottom: 25px;
+}
+
+/* ----------- SEARCH + FILTER BAR ----------- */
+.topBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.searchInput {
+  padding: 10px 15px;
+  width: 260px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+}
+
+/* FILTER SECTION */
+.filters {
+  display: flex;
+  gap: 10px;
+}
+
+.select {
+  padding: 10px 15px;
+  border-radius: 10px;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ----------- STUDENT TABLE ----------- */
+.tableCard {
+  background: #f8f3e7;
+  color: #3b2c24;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 35px;
+  box-shadow: 0px 6px 18px rgba(0,0,0,0.25);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dfd6cb;
+}
+
+th {
+  background: #f0e7dc;
+  color: #3b2c24;
+}
+
+tbody tr:hover {
+  background: #f9f4ee;
+}
+
+/* ACTION BUTTONS */
+.actionBtn {
+  background: #8d5f3a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.actionBtn:hover {
+  background: #704729;
+}
+
+.deleteBtn {
+  background: #c0392b !important;
+}
+
+/* ----------- RESPONSIVE ----------- */
+@media(max-width: 768px) {
+  .filters {
+    flex-wrap: wrap;
+  }
+}
