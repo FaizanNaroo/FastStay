@@ -13,7 +13,7 @@ class Add_Hostel_Details_serializer(serializers.Serializer):
     p_isParking = serializers.BooleanField()
     p_NumRooms = serializers.IntegerField()
     p_NumFloors = serializers.IntegerField()
-    p_WaterTimings = serializers.TimeField()
+    p_WaterTimings = serializers.IntegerField()
     p_CleanlinessTenure = serializers.IntegerField()
     p_IssueResolvingTenure = serializers.IntegerField()
     p_MessProvide = serializers.BooleanField()

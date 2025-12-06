@@ -10,7 +10,7 @@ from django.utils.decorators import method_decorator
 class HostelPicView(View):
     hostel_service = HostelPic()
 
-    def get(self, request, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         
         data = json.loads(request.body)
         hostel_id_str = data.get("p_HostelId")
