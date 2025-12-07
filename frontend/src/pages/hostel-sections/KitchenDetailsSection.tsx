@@ -163,11 +163,6 @@ export default function KitchenDetailsSection({
             <div className={styles.cardHead}>
                 <h3>
                     Kitchen Details
-                    {editingMode && existingKitchenDetails && (
-                        <span style={{ fontSize: '14px', color: '#666', marginLeft: '10px' }}>
-                            (ID: {kitchenId})
-                        </span>
-                    )}
                 </h3>
                 <div className={styles.cardActions}>
                     {existingKitchenDetails && (

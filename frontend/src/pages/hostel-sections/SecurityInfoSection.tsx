@@ -174,11 +174,6 @@ export default function SecurityInfoSection({
             <div className={styles.cardHead}>
                 <h3>
                     Security Information
-                    {editingMode && existingSecurityInfo && (
-                        <span style={{ fontSize: '14px', color: '#666', marginLeft: '10px' }}>
-                            (ID: {securityId})
-                        </span>
-                    )}
                 </h3>
                 <div className={styles.cardActions}>
                     {existingSecurityInfo && (

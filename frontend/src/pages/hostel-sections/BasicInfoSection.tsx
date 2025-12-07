@@ -1,3 +1,4 @@
+// src/components/hostel-sections/BasicInfoSection.tsx
 import React from 'react';
 import styles from "../../styles/AddHostel.module.css";
 
@@ -22,7 +23,10 @@ interface BasicInfoSectionProps {
     handleSubmit: (e: React.FormEvent) => void;
     message: string;
     editingMode: boolean;
-    selectedHostelId: number | null; // Changed from selectedHostel to selectedHostelId
+    selectedHostelId: number | null;
+    hostelId: number | null;
+    hostelPics: string[];
+    onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export default function BasicInfoSection({
@@ -31,7 +35,10 @@ export default function BasicInfoSection({
     handleSubmit,
     message,
     editingMode,
-    selectedHostelId
+    selectedHostelId,
+    hostelId,
+    hostelPics,
+    onFileChange
 }: BasicInfoSectionProps) {
     
     return (
@@ -198,9 +205,40 @@ export default function BasicInfoSection({
                     </div>
                 </div>
 
-                {selectedHostelId && (
-                    <div className={styles.hostelIdDisplay}>
-                        <small>Hostel ID: {selectedHostelId}</small>
+                {/* ---------------- Hoste l Pics Upload ---------------- */}
+                <div className={styles.row}>
+                    <div className={styles.inputGroup}>
+                        <label>Upload Hostel Pictures (max 5)</label>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={onFileChange}
+                            disabled={!hostelId}
+                        />
+                        <p style={{ fontSize: "12px", marginTop: "5px" }}>
+                            Save basic info first. You can upload up to 5 images per hostel.
+                        </p>
+                    </div>
+                </div>
+
+                {/* Preview existing pics */}
+                {hostelPics && hostelPics.length > 0 && (
+                    <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                        {hostelPics.map((pic, idx) => (
+                            <img
+                                key={idx}
+                                src={pic}
+                                alt={`Hostel pic ${idx + 1}`}
+                                style={{
+                                    width: "140px",
+                                    height: "100px",
+                                    borderRadius: "8px",
+                                    objectFit: "cover",
+                                    border: "1px solid #ddd"
+                                }}
+                            />
+                        ))}
                     </div>
                 )}
 

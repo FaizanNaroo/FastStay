@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styles from "../styles/HostelDashboard.module.css";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 interface Hostel {
     p_HostelId: number;
@@ -24,9 +24,14 @@ export default function HostelDashboard() {
     const [pics, setPics] = useState<Record<number, string[]>>({});
     const [loading, setLoading] = useState(true);
     const [slideIndex, setSlideIndex] = useState<Record<number, number>>({});
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [hostelToDelete, setHostelToDelete] = useState<Hostel | null>(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteMessage, setDeleteMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
     
     const params = new URLSearchParams(window.location.search);
     const managerId = Number(params.get("user_id"));
+    const navigate = useNavigate();
 
     console.log(managerId);
 
@@ -49,32 +54,104 @@ export default function HostelDashboard() {
         };
     }
 
-    // Fetch all hostels
-    useEffect(() => {
-        async function fetchHostels() {
-            try {
-                setLoading(true);
-                const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
-                const data = await res.json();
+    // Handle edit button click
+    const handleEditHostel = (hostelId: number) => {
+        navigate(`/manager/add_hostel?user_id=${managerId}&edit_hostel=${hostelId}`);
+    };
 
-                if (data?.hostels) {
-                    const mapped = data.hostels.map((h: any) => mapHostel(h));
-                    const filtered = mapped.filter(
-                        (h: Hostel) => h.p_ManagerId === managerId
-                    );
-                    setHostels(filtered);
+    // Handle delete button click
+    const handleDeleteClick = (hostel: Hostel) => {
+        setHostelToDelete(hostel);
+        setShowDeleteModal(true);
+    };
 
-                    // For each hostel → fetch pics
-                    filtered.forEach((h: { p_HostelId: number }) => fetchPics(h.p_HostelId));
-                }
-            } catch (error) {
-                console.log("Hostel fetch error", error);
-            } finally {
-                setLoading(false);
+    // Close delete modal
+    const closeDeleteModal = () => {
+        setShowDeleteModal(false);
+        setHostelToDelete(null);
+        setDeleteMessage(null);
+    };
+
+    // Confirm and delete hostel
+    const confirmDeleteHostel = async () => {
+        if (!hostelToDelete) return;
+
+        setDeleteLoading(true);
+        setDeleteMessage(null);
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/faststay_app/hosteldetails/delete", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    p_HostelId: hostelToDelete.p_HostelId.toString()
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Remove deleted hostel from state
+                setHostels(prev => prev.filter(h => h.p_HostelId !== hostelToDelete.p_HostelId));
+                
+                // Remove pics for deleted hostel
+                setPics(prev => {
+                    const newPics = { ...prev };
+                    delete newPics[hostelToDelete.p_HostelId];
+                    return newPics;
+                });
+
+                setDeleteMessage({
+                    type: 'success',
+                    text: data.message || `Hostel "${hostelToDelete.p_name}" deleted successfully`
+                });
+
+                // Close modal after 2 seconds
+                setTimeout(() => {
+                    closeDeleteModal();
+                }, 2000);
+            } else {
+                setDeleteMessage({
+                    type: 'error',
+                    text: data.error || 'Failed to delete hostel'
+                });
             }
+        } catch (error) {
+            console.error("Delete error:", error);
+            setDeleteMessage({
+                type: 'error',
+                text: 'Network error. Please try again.'
+            });
+        } finally {
+            setDeleteLoading(false);
         }
-        fetchHostels();
-    }, []);
+    };
+
+    // Fetch all hostels
+    const fetchHostels = async () => {
+        try {
+            setLoading(true);
+            const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+            const data = await res.json();
+
+            if (data?.hostels) {
+                const mapped = data.hostels.map((h: any) => mapHostel(h));
+                const filtered = mapped.filter(
+                    (h: Hostel) => h.p_ManagerId === managerId
+                );
+                setHostels(filtered);
+
+                // For each hostel → fetch pics
+                filtered.forEach((h: { p_HostelId: number }) => fetchPics(h.p_HostelId));
+            }
+        } catch (error) {
+            console.log("Hostel fetch error", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Fetch hostel pics for each hostel
     async function fetchPics(hostelId: number) {
@@ -103,6 +180,11 @@ export default function HostelDashboard() {
         }
     }
 
+    // Initial fetch
+    useEffect(() => {
+        fetchHostels();
+    }, []);
+
     // Slide control
     const nextPic = (id: number) => {
         const images = pics[id];
@@ -124,6 +206,87 @@ export default function HostelDashboard() {
 
     return (
         <>
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className={styles.modalOverlay}>
+                    <div className={styles.modal}>
+                        <div className={styles.modalHeader}>
+                            <h3>Confirm Deletion</h3>
+                            <button 
+                                className={styles.closeModalBtn}
+                                onClick={closeDeleteModal}
+                                disabled={deleteLoading}
+                            >
+                                &times;
+                            </button>
+                        </div>
+                        
+                        <div className={styles.modalBody}>
+                            {deleteMessage ? (
+                                <div className={`${styles.message} ${
+                                    deleteMessage.type === 'success' ? styles.successMessage : styles.errorMessage
+                                }`}>
+                                    {deleteMessage.text}
+                                </div>
+                            ) : (
+                                <>
+                                    <div className={styles.warningIcon}>
+                                        <i className="fa-solid fa-triangle-exclamation"></i>
+                                    </div>
+                                    <p className={styles.warningText}>
+                                        Are you sure you want to delete <strong>"{hostelToDelete?.p_name}"</strong>?
+                                    </p>
+                                    <div className={styles.hostelDetails}>
+                                        <p><span>House:</span> {hostelToDelete?.p_HouseNo}</p>
+                                        <p><span>Block:</span> {hostelToDelete?.p_BlockNo}</p>
+                                        <p><span>Type:</span> {hostelToDelete?.p_HostelType}</p>
+                                        <p><span>Rooms:</span> {hostelToDelete?.p_NumRooms}</p>
+                                    </div>
+                                    <div className={styles.warningBox}>
+                                        <p className={styles.warningTitle}>⚠️ Warning</p>
+                                        <p>This action will permanently delete:</p>
+                                        <ul>
+                                            <li>All rooms in this hostel</li>
+                                            <li>Mess details</li>
+                                            <li>Kitchen details</li>
+                                            <li>Security information</li>
+                                            <li>Expense records</li>
+                                            <li>Hostel images</li>
+                                        </ul>
+                                        <p className={styles.irreversible}>This action cannot be undone!</p>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                        {!deleteMessage && (
+                            <div className={styles.modalFooter}>
+                                <button
+                                    className={`${styles.modalBtn} ${styles.cancelBtn}`}
+                                    onClick={closeDeleteModal}
+                                    disabled={deleteLoading}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    className={`${styles.modalBtn} ${styles.deleteConfirmBtn}`}
+                                    onClick={confirmDeleteHostel}
+                                    disabled={deleteLoading}
+                                >
+                                    {deleteLoading ? (
+                                        <>
+                                            <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
+                                        </>
+                                    ) : (
+                                        "Delete Permanently"
+                                    )}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <nav className={styles.navbar}>
                 <div className={styles.logo}>
                     <i className="fa-solid fa-building-user"></i> FastStay
@@ -255,14 +418,24 @@ export default function HostelDashboard() {
                                 </div>
 
                                 <div className={styles.buttons}>
-                                    <Link 
-                                        to={`/manager/hostel/${h.p_HostelId}?user_id=${managerId}`}
+                                    <button 
                                         className={`${styles.btn} ${styles.view}`}
+                                        onClick={() => handleEditHostel(h.p_HostelId)}
                                     >
                                         View
-                                    </Link>
-                                    <button className={`${styles.btn} ${styles.edit}`}>Edit</button>
-                                    <button className={`${styles.btn} ${styles.delete}`}>Delete</button>
+                                    </button>
+                                    <button 
+                                        className={`${styles.btn} ${styles.edit}`}
+                                        onClick={() => handleEditHostel(h.p_HostelId)}
+                                    >
+                                        Edit
+                                    </button>
+                                    <button 
+                                        className={`${styles.btn} ${styles.delete}`}
+                                        onClick={() => handleDeleteClick(h)}
+                                    >
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         ))}

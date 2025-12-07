@@ -225,11 +225,6 @@ export default function ExpensesSection({
             <div className={styles.cardHead}>
                 <h3>
                     Expenses
-                    {editingMode && existingExpenses && (
-                        <span style={{ fontSize: '14px', color: '#666', marginLeft: '10px' }}>
-                            (ID: {expenseId})
-                        </span>
-                    )}
                 </h3>
                 <div className={styles.cardActions}>
                     {existingExpenses && (

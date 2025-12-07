@@ -1,5 +1,5 @@
-// components/AddHostel.tsx
-import { useState, useEffect } from "react";
+// src/components/AddHostel.tsx
+import React, { useState, useEffect } from "react";
 import styles from "../styles/AddHostel.module.css";
 import { Link } from "react-router-dom";
 import BasicInfoSection from "./hostel-sections/BasicInfoSection";
@@ -28,6 +28,7 @@ interface Hostel {
 export default function AddHostel() {
     const params = new URLSearchParams(window.location.search);
     const managerId = Number(params.get("user_id"));
+    const editHostelId = params.get("edit_hostel");
 
     const [hostels, setHostels] = useState<Hostel[]>([]);
     const [selectedHostelId, setSelectedHostelId] = useState<number | null>(null);
@@ -38,10 +39,13 @@ export default function AddHostel() {
     const [editingMode, setEditingMode] = useState(false);
     const [hostelDetails, setHostelDetails] = useState<any>(null);
 
+    // hostel pics URLs (from DB/cloudinary)
+    const [hostelPics, setHostelPics] = useState<string[]>([]);
+
     // Form state for basic info
     const [form, setForm] = useState({
         p_ManagerId: managerId,
-        p_HostelId: 0, // Add this field for updates
+        p_HostelId: 0,
         p_BlockNo: "",
         p_HouseNo: "",
         p_HostelType: "",
@@ -55,6 +59,20 @@ export default function AddHostel() {
         p_GeezerFlag: false,
         p_name: ""
     });
+
+     // Add this useEffect to scroll to top when component mounts or editHostelId changes
+     useEffect(() => {
+        // Scroll to top immediately when component loads
+        window.scrollTo(0, 0);
+        
+        // Also scroll to top when editHostelId changes (which happens after hostel loads)
+        if (editHostelId) {
+            // Use setTimeout to ensure DOM is ready
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        }
+    }, [editHostelId]);
 
     // Fetch all hostels for this manager
     useEffect(() => {
@@ -96,38 +114,49 @@ export default function AddHostel() {
         fetchHostels();
     }, [managerId]);
 
-    // Fetch hostel details when a hostel is selected
+    // When selectedHostelId changes, fetch details and pics
     useEffect(() => {
         if (selectedHostelId) {
             fetchHostelDetails(selectedHostelId);
+            loadHostelPics(selectedHostelId);
         } else {
             setEditingMode(false);
             setHostelDetails(null);
             resetForm();
+            setHostelPics([]);
         }
     }, [selectedHostelId]);
 
-    async function fetchHostelDetails(hostelId: number) {
+    useEffect(() => {
+        if (editHostelId) {
+            const hostelId = parseInt(editHostelId);
+            setSelectedHostelId(hostelId);
+            setHostelId(hostelId);
+            // This will trigger the existing useEffect that fetches hostel details
+        }
+    }, [editHostelId]);
+
+    async function fetchHostelDetails(hostelIdParam: number) {
         try {
             setLoading(true);
             const res = await fetch("http://127.0.0.1:8000/faststay_app/hostel/display/", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ p_HostelId: hostelId })
+                body: JSON.stringify({ p_HostelId: hostelIdParam })
             });
-            
+
             const data = await res.json();
 
             if (res.ok && data?.success && data?.result) {
                 const hostel = data.result;
                 setHostelDetails(hostel);
                 setEditingMode(true);
-                setHostelId(hostelId);
-                
+                setHostelId(hostelIdParam);
+
                 // Pre-fill form with hostel details
                 setForm(prev => ({
                     ...prev,
-                    p_HostelId: hostelId,
+                    p_HostelId: hostelIdParam,
                     p_BlockNo: hostel.p_BlockNo || "",
                     p_HouseNo: hostel.p_HouseNo || "",
                     p_HostelType: hostel.p_HostelType || "",
@@ -142,7 +171,6 @@ export default function AddHostel() {
                     p_name: hostel.p_name || ""
                 }));
 
-                // Automatically switch to basic section to show details
                 setActiveSection("basic");
                 setMessage("");
             } else {
@@ -156,6 +184,35 @@ export default function AddHostel() {
         }
     }
 
+    async function loadHostelPics(hostelIdParam: number) {
+        try {
+            const res = await fetch(
+                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelIdParam}`
+            );
+            const data = await res.json();
+
+            if (res.ok) {
+                const urls = Array.isArray(data)
+                    ? data.map((d: any) =>
+                        d.p_PhotoLink ||
+                        d.p_photolink ||
+                        d.photolink ||
+                        d.P_Photolink
+                    )
+                    : [];
+
+                console.log("Loaded hostel pics:", urls);
+
+                setHostelPics(urls);
+            } else {
+                setHostelPics([]);
+            }
+        } catch (err) {
+            console.error("Failed to load hostel pics", err);
+            setHostelPics([]);
+        }
+    }
+
     function handleChange(e: any) {
         const { name, value, type, checked } = e.target;
         setForm((prev) => ({
@@ -165,10 +222,10 @@ export default function AddHostel() {
     }
 
     function handleHostelSelect(e: React.ChangeEvent<HTMLSelectElement>) {
-        const hostelId = parseInt(e.target.value);
-        setSelectedHostelId(hostelId || null);
+        const hostelIdVal = parseInt(e.target.value);
+        setSelectedHostelId(hostelIdVal || null);
         setMessage("");
-        setHostelId(hostelId);
+        setHostelId(hostelIdVal || null);
     }
 
     function openAddNewMode() {
@@ -178,7 +235,12 @@ export default function AddHostel() {
         resetForm();
         setActiveSection("basic");
         setHostelId(null);
+        setHostelPics([]);
         setMessage("");
+
+        // Clear the edit_hostel parameter from URL without refreshing
+        const newUrl = window.location.pathname + `?user_id=${managerId}`;
+        window.history.replaceState({}, '', newUrl);
     }
 
     function resetForm() {
@@ -230,24 +292,29 @@ export default function AddHostel() {
             const data = await res.json();
 
             if (res.ok) {
-                setMessage(editingMode 
-                    ? (data.message || "Hostel Updated Successfully!") 
+                setMessage(editingMode
+                    ? (data.message || "Hostel Updated Successfully!")
                     : (data.message || "Hostel Added Successfully!"));
-                
+
                 if (!editingMode && data.hostelid) {
+                    // When newly created, set hostelId & selectedHostelId
                     setHostelId(data.hostelid);
-                    setActiveSection("mess");
-                    // Set the newly created hostel as selected
                     setSelectedHostelId(data.hostelid);
-                } else if (editingMode) {
+                    setActiveSection("mess");
+
+                    // Clear edit_hostel parameter for new hostels
+                    const newUrl = window.location.pathname + `?user_id=${managerId}&hostel_id=${data.hostelid}`;
+                    window.history.replaceState({}, '', newUrl);
+                } 
+                else if (editingMode && selectedHostelId) {
                     // Refresh hostel details
-                    fetchHostelDetails(selectedHostelId!);
+                    fetchHostelDetails(selectedHostelId);
                 }
-                
+
                 // Refresh hostel list
                 const refreshRes = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
                 const refreshData = await refreshRes.json();
-                
+
                 if (refreshData?.hostels) {
                     const filteredHostels = refreshData.hostels
                         .filter((h: any) => h.p_managerid === managerId)
@@ -267,7 +334,7 @@ export default function AddHostel() {
                             p_GeezerFlag: h.p_geezerflag,
                             p_name: h.p_name,
                         }));
-                    
+
                     setHostels(filteredHostels);
                 }
             } else {
@@ -279,7 +346,57 @@ export default function AddHostel() {
         }
     }
 
-    // Remove deleteHostel function since there's no delete API
+    // Image upload handler (uploads to backend which will upload to Cloudinary)
+    async function handlePicUpload(e: React.ChangeEvent<HTMLInputElement>) {
+        if (!hostelId) {
+            setMessage("Please save basic information first (so we have a hostel ID).");
+            return;
+        }
+
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        // enforce total <= 5
+        if (hostelPics.length + files.length > 5) {
+            setMessage("You can upload a maximum of 5 images per hostel.");
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const formData = new FormData();
+            formData.append("p_HostelId", hostelId.toString());
+            // backend expects key "p_PhotoLink" like the manager endpoint
+            formData.append("p_PhotoLink", file);
+
+            try {
+                const res = await fetch("http://127.0.0.1:8000/faststay_app/hostel_pics/add", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    // backend returns photo_url
+                    if (data.photo_url) {
+                        setHostelPics(prev => [...prev, data.photo_url]);
+                    } else if (data.photoUrl) {
+                        setHostelPics(prev => [...prev, data.photoUrl]);
+                    } else {
+                        // Fallback: if backend returns message only, attempt to refresh list
+                        loadHostelPics(hostelId);
+                    }
+                } else {
+                    // show backend error
+                    setMessage(data.error || "Image upload failed");
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                setMessage("Image upload failed");
+            }
+        }
+    }
 
     function requireBasicInfo(e: any, goto: string) {
         e.preventDefault();
@@ -368,8 +485,8 @@ export default function AddHostel() {
                         {editingMode ? "Edit Hostel Details" : "Add Hostel Details"}
                     </h2>
                     <p className={styles.subtitle}>
-                        {editingMode 
-                            ? "View and edit hostel information" 
+                        {editingMode
+                            ? "View and edit hostel information"
                             : "Fill in the required information carefully"}
                     </p>
 
@@ -404,7 +521,6 @@ export default function AddHostel() {
 
                         {selectedHostel && (
                             <div className={styles.hostelInfo}>
-                                <span>Hostel ID: {selectedHostel.p_HostelId}</span>
                                 <span>Rooms: {selectedHostel.p_NumRooms}</span>
                                 <span>Floors: {selectedHostel.p_NumFloors}</span>
                                 <span>Type: {selectedHostel.p_HostelType}</span>
@@ -416,15 +532,14 @@ export default function AddHostel() {
 
                     {/* Message Display */}
                     {message && (
-                        <div className={`${styles.message} ${
-                            message.includes("Successfully") || 
-                            message.includes("successfully") || 
-                            message.includes("Added") || 
-                            message.includes("Updated") ||
-                            message.includes("success")
-                                ? styles.success 
+                        <div className={`${styles.message} ${message.includes("Successfully") ||
+                                message.includes("successfully") ||
+                                message.includes("Added") ||
+                                message.includes("Updated") ||
+                                message.includes("success")
+                                ? styles.success
                                 : styles.error
-                        }`}>
+                            }`}>
                             {message}
                         </div>
                     )}
@@ -445,13 +560,16 @@ export default function AddHostel() {
                             message={message}
                             editingMode={editingMode}
                             selectedHostelId={selectedHostelId}
+                            hostelId={hostelId}
+                            hostelPics={hostelPics}
+                            onFileChange={handlePicUpload}
                         />
                     )}
 
                     {/* MESS DETAILS SECTION */}
                     {activeSection === "mess" && hostelId && (
-                        <MessDetailsSection 
-                            hostelId={hostelId} 
+                        <MessDetailsSection
+                            hostelId={hostelId}
                             editingMode={editingMode}
                             hostelDetails={hostelDetails}
                         />
@@ -459,7 +577,7 @@ export default function AddHostel() {
 
                     {/* KITCHEN DETAILS SECTION */}
                     {activeSection === "kitchen" && hostelId && (
-                        <KitchenDetailsSection 
+                        <KitchenDetailsSection
                             hostelId={hostelId}
                             editingMode={editingMode}
                             hostelDetails={hostelDetails}
@@ -468,7 +586,7 @@ export default function AddHostel() {
 
                     {/* SECURITY DETAILS SECTION */}
                     {activeSection === "security" && hostelId && (
-                        <SecurityInfoSection 
+                        <SecurityInfoSection
                             hostelId={hostelId}
                             editingMode={editingMode}
                             hostelDetails={hostelDetails}
@@ -477,7 +595,7 @@ export default function AddHostel() {
 
                     {/* EXPENSES SECTION */}
                     {activeSection === "expenses" && hostelId && (
-                        <ExpensesSection 
+                        <ExpensesSection
                             hostelId={hostelId}
                             editingMode={editingMode}
                             hostelDetails={hostelDetails}
