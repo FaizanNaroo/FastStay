@@ -1,0 +1,146 @@
+.screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 15px;
+    min-height: 100vh;
+}
+
+.container{
+    width: 100%;
+    max-width: 850px;
+    padding: 20px;
+}
+
+.card{
+    width: 100%;
+    background: #f8f3e7;
+    padding: 30px;
+    border-radius: 18px;
+    box-shadow: 0px 8px 22px rgba(0,0,0,0.28);
+}
+
+.title{
+    text-align: center;
+    font-size: 25px;
+    color: #5c3d2e;
+}
+
+.subtitle{
+    text-align: center;
+    margin-bottom: 25px;
+    color: #7b6a5c;
+}
+
+/* PHOTO UPLOAD */
+.photoSection{
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.photoLabel{
+    font-size: 15px;
+    font-weight: 500;
+    color: #4b3a32;
+}
+
+.photoBox{
+    width: 120px;
+    height: 120px;
+    margin: 12px auto;
+    background: #fff3e1;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid #8d5f3a;
+    overflow: hidden;
+}
+
+.photoBox i{
+    font-size: 45px;
+    color: #8d5f3a;
+}
+
+.photoPreview{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.fileInput{
+    margin-top: 8px;
+}
+
+/* ROWS */
+.row{
+    display: flex;
+    gap: 15px;
+    margin-bottom: 14px;
+}
+
+.inputGroup{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.inputGroup label{
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #4b3a32;
+}
+
+.inputGroup input,
+.inputGroup select{
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: 1.6px solid #d9c9b8;
+    background: #fdfaf4;
+    font-size: 14px;
+    outline: none;
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus{
+    border-color: #b08968;
+}
+
+/* BUTTON */
+.btn{
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #8d5f3a;
+    border: none;
+    color: #fff;
+    font-size: 16px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.btn:hover{
+    background: #704729;
+}
+
+/* MESSAGE */
+.msg{
+    margin-top: 12px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.success{
+    color: #2e7d32;
+}
+
+.error{
+    color: #c62828;
+}
+
+/* RESPONSIVE */
+@media(max-width: 768px){
+    .row{
+        flex-direction: column;
+    }
+}

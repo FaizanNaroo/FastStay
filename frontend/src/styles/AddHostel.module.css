@@ -1,0 +1,679 @@
+/* LAYOUT */
+.navbar {
+    width: 100%;
+    padding: 15px 30px;
+    background: #2b211c;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.logo {
+    color: #f8f3e7;
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.navLinks a {
+    margin-left: 22px;
+    color: #f8f3e7;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.navLinks a:hover,
+.navLinks a.active {
+    color: #d4b498;
+}
+
+/* MAIN */
+.layout {
+    display: flex;
+    padding: 25px;
+    max-width: 1300px;
+    margin: auto;
+    min-height: calc(100vh - 80px);
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 240px;
+    background: #2b211c;
+    color: #f8f3e7;
+    padding: 20px;
+    border-radius: 16px;
+    height: fit-content;
+    position: sticky;
+    top: 100px;
+}
+
+.sidebar h3 {
+    color: #d4b498;
+    margin-bottom: 15px;
+    font-size: 18px;
+    border-bottom: 1px solid #4b3a32;
+    padding-bottom: 10px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar li {
+    margin-bottom: 5px;
+}
+
+.sidebarLink {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 12px 15px;
+    border-radius: 10px;
+    color: #f8f3e7;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.sidebarLink:hover {
+    background: #4b3a32;
+    color: #d4b498;
+}
+
+.sidebarLink.active {
+    background: #8d5f3a;
+    color: white;
+    font-weight: 500;
+}
+
+/* CONTENT */
+.content {
+    flex: 1;
+    margin-left: 25px;
+}
+
+.pageTitle {
+    font-size: 26px;
+    margin-bottom: 6px;
+    color: #f8f3e7;
+}
+
+.subtitle {
+    margin-bottom: 25px;
+    color: #d4c9bb;
+    font-size: 16px;
+}
+
+/* CARDS */
+.card {
+    background: #f8f3e7;
+    padding: 25px;
+    border-radius: 18px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.cardHead {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #e8ddd0;
+}
+
+.cardHead h3 {
+    margin: 0;
+    color: #2b211c;
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cardActions {
+    display: flex;
+    gap: 10px;
+}
+
+.editBtn {
+    padding: 8px 16px;
+    background: #8d5f3a;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.editBtn:hover {
+    background: #704729;
+    transform: translateY(-2px);
+}
+
+.deleteBtn {
+    padding: 8px 16px;
+    background: #c0392b;
+    color: white;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.deleteBtn:hover {
+    background: #a93226;
+    transform: translateY(-2px);
+}
+
+/* FORM */
+.row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 18px;
+}
+
+.inputGroup {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.inputGroup label {
+    color: #4b3a32;
+    margin-bottom: 8px;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.inputGroup input,
+.inputGroup select {
+    padding: 12px;
+    border: 1.5px solid #d9c9b8;
+    border-radius: 10px;
+    background: #fdfaf4;
+    color: #4b3a32;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+    font-family: inherit;
+}
+
+.inputGroup input:focus,
+.inputGroup select:focus {
+    outline: none;
+    border-color: #8d5f3a;
+    box-shadow: 0 0 0 2px rgba(141, 95, 58, 0.1);
+}
+
+.checkboxGroup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #e8ddd0;
+    cursor: pointer;
+    padding: 12px 15px;
+    border-radius: 10px;
+    transition: background 0.2s ease;
+}
+
+.checkboxGroup:hover {
+    background: rgba(141, 95, 58, 0.05);
+}
+
+.checkboxGroup:last-child {
+    border-bottom: none;
+}
+
+.checkboxGroup label {
+    color: #4b3a32;
+    font-weight: 500;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.checkboxGroup input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #8d5f3a;
+    border-radius: 5px;
+    border: 2px solid #d9c9b8;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.checkboxGroup input[type="checkbox"]:checked {
+    background-color: #8d5f3a;
+    border-color: #8d5f3a;
+}
+
+.checkboxGroup input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(141, 95, 58, 0.2);
+    border-color: #8d5f3a;
+}
+
+.checkboxGroup input[type="checkbox"]:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Add checkmark effect for checked state */
+.checkboxGroup input[type="checkbox"]:checked::before {
+    content: "";
+    display: block;
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+    position: relative;
+    left: 50%;
+    top: 50%;
+    margin-left: -2.5px; /* Half of width */
+    margin-top: -7px; /* Slightly adjusted for visual centering */
+}
+
+/* BUTTON */
+.btn {
+    width: 100%;
+    padding: 14px;
+    background: #8d5f3a;
+    color: white;
+    border-radius: 12px;
+    border: none;
+    margin-top: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    font-family: inherit;
+}
+
+.btn:hover {
+    background: #704729;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(141, 95, 58, 0.3);
+}
+
+/* Add New Hostel Button */
+.addNewBtn {
+    padding: 12px 24px;
+    background: #8d5f3a;
+    color: white;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    font-family: inherit;
+    font-size: 15px;
+}
+
+.addNewBtn:hover {
+    background: #704729;
+    transform: translateY(-2px);
+}
+
+/* Message Styles */
+.message {
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin: 15px 0;
+    font-weight: 500;
+    border-left: 4px solid transparent;
+    font-size: 15px;
+}
+
+.topMessage {
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.success {
+    background: #e8f5e8;
+    color: #2e7d32;
+    border-left-color: #4caf50;
+}
+
+.error {
+    background: #ffebee;
+    color: #c62828;
+    border-left-color: #f44336;
+}
+
+.warning {
+    background: #fff8e1;
+    color: #ff8f00;
+    border-left-color: #ffc107;
+}
+
+/* Loading State */
+.loading {
+    text-align: center;
+    padding: 30px;
+    color: #8d7b6d;
+    background: #fdfaf4;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+.loading i {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* Disabled sidebar links */
+.sidebarLink:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.sidebarLink:disabled:hover {
+    background: transparent;
+    color: #f8f3e7;
+}
+
+/* Hostel Selector */
+.hostelSelector {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.hostelSelector .inputGroup {
+    margin: 0;
+    flex: 1;
+}
+
+.hostelSelector select {
+    padding: 12px;
+    border: 1.5px solid #d9c9b8;
+    border-radius: 10px;
+    background: #fdfaf4;
+    color: #4b3a32;
+    font-size: 15px;
+    transition: border-color 0.3s ease;
+    width: 100%;
+    font-family: inherit;
+}
+
+.hostelSelector select:focus {
+    outline: none;
+    border-color: #8d5f3a;
+    box-shadow: 0 0 0 2px rgba(141, 95, 58, 0.1);
+}
+
+.hostelSelector select:disabled {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.hostelInfo {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    padding-top: 15px;
+    border-top: 1px solid #e8ddd0;
+}
+
+.hostelInfo span {
+    background: #f0e6d6;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #6b5c4d;
+    font-weight: 500;
+}
+
+/* Card header hostel ID badge */
+.hostelIdBadge {
+    font-size: 14px;
+    color: #666;
+    margin-left: 10px;
+    font-weight: normal;
+    background: #f0e6d6;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+/* Form validation error message */
+.errorMessage {
+    color: #c62828;
+    font-size: 13px;
+    margin-top: 5px;
+    padding-left: 5px;
+    font-weight: 500;
+}
+
+/* Note style */
+.note {
+    font-size: 14px;
+    padding: 12px 15px;
+    background-color: #fdfaf4;
+    border-radius: 8px;
+    border-left: 4px solid #4a90e2;
+    color: #4b3a32;
+    margin: 15px 0;
+    line-height: 1.5;
+}
+
+.sectionForm {
+    margin-top: 10px;
+}
+
+.warning {
+    background: #fff8e1;
+    color: #ff8f00;
+    border-left-color: #ffc107;
+}
+
+/* Disabled button styles */
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+button:disabled:hover {
+    background: inherit;
+    box-shadow: none;
+}
+
+/* Required field indicator */
+.required::after {
+    content: " *";
+    color: #c62828;
+}
+
+/* Icon styles */
+.fa-solid {
+    margin-right: 8px;
+}
+
+/* RESPONSIVE */
+@media (max-width: 850px) {
+    .layout {
+        flex-direction: column;
+        padding: 15px;
+    }
+    
+    .sidebar {
+        margin-bottom: 20px;
+        width: 100%;
+        position: static;
+    }
+    
+    .content {
+        margin-left: 0;
+    }
+    
+    .row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .card {
+        padding: 20px;
+    }
+    
+    .cardHead {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+    
+    .cardActions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+    
+    .navbar {
+        padding: 12px 20px;
+    }
+    
+    .navLinks {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .navLinks a {
+        margin-left: 0;
+        font-size: 14px;
+    }
+    
+    .hostelSelector {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hostelInfo {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 768px) {
+    .pageTitle {
+        font-size: 22px;
+    }
+    
+    .subtitle {
+        font-size: 14px;
+    }
+    
+    .cardHead h3 {
+        font-size: 20px;
+    }
+    
+    .editBtn,
+    .deleteBtn,
+    .addNewBtn {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+    
+    .btn {
+        padding: 12px;
+        font-size: 15px;
+    }
+    
+    .hostelInfo span {
+        font-size: 13px;
+        padding: 5px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pageTitle {
+        font-size: 20px;
+    }
+    
+    .subtitle {
+        font-size: 13px;
+    }
+    
+    .cardHead h3 {
+        font-size: 18px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .hostelIdBadge {
+        margin-left: 0;
+        font-size: 12px;
+    }
+    
+    .editBtn,
+    .deleteBtn,
+    .addNewBtn {
+        padding: 6px 12px;
+        font-size: 13px;
+    }
+    
+    .btn {
+        padding: 10px;
+        font-size: 14px;
+    }
+    
+    .message {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
+    
+    .loading {
+        padding: 20px;
+        font-size: 14px;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .sidebar {
+        display: none;
+    }
+    
+    .layout {
+        display: block;
+        padding: 0;
+    }
+    
+    .content {
+        margin-left: 0;
+    }
+    
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}

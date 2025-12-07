@@ -10,7 +10,8 @@ class Update_Expenses_serializer(serializers.Serializer):
     p_isIncludedInRoomCharges = serializers.BooleanField()
     p_RoomCharges = serializers.ListField(
         child = serializers.DecimalField(max_digits=10, decimal_places=2),
-        allow_empty= False
+        allow_empty = True,
+        required = False
     )
     p_SecurityCharges = serializers.DecimalField(max_digits=10, decimal_places=2)
     p_MessCharges = serializers.DecimalField(max_digits=10, decimal_places=2)

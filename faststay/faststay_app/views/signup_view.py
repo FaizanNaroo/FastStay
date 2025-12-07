@@ -13,6 +13,8 @@ class SignupView(View):
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
+            data['age']= int(data['age'])
+
             is_valid, error = validate_signup_data(data)
             if not is_valid:
                 return JsonResponse({'error': error}, status=400)
@@ -24,7 +26,7 @@ class SignupView(View):
             usertype = data['usertype']
             gender = data['gender']
             city = data['city']
-            age = data['age']
+            age = int(data['age'])
 
             result_tuple = self.auth_service.register_user(
                "signup", [usertype, fname, lname, age, gender, city, email, password]

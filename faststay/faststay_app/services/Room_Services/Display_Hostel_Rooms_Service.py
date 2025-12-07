@@ -22,15 +22,15 @@ def Display_Hostel_Rooms_service(data):
         rooms = []
         for row in results:
             rooms.append({
-                "floorNo": row[0],
-                "seaterNo": row[1],
-                "bedType": row[2],
-                "washroomType": row[3],
-                "cupboardType": row[4],
-                "roomRent": row[5],
-                "isVentilated": row[6],
-                "isCarpet": row[7],
-                "isMiniFridge": row[8],
+                "p_FloorNo": row[0],
+                "p_SeaterNo": row[1],
+                "p_BedType": row[2],
+                "p_WashroomType": row[3],
+                "p_CupboardType": row[4],
+                "p_RoomRent": row[5],
+                "p_isVentilated": row[6],
+                "p_isCarpet": row[7],
+                "p_isMiniFridge": row[8],
             })
 
         return True, rooms
