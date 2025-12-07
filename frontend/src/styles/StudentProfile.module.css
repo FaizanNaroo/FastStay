@@ -1,0 +1,142 @@
+/* === GLOBAL STYLES === */
+:global(body) {
+  font-family: "Poppins", sans-serif;
+  background: #3b2c24;
+  color: #f8f3e7;
+}
+
+:global(i) {
+  margin-right: 5px;
+}
+
+#root{
+    width: 100%; 
+}
+/* === NAVBAR === */
+.navbar {
+  padding: 3vh 2vw;
+  background: #2b211c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.3);
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  max-width: 100%;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f8f3e7;
+}
+
+.navLinks a {
+  margin-left: 25px;
+  color: #f8f3e7;
+  text-decoration: none;
+}
+
+.navLinks a:hover,
+.navLinks .active {
+  color: #d4b498;
+}
+
+/* === CONTAINER === */
+.container {
+  max-width: 70%;
+  margin: 3% auto 10% auto; /* leave space for fixed navbar */
+  padding: 0 20px;
+}
+
+.pageTitle {
+  font-size: 26px;
+}
+
+.subtitle {
+  color: #d4c9bb;
+  margin-bottom: 25px;
+}
+
+/* === PROFILE GRID === */
+.profileGrid {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* LEFT PROFILE CARD */
+.profileCard {
+  flex: 0 0 15vh;
+  min-width: 15vw;
+  background: #f8f3e7;
+  color: #3b2c24;
+  padding: 25px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.name {
+  margin-top: 5px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.email {
+  margin-top: 5px;
+  font-size: 14px;
+  color: #6c574b;
+}
+
+.editBtn {
+  margin-top: 18px;
+  padding: 10px 20px;
+  background: #8d5f3a;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.editBtn:hover {
+  background: #704729;
+}
+
+/* RIGHT INFO SECTIONS */
+.infoSections {
+  flex: 1;
+}
+
+.section {
+  background: #f8f3e7;
+  color: #3b2c24;
+  padding: 18px 22px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.section h3 {
+  margin-bottom: 12px;
+  color: #5c3d2e;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 900px) {
+  .profileGrid {
+    flex-direction: column;
+  }
+
+  .profileCard {
+    width: 100%;
+  }
+}

@@ -1,5 +1,12 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import StudentProfile from "./pages/Student_Profile";
+import EditProfile from "./pages/Edit_Profile";
+import Suggestions from "./pages/Suggestions";
+import StudentHome from "./pages/Student_Home";
+import HostelDetails from "./pages/Hostel_Details";
+import OwnerDetails from "./pages/Owner_Details";
+import Rooms from "./pages/view_Rooms";
 import AdminDashboard from './pages/admin_dashboard';
 import AdminViewStudents from './pages/admin_student';
 import AdminViewManagers from './pages/admin_manager';
@@ -22,12 +29,20 @@ import AddRoom from "./pages/AddRoom";
 import Profile from "./pages/Profile";
 import ManagerAnalytics from "./pages/ManagerAnalytics";
 
+
 localStorage.clear();
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/student/profile" element={<StudentProfile />} />
+        <Route path="/student/profile/edit" element={<EditProfile />} />
+        <Route path="/student/suggestions" element={<Suggestions />} />
+        <Route path="/student/home" element={<StudentHome />} />
+        <Route path="/student/hostelDetails" element={<HostelDetails/>}/>
+        <Route path="/student/ownerDetails" element={<OwnerDetails/>}/>
+        <Route path="/student/rooms" element={<Rooms/>}/>
         {/* Dashboard Route */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="admin/logout" element={<LogoutConfirm />} />

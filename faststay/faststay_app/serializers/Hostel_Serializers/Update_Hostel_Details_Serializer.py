@@ -15,7 +15,7 @@ class Update_Hostel_Details_serializer(serializers.Serializer):
     p_isParking = serializers.BooleanField(required=False, allow_null=True)
     p_NumRooms = serializers.IntegerField(required=False, allow_null=True)
     p_NumFloors = serializers.IntegerField(required=False, allow_null=True)
-    p_WaterTimings = serializers.IntegerField()
+    p_WaterTimings = serializers.IntegerField(required=False)
     p_CleanlinessTenure = serializers.IntegerField(required=False, allow_null=True)
     p_IssueResolvingTenure = serializers.IntegerField(required=False, allow_null=True)
     p_MessProvide = serializers.BooleanField(required=False, allow_null=True)
