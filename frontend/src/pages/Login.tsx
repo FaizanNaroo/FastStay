@@ -22,7 +22,7 @@ const Login: React.FC = () => {
       if (response.data.usertype === "Hostel Manager") {
         window.location.href = `/manager/dashboard?user_id=${response.data.user_id}`;
       } else if (response.data.usertype === "Student") {
-        window.location.href = `/student/dashboard?user_id=${response.data.user_id}`;
+        window.location.href = `/student/home?user_id=${response.data.user_id}`;
       } else if (response.data.usertype === "Admin") {
         window.location.href = `/admin/dashboard?user_id=${response.data.user_id}`;
       }

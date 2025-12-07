@@ -91,7 +91,7 @@ const StudentHome: React.FC = () => {
   
   // Extract user_id from URL query parameter
   const queryParams = new URLSearchParams(window.location.search);
-  const userId = queryParams.get("user_id") || "5";
+  const userId = queryParams.get("user_id");
 
   // Filter states
   const [filters, setFilters] = useState<FilterState>({
@@ -260,7 +260,6 @@ const StudentHome: React.FC = () => {
               rating: rating
             });
             
-            // Calculate mock distance if not provided, use -1 if missing
             const distance_from_university = hostel.distance_from_university || -1;
             
             return {

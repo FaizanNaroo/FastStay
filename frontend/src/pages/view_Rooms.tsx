@@ -48,7 +48,7 @@ const ViewRooms: React.FC = () => {
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
   const hostelId = queryParams.get("hostel_id");
-  const userId = queryParams.get("user_id") || "5";
+  const userId = queryParams.get("user_id");
   
   // API Base URL
   const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
@@ -237,16 +237,16 @@ const ViewRooms: React.FC = () => {
       if (response.data.success && response.data.result && Array.isArray(response.data.result)) {
         // Process rooms and add room numbers
         const fetchedRooms = response.data.result.map((room: any, index: number) => ({
-          p_RoomNo: (parseInt( room.floorNo || 1) * 100) + index + 1,
-          p_FloorNo: room.floorNo || 1,
-          p_SeaterNo: room.seaterNo || 1,
-          p_BedType: room.bedType || "Single",
-          p_WashroomType: room.washroomType || "Attached",
-          p_CupboardType: room.cupboardType || "PerPerson",
-          p_RoomRent: room.roomRent || 0,
-          p_isVentilated: room.isVentilated || false,
-          p_isCarpet: room.isCarpet || false,
-          p_isMiniFridge: room.isMiniFridge || false
+          p_RoomNo: (parseInt( room.p_FloorNo || 1) * 100) + index + 1,
+          p_FloorNo: room.p_FloorNo || 1,
+          p_SeaterNo: room.p_SeaterNo || 1,
+          p_BedType: room.p_BedType || "Single",
+          p_WashroomType: room.p_WashroomType || "Attached",
+          p_CupboardType: room.p_CupboardType || "PerPerson",
+          p_RoomRent: room.p_RoomRent || 0,
+          p_isVentilated: room.p_isVentilated || false,
+          p_isCarpet: room.p_isCarpet || false,
+          p_isMiniFridge: room.p_isMiniFridge || false
         }));
         
         // Sort rooms by seater type and rent
@@ -270,39 +270,10 @@ const ViewRooms: React.FC = () => {
     } catch (error: any) {
       console.error("Failed to fetch rooms:", error.response?.data || error.message);
       
-      // For development/testing, create mock data
-      const mockRooms = createMockRooms();
-      setRooms(mockRooms);
-      setFilteredRooms(mockRooms);
       
     } finally {
       setLoading(false);
     }
-  };
-
-  // Mock data for testing when API fails
-  const createMockRooms = (): Room[] => {
-    const roomTypes = [
-      { seater: 1, rent: 20000, floor: 1 },
-      { seater: 2, rent: 15000, floor: 1 },
-      { seater: 2, rent: 16000, floor: 2 },
-      { seater: 3, rent: 12000, floor: 1 },
-      { seater: 3, rent: 13000, floor: 2 },
-      { seater: 4, rent: 10000, floor: 1 },
-    ];
-    
-    return roomTypes.map((type, index) => ({
-      p_RoomNo: index + 1,
-      p_FloorNo: type.floor,
-      p_SeaterNo: type.seater,
-      p_BedType: type.seater === 1 ? "Single" : "Double",
-      p_WashroomType: type.seater <= 2 ? "Attached" : "Shared",
-      p_CupboardType: "Built-in",
-      p_RoomRent: type.rent,
-      p_isVentilated: Math.random() > 0.5,
-      p_isCarpet: Math.random() > 0.7,
-      p_isMiniFridge: Math.random() > 0.8
-    }));
   };
 
   useEffect(() => {

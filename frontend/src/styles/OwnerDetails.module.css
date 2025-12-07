@@ -8,21 +8,21 @@
 
 /* NAVBAR */
 .navbar {
-  background: linear-gradient(135deg, #8d5f3a 0%, #6c574b 100%);
-  padding: 1rem 2rem;
+  padding: 3vh 2vw;
+  background: #2b211c;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 22px;
+  font-weight: 600;
+  color: #f8f3e7;
 }
 
 .logo i {
@@ -31,7 +31,8 @@
 
 .navLinks {
   display: flex;
-  gap: 2rem;
+  align-items: center;
+  gap: 25px;
 }
 
 .navLink {

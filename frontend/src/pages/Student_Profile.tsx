@@ -85,16 +85,16 @@ const StudentProfile: React.FC = () => {
           <i className="fa-solid fa-building-user"></i> FastStay
         </div>
         <div className={styles.navLinks}>
-          <a href="/student/home" className={styles.navLinkItem}>
+          <a href={`/student/home?user_id=${userId}`} className={styles.navLinkItem}>
             Home
           </a>
           <a
-            href="/student/profile"
+            href={`/student/profile?user_id=${userId}`}
             className={`${styles.navLinkItem} ${styles.active}`}
           >
             My Profile
           </a>
-          <Link to={`/student/suggestions?user-id=${userId}`} className={styles.navLinkItem}>
+          <Link to={`/student/suggestions?user_id=${userId}`} className={styles.navLinkItem}>
             Suggestions
           </Link>
           <a href="/" className={styles.navLinkItem}>

@@ -46,7 +46,7 @@ const OwnerDetails: React.FC = () => {
   // Extract query parameters
   const queryParams = new URLSearchParams(location.search);
   const hostelId = queryParams.get("id");
-  const userId = queryParams.get("user_id") || "5";
+  const userId = queryParams.get("user_id");
   
   // API Base URL
   const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
@@ -98,9 +98,9 @@ const OwnerDetails: React.FC = () => {
       
       let userDetails: UserDetails | null = null;
       if (usersResponse.data.users && Array.isArray(usersResponse.data.users)) {
-        // Find the manager among users (manager has same ID as loginid/userid)
+        // Find the manager among users (manager has same ID as userid)
         userDetails = usersResponse.data.users.find(
-          (u: any) => u.userid === managerId || u.loginid === managerId
+          (u: any) => u.userid === managerId
         );
         
         if (!userDetails) {
@@ -112,6 +112,7 @@ const OwnerDetails: React.FC = () => {
         }
       }
       
+      console.log("Owner found:", userDetails);
       if (!userDetails) {
         console.warn("No user details found, using default");
         userDetails = {

@@ -91,7 +91,7 @@ const Suggestions: React.FC = () => {
   const [profile, setProfile] = useState<StudentProfile | null>(null);
   
   const queryParams = new URLSearchParams(window.location.search);
-  const userId = queryParams.get("user_id") || "5";
+  const userId = queryParams.get("user_id") || '';
   const navigate = useNavigate();
 
   const fetchStudentProfile = async (): Promise<StudentProfile | null> => {
