@@ -4,6 +4,7 @@ import EditProfile from "./pages/Edit_Profile";
 import Suggestions from "./pages/Suggestions";
 import StudentHome from "./pages/Student_Home";
 import HostelDetails from "./pages/Hostel_Details";
+import OwnerDetails from "./pages/Owner_Details";
 
 localStorage.clear();
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/student/suggestions" element={<Suggestions />} />
         <Route path="/student/home" element={<StudentHome />} />
         <Route path="/student/hostelDetails" element={<HostelDetails/>}/>
+        <Route path="/student/ownerDetails" element={<OwnerDetails/>}/>
       </Routes>
     </BrowserRouter>
   );

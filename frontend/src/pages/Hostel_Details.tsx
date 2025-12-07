@@ -42,7 +42,7 @@ interface HostelDetails {
   p_blockno: string;
   p_houseno: string;
   distance_from_university?: number;
-  images?: HostelImage[];
+  images: HostelImage[];
   
   // Room types
   rooms: RoomType[];
@@ -74,7 +74,6 @@ interface HostelDetails {
 const HostelDetails: React.FC = () => {
   const [hostel, setHostel] = useState<HostelDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeImage, setActiveImage] = useState(0);
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,14 +83,152 @@ const HostelDetails: React.FC = () => {
   const hostelId = queryParams.get("id");
   const userId = queryParams.get("user_id") || "5";
   
+  // API Base URL
+  const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
+  
   // Helper function to calculate average rating from ratings data
   const calculateAverageRating = (ratings: Rating[]): number => {
-    if (!ratings || ratings.length === 0) return 4.0;
+    if (!ratings || ratings.length === 0) return 0;
     
     const total = ratings.reduce((sum, rating) => sum + rating.p_RatingStar, 0);
     return parseFloat((total / ratings.length).toFixed(1));
   };
   
+  // Helper function to get hostel images - SIMPLIFIED VERSION
+  const getHostelImages = async (hostelId: number): Promise<HostelImage[]> => {
+    try {
+      console.log(`Fetching images for hostel ${hostelId}`);
+      const response = await axios.post(
+        `${API_BASE_URL}/display/hostel_pic`,
+        { p_HostelId: hostelId.toString() }
+      );
+      
+      console.log(`Images API response for hostel ${hostelId}:`, response.data);
+      
+      // Based on your example URL, the API returns a single object with p_photolink
+      const imageData = response.data;
+      
+      // Check if we have a photo link
+      if (imageData && imageData.p_photolink) {
+        const photoLink = imageData.p_photolink;
+        // Return as array with one image
+        return [{ p_PhotoLink: photoLink }];
+      }
+      // Alternative field name
+      else if (imageData && imageData.p_PhotoLink) {
+        const photoLink = imageData.p_PhotoLink;
+        return [{ p_PhotoLink: photoLink }];
+      }
+      // If it's already an array
+      else if (Array.isArray(imageData)) {
+        return imageData
+          .filter((img: any) => img.p_photolink || img.p_PhotoLink)
+          .map((img: any) => ({
+            p_PhotoLink: img.p_photolink || img.p_PhotoLink
+          }));
+      }
+      
+      console.warn(`No p_photolink found for hostel ${hostelId}`);
+      return [];
+      
+    } catch (error: any) {
+      // Check if it's a 404 (no image for this hostel)
+      if (error.response?.status === 404) {
+        console.log(`No images found for hostel ${hostelId} (expected)`);
+        return [];
+      }
+      
+      console.error(`Failed to fetch images for hostel ${hostelId}:`, 
+        error.response?.data || error.message
+      );
+      return [];
+    }
+  };
+
+  // Helper to get hostel ratings
+  const getHostelRatings = async (hostelId: number): Promise<Rating[]> => {
+    try {
+      console.log(`Fetching ratings for hostel ${hostelId}`);
+      const response = await axios.get(
+        `${API_BASE_URL}/display/hostel_rating`
+      );
+      
+      console.log(`All ratings API response:`, response.data);
+      
+      // Filter ratings for this specific hostel
+      if (response.data && Array.isArray(response.data.ratings)) {
+        const hostelRatings = response.data.ratings.filter(
+          (rating: any) => rating.p_hostelid === hostelId || rating.p_HostelId === hostelId || rating.hostel_id === hostelId
+        );
+        
+        // Map to Rating interface
+        return hostelRatings.map((rating: any) => ({
+          p_RatingId: rating.p_RatingId || rating.id || 0,
+          p_HostelId: rating.p_hostelid || rating.p_HostelId || rating.hostel_id,
+          p_StudentId: rating.p_studentid || rating.p_StudentId || rating.student_id || 0,
+          p_RatingStar: rating.p_ratingstar || rating.p_RatingStar || rating.rating || 0,
+          p_MaintenanceRating: rating.p_maintenancerating || rating.p_MaintenanceRating || 0,
+          p_IssueResolvingRate: rating.p_issueresolvingrate || rating.p_IssueResolvingRate || 0,
+          p_ManagerBehaviour: rating.p_managerbehaviour || rating.p_ManagerBehaviour || 0,
+          p_Challenges: rating.p_challenges || rating.p_Challenges || ""
+        }));
+      }
+      
+      console.log(`No ratings found for hostel ${hostelId}`);
+      return [];
+      
+    } catch (error: any) {
+      console.error(`Failed to fetch ratings:`, error.response?.data || error.message);
+      return [];
+    }
+  };
+
+  // Helper to get hostel expenses
+  const getHostelExpenses = async (hostelId: number): Promise<Expense | null> => {
+    try {
+      console.log(`Fetching expenses for hostel ${hostelId}`);
+      const response = await axios.post(
+        `${API_BASE_URL}/Expenses/display/`,
+        { p_HostelId: hostelId }
+      );
+      
+      console.log(`Expenses response for hostel ${hostelId}:`, response.data);
+      
+      // Handle different response structures
+      const data = response.data;
+      
+      if (data.expenses) {
+        return data.expenses as Expense;
+      }
+      else if (data.result) {
+        const result = data.result;
+        return {
+          p_isIncludedInRoomCharges: result.isIncludedInRoomCharges || false,
+          p_RoomCharges: result.RoomCharges || [],
+          p_SecurityCharges: result.SecurityCharges || 0,
+          p_MessCharges: result.MessCharges || 0,
+          p_KitchenCharges: result.KitchenCharges || 0,
+          p_InternetCharges: result.InternetCharges || 0,
+          p_AcServiceCharges: result.AcServiceCharges || 0,
+          p_ElectricitybillType: result.ElectricitybillType || "According to Unit",
+          p_ElectricityCharges: result.ElectricityCharges || 0
+        };
+      }
+      else if (data.p_isIncludedInRoomCharges !== undefined) {
+        return data as Expense;
+      }
+      
+      console.log(`No expense data found for hostel ${hostelId}`);
+      return null;
+      
+    } catch (error: any) {
+      console.error(`Failed to fetch expenses for hostel ${hostelId}:`, 
+        error.response?.data || error.message
+      );
+      return null;
+    }
+  };
+
   // Helper function to get room types from expenses
   const getRoomTypesFromExpenses = (expenses: Expense | null): RoomType[] => {
     if (!expenses || !expenses.p_RoomCharges || expenses.p_RoomCharges.length === 0) {
@@ -108,8 +245,7 @@ const HostelDetails: React.FC = () => {
     });
   };
   
-  
-  // Fetch all hostel data from multiple APIs
+  // Fetch all hostel data from APIs
   const fetchHostelDetails = async () => {
     if (!hostelId) {
       console.error("No hostel ID provided");
@@ -120,82 +256,73 @@ const HostelDetails: React.FC = () => {
     setLoading(true);
     
     try {
+      const id = parseInt(hostelId);
+      
       // Fetch basic hostel info
-      const basicInfoPromise = axios.get(
-        `http://127.0.0.1:8000/faststay_app/hostel_details/${hostelId}/`
+      console.log("Fetching basic hostel info...");
+      const basicInfoResponse = await axios.get(
+        `${API_BASE_URL}/display/all_hostels`
       );
       
-      // Fetch ratings
-      const ratingsPromise = axios.post(
-        `http://127.0.0.1:8000/faststay_app/display/hostel_rating/`,
-        { p_HostelId: parseInt(hostelId) }
-      );
+      // Find the specific hostel from all hostels
+      let basicInfo = null;
+      if (basicInfoResponse.data.hostels && Array.isArray(basicInfoResponse.data.hostels)) {
+        basicInfo = basicInfoResponse.data.hostels.find(
+          (h: any) => h.hostel_id === id || h.p_hostelid === id
+        );
+      }
       
-      // Fetch expenses
-      const expensesPromise = axios.post(
-        `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
-        { p_HostelId: parseInt(hostelId) }
-      );
+      console.log("Basic hostel info found:", basicInfo);
       
-      // Fetch images
-      const imagesPromise = axios.post(
-        `http://127.0.0.1:8000/faststay_app/display/hostel_pic/`,
-        { p_HostelId: parseInt(hostelId) }
-      );
-      
-      // Execute all promises in parallel
-      const [basicInfoRes, ratingsRes, expensesRes, imagesRes] = await Promise.allSettled([
-        basicInfoPromise,
-        ratingsPromise,
-        expensesPromise,
-        imagesPromise
+      // Fetch other data in parallel
+      const [images, ratings, expenses] = await Promise.all([
+        getHostelImages(id),
+        getHostelRatings(id),
+        getHostelExpenses(id)
       ]);
       
-      const apiData = basicInfoRes.status === 'fulfilled' ? basicInfoRes.value.data : {};
-      const ratingsData = ratingsRes.status === 'fulfilled' ? ratingsRes.value.data : { ratings: [] };
-      const expensesData = expensesRes.status === 'fulfilled' ? expensesRes.value.data : { expenses: null };
-      const imagesData = imagesRes.status === 'fulfilled' ? imagesRes.value.data : { images: [] };
+      console.log("Fetched additional data:", { images, ratings, expenses });
       
       // Calculate average rating
-      const averageRating = calculateAverageRating(ratingsData.ratings || []);
+      const averageRating = calculateAverageRating(ratings);
       
       // Get rooms from expenses or use default
-      const roomsFromExpenses = getRoomTypesFromExpenses(expensesData.expenses);
+      const roomsFromExpenses = getRoomTypesFromExpenses(expenses);
       const defaultRooms = [
         { type: "1-Seater", rent: 20000, available: 2 },
         { type: "2-Seater", rent: 15000, available: 5 },
         { type: "3-Seater", rent: 12000, available: 4 }
       ];
       
-      setHostel({
-        hostel_id: apiData.hostel_id || parseInt(hostelId),
-        p_name: apiData.p_name || "Hostel",
-        p_blockno: apiData.p_blockno || "N/A",
-        p_houseno: apiData.p_houseno || "N/A",
-        distance_from_university: apiData.distance_from_university || 1.2,
-        images: imagesData.images || imagesData.photos || [],
+      const hostelDetails: HostelDetails = {
+        hostel_id: id,
+        p_name: basicInfo?.p_name || "Hostel",
+        p_blockno: basicInfo?.p_blockno || "N/A",
+        p_houseno: basicInfo?.p_houseno || "N/A",
+        distance_from_university: basicInfo?.distance_from_university || 1.2,
+        images: images,
         
         // Room types
         rooms: roomsFromExpenses.length > 0 ? roomsFromExpenses : defaultRooms,
         
         // Ratings
-        ratings: ratingsData.ratings || [],
-        averageRating: averageRating,
+        ratings: ratings,
+        averageRating: averageRating > 0 ? averageRating : undefined,
         
         // Expenses
-        expenses: expensesData.expenses || null,
+        expenses: expenses,
         
         // Services - combine API services with expenses info
         services: [
-          ...(apiData.services || []),
-          ...(expensesData.expenses?.p_isIncludedInRoomCharges ? ["All utilities included"] : []),
-          ...(expensesData.expenses?.p_InternetCharges === 0 ? ["Free WiFi"] : []),
-          ...(expensesData.expenses?.p_KitchenCharges === 0 ? ["Free Kitchen Access"] : [])
+          ...(basicInfo?.services || []),
+          ...(expenses?.p_isIncludedInRoomCharges ? ["All utilities included"] : []),
+          ...(expenses?.p_InternetCharges === 0 ? ["Free WiFi"] : []),
+          ...(expenses?.p_KitchenCharges === 0 ? ["Free Kitchen Access"] : [])
         ].length > 0 ? [
-          ...(apiData.services || []),
-          ...(expensesData.expenses?.p_isIncludedInRoomCharges ? ["All utilities included"] : []),
-          ...(expensesData.expenses?.p_InternetCharges === 0 ? ["Free WiFi"] : []),
-          ...(expensesData.expenses?.p_KitchenCharges === 0 ? ["Free Kitchen Access"] : [])
+          ...(basicInfo?.services || []),
+          ...(expenses?.p_isIncludedInRoomCharges ? ["All utilities included"] : []),
+          ...(expenses?.p_InternetCharges === 0 ? ["Free WiFi"] : []),
+          ...(expenses?.p_KitchenCharges === 0 ? ["Free Kitchen Access"] : [])
         ] : [
           "24/7 Security with CCTV",
           "High-speed Internet",
@@ -206,11 +333,11 @@ const HostelDetails: React.FC = () => {
         ],
         
         // Mess details
-        mess_charges: expensesData.expenses?.p_MessCharges || apiData.mess_charges || 7000,
-        mess_description: apiData.mess_description || "Breakfast, Lunch, Dinner included. Menu rotates weekly.",
+        mess_charges: expenses?.p_MessCharges || basicInfo?.mess_charges || 7000,
+        mess_description: basicInfo?.mess_description || "Breakfast, Lunch, Dinner included. Menu rotates weekly.",
         
         // Kitchen details
-        kitchen_facilities: apiData.kitchen_facilities || [
+        kitchen_facilities: basicInfo?.kitchen_facilities || [
           "Shared Kitchen Available",
           "Fridge / Microwave",
           "Filtered Water",
@@ -218,11 +345,14 @@ const HostelDetails: React.FC = () => {
         ],
         
         // Additional expenses from API or expenses data
-        electricity_charges: expensesData.expenses?.p_ElectricitybillType || apiData.electricity_charges || "According to Unit",
-        security_deposit: expensesData.expenses?.p_SecurityCharges || apiData.security_deposit || 5000,
-        maintenance_charges: expensesData.expenses?.p_AcServiceCharges || apiData.maintenance_charges || 500,
-        wifi_included: expensesData.expenses?.p_InternetCharges === 0 || true
-      });
+        electricity_charges: expenses?.p_ElectricitybillType || basicInfo?.electricity_charges || "According to Unit",
+        security_deposit: expenses?.p_SecurityCharges || basicInfo?.security_deposit || 5000,
+        maintenance_charges: expenses?.p_AcServiceCharges || basicInfo?.maintenance_charges || 500,
+        wifi_included: expenses?.p_InternetCharges === 0 || true
+      };
+      
+      console.log("Final hostel details:", hostelDetails);
+      setHostel(hostelDetails);
       
     } catch (error) {
       console.error("Failed to fetch hostel details:", error);
@@ -286,22 +416,33 @@ const HostelDetails: React.FC = () => {
         </div>
       </nav>
       
-      {/* HEADER IMAGE */}
+      {/* HEADER IMAGE - FIXED WITH PROPER IMAGE HANDLING */}
       <div className={styles.headerImage}>
         {hostel.images && hostel.images.length > 0 ? (
-          <img 
-            src={hostel.images[0]?.p_PhotoLink || ``} 
-            alt={hostel.p_name}
-            onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.src = ``;
-            }}
-          />
+          <>
+            <img 
+              src={hostel.images[0]?.p_PhotoLink} 
+              alt={hostel.p_name}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                console.log('Image failed to load:', hostel.images[0]?.p_PhotoLink);
+                target.src = `https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop`;
+              }}
+              onLoad={() => console.log('Image loaded successfully:', hostel.images[0]?.p_PhotoLink)}
+            />
+            {hostel.images.length > 1 && (
+              <div className={styles.imageCounter}>
+                <i className="fa-solid fa-images"></i> {hostel.images.length} images
+              </div>
+            )}
+          </>
         ) : (
-          <img 
-            src={``} 
-            alt={hostel.p_name}
-          />
+          <div className={styles.noImagePlaceholder}>
+            <img 
+              src={`https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800&auto=format&fit=crop`}
+              alt={hostel.p_name}
+            />
+          </div>
         )}
         <h1>{hostel.p_name}</h1>
         <p>

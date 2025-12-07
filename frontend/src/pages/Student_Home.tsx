@@ -19,10 +19,10 @@ interface Hostel {
   hostel_id: number;
   p_hostelid?: number;         
   p_managerid?: number;        
-  distance_from_university?: number;
-  rating?: number;
-  monthly_rent?: number;
-  available_rooms?: number;
+  distance_from_university: number;
+  rating: number;
+  monthly_rent: number;
+  available_rooms: number;
   images?: string[];
   location?: string;
 }
@@ -36,6 +36,49 @@ interface FilterState {
   hasMess: boolean | null;
   hasGeyser: boolean | null;
 }
+
+// Helper function to display values with N/A for -1
+const formatValue = (value: number, options?: {
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  isCurrency?: boolean;
+  isDistance?: boolean;
+}): string => {
+  if (value === -1) return "N/A";
+  
+  let displayValue = value;
+  
+  // Apply decimal places if specified
+  if (options?.decimals !== undefined) {
+    displayValue = parseFloat(displayValue.toFixed(options.decimals));
+  }
+  
+  // Format as currency if needed
+  if (options?.isCurrency) {
+    return `${options.prefix || ''}${displayValue.toLocaleString()}${options.suffix || ' PKR'}`;
+  }
+  
+  // Format as distance if needed
+  if (options?.isDistance) {
+    return `${displayValue.toFixed(1)}${options.suffix || ' km'}`;
+  }
+  
+  // Default formatting
+  return `${options?.prefix || ''}${displayValue}${options?.suffix || ''}`;
+};
+
+// Helper for ratings specifically
+const formatRating = (rating: number): string => {
+  if (rating === -1) return "N/A";
+  return `${rating.toFixed(1)}/5.0`;
+};
+
+// Helper for rooms specifically
+const formatRooms = (rooms: number): string => {
+  if (rooms === -1) return "N/A";
+  return `${rooms}`;
+};
 
 const StudentHome: React.FC = () => {
   const [hostels, setHostels] = useState<Hostel[]>([]);
@@ -113,46 +156,27 @@ const StudentHome: React.FC = () => {
       
       console.log(`Expenses response for hostel ${hostelId}:`, response.data);
       
-      if (response.data.expenses && response.data.expenses.p_roomcharges && 
-          response.data.expenses.p_roomcharges.length > 0) {
+      if (response.data.result && response.data.result.RoomCharges && 
+          response.data.result.RoomCharges.length > 0) {
         // Use the first room charge as monthly rent
-        const monthly_rent = response.data.expenses.p_roomcharges[0];
+        const monthly_rent = response.data.result.RoomCharges[0];
         // Mock available rooms calculation
         const available_rooms = Math.max(1, Math.floor(Math.random() * 10) + 1);
         
         return { monthly_rent, available_rooms };
       }
       
-      // Default values if no expenses data
+      // Return -1 for both if no data found
       return { 
-        monthly_rent: 0, 
-        available_rooms: Math.floor(Math.random() * 10) + 1 
+        monthly_rent: -1, 
+        available_rooms: Math.floor(Math.random() * 21)
       };
-    } catch (error: any) {
-      // If POST fails with 400, try GET
-      if (error.response?.status === 400) {
-        try {
-          const getResponse = await axios.get(
-            `http://127.0.0.1:8000/faststay_app/Expenses/display/?p_HostelId=${hostelId}`
-          );
-          
-          console.log(`Expenses GET response for hostel ${hostelId}:`, getResponse.data);
-          
-          if (getResponse.data && getResponse.data.expenses) {
-            return {
-              monthly_rent: getResponse.data.expenses.p_roomcharges?.[0] || undefined,
-              available_rooms: getResponse.data.expenses.available_rooms || 3
-            };
-          }
-        } catch (getError) {
-          console.log(`GET also failed for expenses hostel ${hostelId}`);
-        }
-      }
       
+    } catch (error: any) {
       console.error(`Failed to fetch expenses for hostel ${hostelId}:`, error.response?.data || error.message);
       return { 
-        monthly_rent: 0, 
-        available_rooms: Math.floor(Math.random() * 10) + 1 
+        monthly_rent: -1, 
+        available_rooms: Math.floor(Math.random() * 21)
       };
     }
   };
@@ -183,11 +207,12 @@ const StudentHome: React.FC = () => {
         }
       }
       
-      // Default rating if no ratings found for this hostel
-      return parseFloat("0");
+      // Return -1 if no ratings found
+      return -1;
+      
     } catch (error: any) {
       console.error(`Failed to fetch ratings:`, error.response?.data || error.message);
-      return parseFloat("0");
+      return -1;
     }
   };
 
@@ -204,33 +229,32 @@ const StudentHome: React.FC = () => {
       if (response.data.hostels && Array.isArray(response.data.hostels)) {
         // Process each hostel to add missing data from APIs
         const processedHostels = await Promise.all(
-          response.data.hostels.map(async (hostel: Hostel, index: number) => {
+          response.data.hostels.map(async (hostel: any, index: number) => {
             const hostelId = hostel.hostel_id || index + 1;
             
             console.log(`Processing hostel ${hostelId}: ${hostel.p_name}`);
             
             // Fetch additional data from APIs
-            // NOTE: We're fetching ratings once for all hostels to optimize
             let images: string[] = [];
-            let expenses = { monthly_rent: 15000, available_rooms: 3 };
-            let rating = 4.0;
+            let expenses = { monthly_rent: -1, available_rooms: -1 };
+            let rating = -1;
             
             try {
-              // Get images (only for hostels 5 and 6 as you mentioned)
+              // Get images
               images = await getHostelImages(hostelId);
             } catch (imgError) {
               console.log(`Image fetch skipped for hostel ${hostelId}`);
             }
             
             try {
-              // Get expenses (only for hostels 5, 6, 11, 12)
+              // Get expenses
               expenses = await getHostelExpenses(hostelId);
             } catch (expError) {
               console.log(`Expense fetch skipped for hostel ${hostelId}`);
             }
             
             try {
-              // Get rating (only for hostel 5)
+              // Get rating
               rating = await getHostelRatings(hostelId);
             } catch (ratingError) {
               console.log(`Rating fetch skipped for hostel ${hostelId}`);
@@ -242,9 +266,8 @@ const StudentHome: React.FC = () => {
               rating: rating
             });
             
-            // Calculate mock distance if not provided
-            const distance_from_university = hostel.distance_from_university || 
-              parseFloat("0");
+            // Calculate mock distance if not provided, use -1 if missing
+            const distance_from_university = hostel.distance_from_university || -1;
             
             return {
               ...hostel,
@@ -294,19 +317,19 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Max rent filter
+    // Max rent filter (skip if rent is -1/N/A)
     if (filters.maxRent) {
       const maxRentValue = parseInt(filters.maxRent);
       filtered = filtered.filter(hostel => 
-        hostel.monthly_rent && hostel.monthly_rent <= maxRentValue
+        hostel.monthly_rent !== -1 && hostel.monthly_rent <= maxRentValue
       );
     }
 
-    // Distance filter
+    // Distance filter (skip if distance is -1/N/A)
     if (filters.distance) {
       const maxDistance = parseFloat(filters.distance);
       filtered = filtered.filter(hostel => 
-        hostel.distance_from_university && hostel.distance_from_university <= maxDistance
+        hostel.distance_from_university !== -1 && hostel.distance_from_university <= maxDistance
       );
     }
 
@@ -317,11 +340,11 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Rating filter
+    // Rating filter (skip if rating is -1/N/A)
     if (filters.rating) {
       const minRating = parseFloat(filters.rating);
       filtered = filtered.filter(hostel => 
-        hostel.rating && hostel.rating >= minRating
+        hostel.rating !== -1 && hostel.rating >= minRating
       );
     }
 
@@ -371,7 +394,7 @@ const StudentHome: React.FC = () => {
   };
 
   const handleViewOwner = (hostelId: number) => {
-    navigate(`/hostel/owner?id=${hostelId}&user_id=${userId}`);
+    navigate(`/student/ownerDetails?id=${hostelId}&user_id=${userId}`);
   };
 
   // Render loading state
@@ -412,7 +435,7 @@ const StudentHome: React.FC = () => {
           <Link to={`/student/profile?user_id=${userId}`} className={styles.navLinkItem}>
             My Profile
           </Link>
-          <Link to={`/suggestions?user_id=${userId}`} className={styles.navLinkItem}>
+          <Link to={`/student/suggestions?user_id=${userId}`} className={styles.navLinkItem}>
             Suggestions
           </Link>
           <Link to="/logout" className={styles.navLinkItem}>
@@ -590,7 +613,7 @@ const StudentHome: React.FC = () => {
                 Clear All Filters
               </button>
               <button 
-                onClick={() => navigate(`/suggestions?user_id=${userId}`)}
+                onClick={() => navigate(`/student/suggestions?user_id=${userId}`)}
                 className={styles.suggestionsLinkBtn}
               >
                 View Suggestions
@@ -604,12 +627,12 @@ const StudentHome: React.FC = () => {
                 <img 
                   src={hostel.images && hostel.images.length > 0 
                     ? hostel.images[0] 
-                    : ``
+                    : `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`
                   } 
                   alt={hostel.p_name} 
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = ``;
+                    target.src = `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`;
                   }}
                 />
                 <div className={styles.cardBadges}>
@@ -625,7 +648,7 @@ const StudentHome: React.FC = () => {
                   {hostel.p_geezerflag && (
                     <span className={styles.geyserBadge}>Geyser</span>
                   )}
-                  {hostel.available_rooms && hostel.available_rooms < 5 && (
+                  {hostel.available_rooms !== -1 && hostel.available_rooms < 5 && (
                     <span className={styles.roomsBadge}>
                       Only {hostel.available_rooms} left
                     </span>
@@ -638,9 +661,9 @@ const StudentHome: React.FC = () => {
                 <p className={styles.cardAddress}>
                   <i className="fa-solid fa-location-dot"></i>
                   Block {hostel.p_blockno}, House {hostel.p_houseno}
-                  {hostel.distance_from_university && (
+                  {hostel.distance_from_university !== -1 && (
                     <span className={styles.distance}>
-                      • {hostel.distance_from_university.toFixed(1)} km from university
+                      • {formatValue(hostel.distance_from_university, { isDistance: true })} from university
                     </span>
                   )}
                 </p>
@@ -651,7 +674,7 @@ const StudentHome: React.FC = () => {
                     <div>
                       <span className={styles.statLabel}>Monthly Rent</span>
                       <span className={styles.statValue}>
-                        {hostel.monthly_rent?.toLocaleString()} PKR
+                        {formatValue(hostel.monthly_rent, { isCurrency: true })}
                       </span>
                     </div>
                   </div>
@@ -661,7 +684,7 @@ const StudentHome: React.FC = () => {
                     <div>
                       <span className={styles.statLabel}>Rating</span>
                       <span className={styles.statValue}>
-                        {hostel.rating?.toFixed(1)}/5.0
+                        {formatRating(hostel.rating)}
                       </span>
                     </div>
                   </div>
@@ -671,7 +694,7 @@ const StudentHome: React.FC = () => {
                     <div>
                       <span className={styles.statLabel}>Available Rooms</span>
                       <span className={styles.statValue}>
-                        {hostel.available_rooms || "N/A"}
+                        {formatRooms(hostel.available_rooms)}
                       </span>
                     </div>
                   </div>

@@ -17,10 +17,10 @@ interface Hostel {
   p_issueresolvingtenure: number;
   p_messprovide: boolean;
   p_geezerflag: boolean;
-  monthly_rent?: number;
-  available_rooms?: number;
-  rating?: number;
-  distance_from_university?: number;
+  monthly_rent: number;
+  available_rooms: number;
+  rating: number;
+  distance_from_university: number;
   images?: string[];
 }
 
@@ -35,6 +35,49 @@ interface StudentProfile {
   p_BedType: string;
   p_WashroomType: string;
 }
+
+// Helper function to display values with N/A for -1
+const formatValue = (value: number, options?: {
+  prefix?: string;
+  suffix?: string;
+  decimals?: number;
+  isCurrency?: boolean;
+  isDistance?: boolean;
+}): string => {
+  if (value === -1) return "N/A";
+  
+  let displayValue = value;
+  
+  // Apply decimal places if specified
+  if (options?.decimals !== undefined) {
+    displayValue = parseFloat(displayValue.toFixed(options.decimals));
+  }
+  
+  // Format as currency if needed
+  if (options?.isCurrency) {
+    return `${options.prefix || ''}${displayValue.toLocaleString()}${options.suffix || ' PKR'}`;
+  }
+  
+  // Format as distance if needed
+  if (options?.isDistance) {
+    return `${displayValue.toFixed(1)}${options.suffix || ' km'}`;
+  }
+  
+  // Default formatting
+  return `${options?.prefix || ''}${displayValue}${options?.suffix || ''}`;
+};
+
+// Helper for ratings specifically
+const formatRating = (rating: number): string => {
+  if (rating === -1) return "N/A";
+  return `${rating.toFixed(1)}/5.0`;
+};
+
+// Helper for rooms specifically
+const formatRooms = (rooms: number): string => {
+  if (rooms === -1) return "N/A";
+  return `${rooms}`;
+};
 
 const Suggestions: React.FC = () => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -99,7 +142,7 @@ const Suggestions: React.FC = () => {
       
       // Enhance hostels with additional data
       const enhancedHostels = await Promise.all(
-        hostelsData.map(async (hostel: Hostel) => {
+        hostelsData.map(async (hostel: any) => {
           try {
             // Get images
             let images: string[] = [];
@@ -119,23 +162,38 @@ const Suggestions: React.FC = () => {
             }
             
             // Get expenses for rent
-            let monthly_rent = 15000;
-            let available_rooms = 3;
+            let monthly_rent = -1;
+            let available_rooms = -1;
             try {
               const expensesResponse = await axios.post(
                 `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
                 { p_HostelId: hostel.hostel_id }
               );
               
-              if (expensesResponse.data.expenses?.p_roomcharges?.length > 0) {
-                monthly_rent = expensesResponse.data.expenses.p_roomcharges[0];
+              if (expensesResponse.data.result && expensesResponse.data.result.RoomCharges && 
+                  expensesResponse.data.result.RoomCharges.length > 0) {
+                monthly_rent = expensesResponse.data.result.RoomCharges[0];
+                
+                // Generate random available rooms: 30% chance of N/A (-1), else random 0-20
+                const randomValue = Math.random();
+                if (randomValue < 0.3) {
+                  // 30% chance: N/A
+                  available_rooms = -1;
+                } else {
+                  // 70% chance: Random number 0-20
+                  available_rooms = Math.floor(Math.random() * 21);
+                }
+              } else {
+                // Default mock data for available rooms
+                available_rooms = Math.floor(Math.random() * 21);
               }
             } catch (expError) {
-              // Use default rent
+              // Default mock data for available rooms
+              available_rooms = Math.floor(Math.random() * 21);
             }
             
             // Get rating
-            let rating = 4.0;
+            let rating = -1;
             try {
               const ratingsResponse = await axios.get(
                 `http://127.0.0.1:8000/faststay_app/display/hostel_rating`
@@ -153,7 +211,7 @@ const Suggestions: React.FC = () => {
                 }
               }
             } catch (ratingError) {
-              // Use default rating
+              // Keep as -1
             }
             
             return {
@@ -162,17 +220,17 @@ const Suggestions: React.FC = () => {
               monthly_rent,
               available_rooms,
               rating,
-              distance_from_university: parseFloat((Math.random() * 5).toFixed(1)) // Mock distance
+              distance_from_university: hostel.distance_from_university || -1
             };
           } catch (error) {
             console.error(`Error enhancing hostel ${hostel.hostel_id}:`, error);
             return {
               ...hostel,
               images: [],
-              monthly_rent: 15000,
-              available_rooms: 3,
-              rating: 4.0,
-              distance_from_university: 2.5
+              monthly_rent: -1,
+              available_rooms: Math.floor(Math.random() * 21),
+              rating: -1,
+              distance_from_university: -1
             };
           }
         })
@@ -260,12 +318,12 @@ const Suggestions: React.FC = () => {
     }
     
     // Adjust based on distance preference
-    if (hostel.distance_from_university && hostel.distance_from_university <= profile.p_UniDistance) {
+    if (hostel.distance_from_university !== -1 && hostel.distance_from_university <= profile.p_UniDistance) {
       score += 10;
     }
     
     // Bonus for good rating
-    if (hostel.rating && hostel.rating >= 4.0) {
+    if (hostel.rating !== -1 && hostel.rating >= 4.0) {
       score += 10;
     }
     
@@ -451,9 +509,9 @@ const Suggestions: React.FC = () => {
                         <div className={styles.locationInfo}>
                           <i className="fa-solid fa-location-dot"></i>
                           <span>Block {hostel.p_blockno}, House {hostel.p_houseno}</span>
-                          {hostel.distance_from_university && (
+                          {hostel.distance_from_university !== -1 && (
                             <span className={styles.distanceBadge}>
-                              {hostel.distance_from_university.toFixed(1)} km
+                              {formatValue(hostel.distance_from_university, { isDistance: true })}
                             </span>
                           )}
                         </div>
@@ -466,7 +524,7 @@ const Suggestions: React.FC = () => {
                             <div className={styles.statContent}>
                               <span className={styles.statLabel}>Monthly Rent</span>
                               <span className={styles.statValue}>
-                                PKR {hostel.monthly_rent?.toLocaleString()}
+                                {formatValue(hostel.monthly_rent, { isCurrency: true })}
                               </span>
                             </div>
                           </div>
@@ -478,7 +536,7 @@ const Suggestions: React.FC = () => {
                             <div className={styles.statContent}>
                               <span className={styles.statLabel}>Rating</span>
                               <span className={styles.statValue}>
-                                {hostel.rating?.toFixed(1)}/5.0
+                                {formatRating(hostel.rating)}
                               </span>
                             </div>
                           </div>
@@ -513,7 +571,7 @@ const Suggestions: React.FC = () => {
                             <i className="fa-solid fa-eye"></i> View Details
                           </button>
                           <span className={styles.roomsAvailable}>
-                            <i className="fa-solid fa-door-closed"></i> {hostel.available_rooms} rooms left
+                            <i className="fa-solid fa-door-closed"></i> {formatRooms(hostel.available_rooms)} rooms left
                           </span>
                         </div>
                       </div>
