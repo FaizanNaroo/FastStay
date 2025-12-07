@@ -22,10 +22,10 @@ class UpdateSecurityInfoView(View):
             is_updated = self.hostel_service.update_securityinfo(validated_data) 
             if is_updated is True:
                 return JsonResponse({
-                    'message': f'Security information for ID {validated_data["p_SecurityId"]} updated successfully'
+                    'message': f'Security information updated successfully'
                 }, status=200)
             elif is_updated is False:
-                return JsonResponse({'error': f'Security ID {validated_data["p_SecurityId"]} not found'}, status=404)
+                return JsonResponse({'error': f'Security Info not found'}, status=404)
             else:
                 return JsonResponse({'error': 'Database system error during update'}, status=500)
 

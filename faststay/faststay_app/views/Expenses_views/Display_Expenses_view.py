@@ -19,6 +19,7 @@ class Display_Expenses_View(APIView):
     {
         "success": bool,   # True if expenses found, False otherwise
         "result": {        # Expense details
+            "p_ExpenseId": int,
             "p_isIncludedInRoomCharges": bool,
             "p_RoomCharges": [float],
             "p_SecurityCharges": float,
