@@ -1,0 +1,152 @@
+/*----------- GLOBAL RESET -----------*/
+:global(*) {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+
+:global(body) {
+  background: #3b2c24;
+  color: #f8f3e7;
+}
+
+/* ----------- NAVBAR ----------- */
+.navbar {
+  width: 100%;
+  padding: 15px 35px;
+  background: #2b211c;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0px 4px 18px rgba(0, 0, 0, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 99;
+}
+
+.logo {
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.navLinks a {
+  margin-left: 25px;
+  text-decoration: none;
+  font-size: 15px;
+  color: #f8f3e7;
+}
+
+.navLinks a:hover,
+.active {
+  color: #d4b498;
+}
+
+/* ----------- CONTAINER ----------- */
+.container {
+  max-width: 1200px;
+  margin: auto;
+  padding: 30px;
+}
+
+.pageTitle {
+  font-size: 28px;
+}
+
+.subtitle {
+  margin-bottom: 25px;
+  color: #d6c7ba;
+}
+
+/* ----------- DASHBOARD CARDS ----------- */
+.cards {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 35px;
+  flex-wrap: wrap;
+}
+
+.card {
+  flex: 1;
+  min-width: 230px;
+  background: #f8f3e7;
+  color: #3b2c24;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.card i {
+  font-size: 35px;
+  color: #8d5f3a;
+}
+
+.cardTitle {
+  font-size: 14px;
+  margin-top: 5px;
+  color: #6d5d52;
+}
+
+.cardValue {
+  font-size: 26px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ----------- TABLE CARD ----------- */
+.tableCard {
+  background: #f8f3e7;
+  color: #3b2c24;
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 35px;
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
+}
+
+.tableTitle {
+  margin-bottom: 12px;
+  font-size: 20px;
+  color: #4b3a32;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #dfd6cb;
+}
+
+th {
+  background: #f0e7dc;
+  color: #3b2c24;
+}
+
+tr:hover {
+  background: #f9f4ee;
+}
+
+.actionBtn {
+  background: #8d5f3a;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+}
+
+.actionBtn:hover {
+  background: #704729;
+}
+
+/* ----------- MOBILE ----------- */
+@media (max-width: 768px) {
+  .cards {
+    flex-direction: column;
+  }
+}

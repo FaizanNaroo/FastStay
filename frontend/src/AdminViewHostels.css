@@ -1,0 +1,467 @@
+/* AdminViewHostels.css */
+
+.custom-title {
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.custom-subtitle {
+  margin-bottom: 25px;
+  color: #d4c7ba;
+}
+
+.custom-card {
+  background: #f8f3e7;
+  color: #3b2c24;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  margin-bottom: 30px;
+}
+
+.custom-section-title {
+  font-size: 20px;
+  color: #5c3d2e;
+  margin: 18px 0 12px;
+}
+
+.custom-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.custom-info-box {
+  background: #fff9f3;
+  border: 1px solid #dbc8b8;
+  border-radius: 10px;
+  padding: 12px 15px;
+}
+
+.custom-info-label {
+  font-size: 14px;
+  color: #6a5c54;
+}
+
+.custom-info-value {
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+
+.custom-info-value a {
+  color: #8d5f3a;
+  text-decoration: none;
+}
+
+.custom-info-value a:hover {
+  text-decoration: underline;
+}
+
+.custom-gallery {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+.custom-gallery img {
+  width: 180px;
+  height: 140px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid #c7b29f;
+}
+
+.custom-btn-row {
+  margin-top: 25px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.custom-btn {
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-btn:hover {
+  opacity: 0.9;
+}
+
+.custom-btn-approve {
+  background: #2ecc71;
+}
+
+.custom-btn-reject {
+  background: #e74c3c;
+}
+
+@media (max-width: 700px) {
+  .custom-info-grid {
+    grid-template-columns: 1fr;
+  }
+  .custom-gallery img {
+    width: 100%;
+    height: 160px;
+  }
+}
+
+
+
+
+/* Enhanced Image Gallery Styles */
+
+.custom-image-gallery {
+  width: 100%;
+  margin-bottom: 30px;
+  border-radius: 12px;
+  overflow: hidden;
+  background-color: #2c1b10;
+  padding: 20px;
+}
+
+.custom-main-image-container {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #1a120b;
+}
+
+.custom-main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.custom-main-image:hover {
+  transform: scale(1.01);
+}
+
+.custom-image-counter {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background-color: rgba(44, 27, 16, 0.8);
+  color: #f8f3e7;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  z-index: 10;
+}
+
+.custom-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(44, 27, 16, 0.8);
+  color: #f8f3e7;
+  border: none;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+
+.custom-nav-btn:hover {
+  background-color: rgba(92, 61, 46, 0.9);
+  transform: translateY(-50%) scale(1.1);
+}
+
+.custom-prev-btn {
+  left: 20px;
+}
+
+.custom-next-btn {
+  right: 20px;
+}
+
+.custom-thumbnail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 15px;
+  padding: 10px;
+  background-color: #1a120b;
+  border-radius: 8px;
+}
+
+.custom-thumbnail-container {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.custom-thumbnail-container:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.custom-thumbnail-container.custom-thumbnail-active {
+  border-color: #d4a574;
+}
+
+.custom-thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.custom-thumbnail-container:hover .custom-thumbnail {
+  transform: scale(1.1);
+}
+
+.custom-no-images {
+  text-align: center;
+  padding: 40px;
+  background-color: #1a120b;
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.custom-placeholder-image {
+  width: 100%;
+  max-width: 600px;
+  height: 400px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.custom-no-images p {
+  color: #f8f3e7;
+  font-size: 18px;
+  margin: 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .custom-main-image-container {
+    height: 350px;
+  }
+  
+  .custom-thumbnail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+  
+  .custom-thumbnail-container {
+    height: 80px;
+  }
+}
+
+@media (max-width: 480px) {
+  .custom-main-image-container {
+    height: 250px;
+  }
+  
+  .custom-thumbnail-grid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+  
+  .custom-thumbnail-container {
+    height: 70px;
+  }
+  
+  .custom-nav-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+}
+
+
+
+
+/* Action Messages */
+.custom-success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #c3e6cb;
+}
+
+.custom-error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #f5c6cb;
+}
+
+.custom-message i {
+  font-size: 18px;
+}
+
+/* Approved Badge */
+.custom-approved-badge {
+  background-color: #28a745;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-left: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* Delete Button */
+.custom-btn-delete {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+.custom-btn-delete:hover {
+  background-color: #c82333 !important;
+}
+
+.custom-btn-delete:disabled {
+  background-color: #e35d6a !important;
+  cursor: not-allowed;
+}
+
+/* Modal Styles */
+.custom-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.custom-modal {
+  background-color: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.custom-modal-header {
+  background-color: #f8f3e7;
+  padding: 20px;
+  border-bottom: 1px solid #e0d8c5;
+  display: flex;
+  align-items: center;
+}
+
+.custom-modal-header h3 {
+  margin: 0;
+  color: #5c3d2e;
+}
+
+.custom-modal-body {
+  padding: 30px 20px;
+}
+
+.custom-warning-text {
+  color: #856404;
+  background-color: #fff3cd;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #ffeaa7;
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-modal-footer {
+  padding: 20px;
+  background-color: #f8f9fa;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  border-top: 1px solid #dee2e6;
+}
+
+.custom-btn-cancel {
+  background-color: #6c757d !important;
+  color: white !important;
+}
+
+.custom-btn-cancel:hover {
+  background-color: #5a6268 !important;
+}
+
+.custom-btn-confirm-delete {
+  background-color: #dc3545 !important;
+  color: white !important;
+}
+
+.custom-btn-confirm-delete:hover {
+  background-color: #c82333 !important;
+}
+
+.custom-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Loading Spinner for Buttons */
+.fa-spin {
+  margin-right: 8px;
+}
+
+
+
+
+/* Approved Message */
+.custom-approved-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 15px 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #c3e6cb;
+  width: 100%;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.custom-approved-message i {
+  font-size: 18px;
+}
+
+/* Rest of your existing CSS remains the same... */
