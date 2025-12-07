@@ -66,6 +66,14 @@ const ViewRooms: React.FC = () => {
     hasVentilation: false
   });
 
+  useEffect(() => {
+    const initialIndices: { [key: number]: number } = {};
+    rooms.forEach(room => {
+      initialIndices[room.p_RoomNo] = 0;
+    });
+    setRoomPicIndices(initialIndices);
+  }, [rooms]);
+
   // Helper function to get hostel information
   const getHostelInfo = async (): Promise<HostelInfo | null> => {
     if (!hostelId) return null;
@@ -128,12 +136,7 @@ const ViewRooms: React.FC = () => {
         console.log(`Found ${picsData.length} room pictures for hostel ${hostelId}`);
         setRoomPics(picsData);
         
-        // Initialize picture indices for all rooms
-        const initialIndices: { [key: number]: number } = {};
-        rooms.forEach(room => {
-          initialIndices[room.p_RoomNo] = 0;
-        });
-        setRoomPicIndices(initialIndices);
+        
         
       } else {
         console.log("No pictures found or empty response");
@@ -178,30 +181,29 @@ const ViewRooms: React.FC = () => {
     return [...new Set(roomPicsList)];
   };
 
-  // Navigation for picture slider - PER ROOM
   const nextPic = (roomNo: number) => {
-    const room = rooms.find(r => r.p_RoomNo === roomNo);
+    const room = filteredRooms.find(r => r.p_RoomNo === roomNo);
     if (!room) return;
-    
+
     const roomPicsList = getRoomPics(room);
     if (roomPicsList.length <= 1) return;
-    
+
     setRoomPicIndices(prev => ({
       ...prev,
-      [roomNo]: (prev[roomNo] + 1) % roomPicsList.length
+      [roomNo]: ((prev[roomNo] ?? 0) + 1) % roomPicsList.length
     }));
   };
 
   const prevPic = (roomNo: number) => {
-    const room = rooms.find(r => r.p_RoomNo === roomNo);
+    const room = filteredRooms.find(r => r.p_RoomNo === roomNo);
     if (!room) return;
-    
+
     const roomPicsList = getRoomPics(room);
     if (roomPicsList.length <= 1) return;
-    
+
     setRoomPicIndices(prev => ({
       ...prev,
-      [roomNo]: (prev[roomNo] - 1 + roomPicsList.length) % roomPicsList.length
+      [roomNo]: ((prev[roomNo] ?? 0) - 1 + roomPicsList.length) % roomPicsList.length
     }));
   };
 
