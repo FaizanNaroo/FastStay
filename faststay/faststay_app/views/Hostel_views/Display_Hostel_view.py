@@ -25,7 +25,7 @@ class Display_Hostel_View(APIView):
             "p_isParking": bool,
             "p_NumRooms": int,
             "p_NumFloors": int,
-            "p_WaterTimings": str,
+            "p_WaterTimings": int,
             "p_CleanlinessTenure": int,
             "p_IssueResolvingTenure": int,
             "p_MessProvide": bool,

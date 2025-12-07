@@ -26,7 +26,17 @@ def Display_Expenses_service(data):
             "InternetCharges": result[6],
             "AcServiceCharges": result[7],
             "ElectricitybillType": result[8],
-            "ElectricityCharges": result[9]
+            "ElectricityCharges": result[9],
+            "p_ExpenseId": result[0],
+            "p_isIncludedInRoomCharges": result[1],
+            "p_RoomCharges": result[2],          # This is a list (float array)
+            "p_SecurityCharges": result[3],
+            "p_MessCharges": result[4],
+            "p_KitchenCharges": result[5],
+            "p_InternetCharges": result[6],
+            "p_AcServiceCharges": result[7],
+            "p_ElectricitybillType": result[8],
+            "p_ElectricityCharges": result[9]
         }
 
         return True, expenses

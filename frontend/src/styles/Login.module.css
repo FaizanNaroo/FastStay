@@ -1,0 +1,165 @@
+.screen {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  min-height: 100vh;
+}
+
+.container {
+  width: 100%;
+  max-width: 550px;
+  display: flex;
+  justify-content: center;
+}
+
+/* -------- LOGIN CARD -------- */
+.loginCard {
+  width: 100%;
+  background: #f8f3e7;
+  padding: 35px 30px;
+  border-radius: 18px;
+  box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.title {
+  font-size: 28px;
+  margin-bottom: 6px;
+  color: #5c3d2e;
+}
+
+.subtitle {
+  color: #7b6a5c;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+/* -------- INPUTS -------- */
+.inputGroup {
+  position: relative;
+  margin-bottom: 18px;
+}
+
+.inputGroup i {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8a7764;
+  font-size: 15px;
+}
+
+.inputGroup input {
+  width: 100%;
+  padding: 12px 45px;
+  border-radius: 10px;
+  background: #fdfaf4;
+  border: 2px solid #d9c9b8;
+  outline: none;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.inputGroup input:focus {
+  border-color: #b08968;
+}
+
+/* -------- BUTTONS -------- */
+.btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #8d5f3a;
+  color: #fff;
+  font-size: 16px;
+  border-radius: 10px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  background: #704729;
+}
+
+.divider {
+  margin: 18px 0;
+  color: #9b8a7a;
+  font-size: 13px;
+}
+
+.googleBtn {
+  width: 100%;
+  padding: 12px;
+  border: 1.5px solid #c9b8a6;
+  background: #fefcf8;
+  font-size: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: 0.3s;
+  color: #533e2d;
+}
+
+.googleBtn i {
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.googleBtn:hover {
+  background: #f4ede3;
+}
+
+.bottomText {
+  margin-top: 20px;
+  color: #6a5242;
+  font-size: 14px;
+}
+
+.bottomText a {
+  color: #8d5f3a;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.errorSpace {
+  min-height: 25px;
+}
+
+.error {
+  color: #c62828;
+  margin-top: 10px;
+  margin-bottom: -15px;
+}
+
+/* -------- MOBILE RESPONSIVE -------- */
+@media (max-width: 480px) {
+  .loginCard {
+    padding: 25px 20px;
+    border-radius: 15px;
+    width: 100%;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .inputGroup input {
+    font-size: 14px;
+    padding: 11px 40px;
+  }
+
+  .btn,
+  .googleBtn {
+    padding: 11px;
+    font-size: 15px;
+  }
+
+  .bottomText {
+    font-size: 13px;
+  }
+}

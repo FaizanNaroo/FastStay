@@ -46,6 +46,7 @@ class Update_Hostel_Details_view(APIView):
 
         #Validate Input
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service

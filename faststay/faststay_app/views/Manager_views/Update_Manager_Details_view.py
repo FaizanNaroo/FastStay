@@ -12,7 +12,7 @@ class Update_Manager_Details_view(APIView):
     POST:
     Accepts JSON:
     {
-        "p_UserId": int,           # Required, must exist in Users table
+        "p_ManagerId": int,        # Required, must exist in Manager table
         "p_PhotoLink": str,        # Optional, URL/path to photo
         "p_PhoneNo": str,          # Required, 11-digit phone number
         "p_Education": str,        # Optional
@@ -39,6 +39,7 @@ class Update_Manager_Details_view(APIView):
 
         # Validate Input
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         # Call service

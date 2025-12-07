@@ -19,11 +19,12 @@ class Add_Hostel_Details_view(APIView):
         "p_isParking": bool,          # Required
         "p_NumRooms": int,            # Required, >= 1
         "p_NumFloors": int,           # Required, >= 1
-        "p_WaterTimings": str,        # Required, HH:MM:SS format
+        "p_WaterTimings": int,        # Required, int
         "p_CleanlinessTenure": int,   # Required, >= 1
         "p_IssueResolvingTenure": int,# Required, >= 1
         "p_MessProvide": bool,        # Required
         "p_GeezerFlag": bool          # Required
+        "p_name": string              # Required
     }
 
     Returns:
@@ -46,13 +47,14 @@ class Add_Hostel_Details_view(APIView):
 
         #Validate Input
         if not serializer.is_valid():
+            print(serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         #call service
-        success, result = Add_hostel_details_service(serializer.validated_data)
+        success, result, hostelid = Add_hostel_details_service(serializer.validated_data)
         if not success:
             return Response({'error': result}, status=status.HTTP_400_BAD_REQUEST)
         
         #success
-        return Response({'message': 'Data Entered Successfully', 'result': success}, status=status.HTTP_201_CREATED)
+        return Response({'message': 'Data Entered Successfully', 'result': success, 'hostelid': hostelid}, status=status.HTTP_201_CREATED)
     

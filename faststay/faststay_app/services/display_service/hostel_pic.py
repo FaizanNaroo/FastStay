@@ -4,4 +4,3 @@ class HostelPic:
     def hostel_pic(self, hostel_id: int):
         params = [hostel_id]
         return _execute_display_function("DisplayHostelPics",params)
-    

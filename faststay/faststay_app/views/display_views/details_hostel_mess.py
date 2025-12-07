@@ -11,11 +11,11 @@ class DetailsHostelMess(View):
     hostel_service = DetailsHostelMess()
 
     def get(self, request, *args, **kwargs):
+        # Use query parameters instead of request body
+        hostel_id_str = request.GET.get("p_HostelId")
         
-        data = json.loads(request.body)
-        hostel_id_str = data.get("p_HostelId")
         if not hostel_id_str:
-            return JsonResponse({'error': 'Missing required query parameter:  p_HostelId'}, status=400)
+            return JsonResponse({'error': 'Missing required query parameter: p_HostelId'}, status=400)
             
         try:
             hostel_id = int(hostel_id_str)
@@ -25,7 +25,6 @@ class DetailsHostelMess(View):
         try:
             info_list = self.hostel_service.details_hostel_mess(hostel_id)
             if info_list:
-
                 return JsonResponse(info_list[0], status=200)
             else:
                 return JsonResponse({'error': f'Mess information not found for Hostel ID {hostel_id}'}, status=404)
