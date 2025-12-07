@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
 
-import { Link } from "react-router-dom"; 
+import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 import { 
   getDashboardSummary, 
@@ -25,13 +25,13 @@ const AdminDashboard: React.FC = () => {
   const [recentUsers, setRecentUsers] = useState<RecentUserAccount[]>([]);
   const [recentHostels, setRecentHostels] = useState<RecentHostel[]>([]);
   
-  const [error, setError] = useState<string | null>(null); // Keep error for global errors
+  const [error, setError] = useState<string | null>(null);
   
   // Individual loading states
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
-  const [hostelsLoading, setHostelsLoading] = useState(true); 
-  
+  const [hostelsLoading, setHostelsLoading] = useState(true);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -73,7 +73,18 @@ const AdminDashboard: React.FC = () => {
 
   if (error) return <h2 style={{ textAlign:"center", marginTop:"40px", color:"red" }}>{error}</h2>;
 
-  // Rest of your component remains the same...
+  // Helper function to determine profile route based on user type
+  const getUserProfileRoute = (user: RecentUserAccount) => {
+    switch (user.UserType) {
+      case "Hostel Manager":
+        return `/admin/managers/${user.userid}`;
+      case "Student":
+        return `/admin/students/${user.userid}`;
+      default:
+        return "#";
+    }
+  };
+
   return (
     <>
       {/* NAVBAR */}
@@ -156,8 +167,45 @@ const AdminDashboard: React.FC = () => {
                   <tr key={u.userid}>
                     <td>{u.Name}</td>
                     <td>{u.City}</td>
-                    <td>{u.UserType}</td>
-                    <td><button className={styles.actionBtn}>View</button></td>
+                      <td>
+                        <span style={{
+                          display: 'inline-block',
+                          padding: '4px 12px',
+                          borderRadius: '20px',
+                          fontSize: '12px',
+                          fontWeight: '600',
+                          backgroundColor: u.UserType === 'Student' ? '#7D5D4E' :      // Muted Brown
+                                          u.UserType === 'Hostel Manager' ? '#8B7355' : '#A1887F', // Muted Tan & Muted Gray-Brown
+                          color: '#F8F3E7',  // Cream text
+                          border: '1px solid rgba(255, 255, 255, 0.1)'
+                        }}>
+                          {u.UserType}
+                        </span>
+                      </td>
+                    <td>
+                      {u.UserType === "Student" || u.UserType === "Hostel Manager" ? (
+                        <Link 
+                          to={getUserProfileRoute(u)}
+                          className={styles.actionBtn}
+                          style={{
+                            display: 'inline-block',
+                            padding: '8px 16px',
+                            textDecoration: 'none',
+                            textAlign: 'center'
+                          }}
+                        >
+                          View
+                        </Link>
+                      ) : (
+                        <button 
+                          className={styles.actionBtn}
+                          disabled
+                          title="Profile not available for this user type"
+                        >
+                          View
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))
               ) : (

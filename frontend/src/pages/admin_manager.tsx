@@ -1,5 +1,4 @@
-
-// import React, { useEffect, useState } from "react";
+// import React, { useEffect, useState, useMemo } from "react";
 // import { getAllManagersTableData, type ManagerTableRow } from "../api/admin_manager";
 // import styles from "../styles/admin_dashboard.module.css";
 // import { Link } from "react-router-dom";
@@ -28,17 +27,30 @@
 //     loadManagers();
 //   }, []);
 
+//   // Get unique manager types from data
+//   const managerTypes = useMemo(() => {
+//     const types = new Set(managers.map(m => m.type).filter(Boolean));
+//     return Array.from(types).sort();
+//   }, [managers]);
+
 //   // --------- SEARCH + FILTER ----------
-//   const filteredManagers = managers.filter(m => {
-//     const matchesSearch =
-//       m.name.toLowerCase().includes(search.toLowerCase()) ||
-//       m.phone.toLowerCase().includes(search.toLowerCase());
+//   const filteredManagers = useMemo(() => {
+//     return managers.filter(m => {
+//       // Search filter
+//       const searchTerm = search.toLowerCase();
+//       const matchesSearch =
+//         m.name.toLowerCase().includes(searchTerm) ||
+//         m.phone.toLowerCase().includes(searchTerm) ||
+//         m.education.toLowerCase().includes(searchTerm);
 
-//     const matchesFilter =
-//       filterType === "All" || m.type.toLowerCase() === filterType.toLowerCase();
-
-//     return matchesSearch && matchesFilter;
-//   });
+//       // Type filter
+//       if (filterType === "All") {
+//         return matchesSearch;
+//       }
+      
+//       return matchesSearch && m.type.toLowerCase() === filterType.toLowerCase();
+//     });
+//   }, [managers, search, filterType]);
 
 //   // Show only error on full page if there's a critical error
 //   if (error) {
@@ -84,39 +96,64 @@
 //           {/* Search Field */}
 //           <input
 //             type="text"
-//             placeholder="Search manager..."
+//             placeholder="Search manager by name, phone, or education..."
 //             value={search}
 //             onChange={(e) => setSearch(e.target.value)}
 //             style={{ 
 //               padding: "10px", 
 //               borderRadius: "8px", 
-//               width: "250px", 
+//               width: "300px", 
 //               border: "1px solid #ddd",
-//               backgroundColor: loading ? "#f5f5f5" : "white",
-//               color: loading ? "#999" : "inherit"
+//               backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
+//               color: loading ? "#7a6648" : "#4c3f30",  
 //             }}
 //             disabled={loading}
 //           />
 
 //           {/* Filter Dropdown */}
-//           <select
-//             value={filterType}
-//             onChange={(e) => setFilterType(e.target.value)}
-//             style={{ 
-//               padding: "10px", 
-//               borderRadius: "8px", 
-//               border: "1px solid #ddd",
-//               backgroundColor: loading ? "#f5f5f5" : "white",
-//               color: loading ? "#999" : "inherit"
-//             }}
-//             disabled={loading}
-//           >
-//             <option value="All">All Types</option>
-//             <option value="Owner">Owner</option>
-//             <option value="Employee">Employee</option>
-//             <option value="Manager">Manager</option>
-//           </select>
+//           <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+//             <span style={{ color: "#666", fontSize: "14px" }}>Filter by type:</span>
+//             <select
+//               value={filterType}
+//               onChange={(e) => setFilterType(e.target.value)}
+//               style={{ 
+//                 padding: "10px", 
+//                 borderRadius: "8px", 
+//                 border: "1px solid #ddd",
+//                 backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
+//                 color: loading ? "#7a6648" : "#4c3f30",  
+//                 minWidth: "150px"
+//               }}
+//               disabled={loading}
+//             >
+//               <option value="All">All Types ({managers.length})</option>
+//               {managerTypes.map((type) => (
+//                 <option key={type} value={type}>
+//                   {type} ({managers.filter(m => m.type === type).length})
+//                 </option>
+//               ))}
+//             </select>
+//           </div>
 //         </div>
+
+//         {/* RESULTS SUMMARY */}
+//         {!loading && (
+//           <div style={{ 
+//             marginBottom: "15px", 
+//             color: "#666", 
+//             fontSize: "14px",
+//             display: "flex",
+//             alignItems: "center",
+//             gap: "10px"
+//           }}>
+//             <i className="fa-solid fa-info-circle"></i>
+//             <span>
+//               Showing {filteredManagers.length} of {managers.length} manager(s)
+//               {filterType !== "All" && ` (filtered by: ${filterType})`}
+//               {search && ` (search: "${search}")`}
+//             </span>
+//           </div>
+//         )}
 
 //         {/* TABLE */}
 //         <div className={styles.tableCard}>
@@ -144,14 +181,13 @@
 //                       display: "flex", 
 //                       alignItems: "center", 
 //                       justifyContent: "center",
-//                       flexDirection: "column",
 //                       gap: "10px"
 //                     }}>
 //                       <i className="fa-solid fa-spinner fa-spin" style={{ 
-//                         fontSize: "20px",
-//                         color: "#3498db"
+//                         fontSize: "18px",
+//                         marginRight: "8px"
 //                       }}></i>
-//                       <span>Loading managers data...</span>
+//                       Loading managers...
 //                     </div>
 //                   </td>
 //                 </tr>
@@ -160,9 +196,27 @@
 //                   <tr key={m.id}>
 //                     <td>{m.name}</td>
 //                     <td>{m.phone}</td>
-//                     <td>{m.type}</td>
+//                     <td>
+//                       <span style={{
+//                         display: "inline-block",
+//                         padding: "4px 8px",
+//                         borderRadius: "4px",
+//                         fontSize: "12px",
+//                         fontWeight: "bold",
+//                         backgroundColor: 
+//                           m.type === "Owner" ? "#e8f5e8" : 
+//                           m.type === "Employee" ? "#e8f5ff" : 
+//                           m.type === "Manager" ? "#f5f0ff" : "#f5f5f5",
+//                         color: 
+//                           m.type === "Owner" ? "#2e7d32" : 
+//                           m.type === "Employee" ? "#1565c0" : 
+//                           m.type === "Manager" ? "#5e35b1" : "#666"
+//                       }}>
+//                         {m.type}
+//                       </span>
+//                     </td>
 //                     <td>{m.education}</td>
-//                     <td>{m.operatingHours}</td>
+//                     <td>{m.operatingHours} hours</td>
 //                     <td>
 //                       <button className={styles.actionBtn}>View</button>{" "}
 //                       <button className={`${styles.actionBtn}`} style={{ background: "#c0392b" }}>
@@ -171,39 +225,51 @@
 //                     </td>
 //                   </tr>
 //                 ))
-//               ) : search || filterType !== "All" ? (
-//                 <tr>
-//                   <td colSpan={6} style={{ 
-//                     textAlign: "center", 
-//                     padding: "30px 20px",
-//                     color: "#666"
-//                   }}>
-//                     <div style={{ 
-//                       display: "flex", 
-//                       alignItems: "center", 
-//                       justifyContent: "center",
-//                       gap: "10px"
-//                     }}>
-//                       <i className="fa-solid fa-search" style={{ color: "#999" }}></i>
-//                       <span>No managers found matching your search criteria.</span>
-//                     </div>
-//                   </td>
-//                 </tr>
 //               ) : (
 //                 <tr>
 //                   <td colSpan={6} style={{ 
 //                     textAlign: "center", 
-//                     padding: "30px 20px",
+//                     padding: "40px 20px",
 //                     color: "#666"
 //                   }}>
 //                     <div style={{ 
 //                       display: "flex", 
+//                       flexDirection: "column",
 //                       alignItems: "center", 
 //                       justifyContent: "center",
-//                       gap: "10px"
+//                       gap: "15px"
 //                     }}>
-//                       <i className="fa-solid fa-user-tie" style={{ color: "#999" }}></i>
-//                       <span>No managers found in the system.</span>
+//                       <i className="fa-solid fa-user-slash" style={{ 
+//                         fontSize: "48px",
+//                         color: "#ddd"
+//                       }}></i>
+//                       <div>
+//                         <h4 style={{ marginBottom: "5px" }}>No managers found</h4>
+//                         <p style={{ margin: 0, fontSize: "14px", maxWidth: "400px" }}>
+//                           {search || filterType !== "All" 
+//                             ? `No managers match your ${search ? `search "${search}"` : ""}${search && filterType !== "All" ? ' and ' : ''}${filterType !== "All" ? `filter "${filterType}"` : ''}.`
+//                             : "There are no managers in the system yet."}
+//                         </p>
+//                         {(search || filterType !== "All") && (
+//                           <button 
+//                             onClick={() => {
+//                               setSearch("");
+//                               setFilterType("All");
+//                             }}
+//                             style={{
+//                               marginTop: "15px",
+//                               padding: "8px 16px",
+//                               backgroundColor: "#3498db",
+//                               color: "white",
+//                               border: "none",
+//                               borderRadius: "4px",
+//                               cursor: "pointer"
+//                             }}
+//                           >
+//                             Clear filters
+//                           </button>
+//                         )}
+//                       </div>
 //                     </div>
 //                   </td>
 //                 </tr>
@@ -222,7 +288,8 @@
 
 
 
-import React, { useEffect, useState } from "react";
+
+import React, { useEffect, useState, useMemo } from "react";
 import { getAllManagersTableData, type ManagerTableRow } from "../api/admin_manager";
 import styles from "../styles/admin_dashboard.module.css";
 import { Link } from "react-router-dom";
@@ -251,17 +318,30 @@ const AdminViewManagers: React.FC = () => {
     loadManagers();
   }, []);
 
+  // Get unique manager types from data
+  const managerTypes = useMemo(() => {
+    const types = new Set(managers.map(m => m.type).filter(Boolean));
+    return Array.from(types).sort();
+  }, [managers]);
+
   // --------- SEARCH + FILTER ----------
-  const filteredManagers = managers.filter(m => {
-    const matchesSearch =
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.phone.toLowerCase().includes(search.toLowerCase());
+  const filteredManagers = useMemo(() => {
+    return managers.filter(m => {
+      // Search filter
+      const searchTerm = search.toLowerCase();
+      const matchesSearch =
+        m.name.toLowerCase().includes(searchTerm) ||
+        m.phone.toLowerCase().includes(searchTerm) ||
+        m.education.toLowerCase().includes(searchTerm);
 
-    const matchesFilter =
-      filterType === "All" || m.type.toLowerCase() === filterType.toLowerCase();
-
-    return matchesSearch && matchesFilter;
-  });
+      // Type filter
+      if (filterType === "All") {
+        return matchesSearch;
+      }
+      
+      return matchesSearch && m.type.toLowerCase() === filterType.toLowerCase();
+    });
+  }, [managers, search, filterType]);
 
   // Show only error on full page if there's a critical error
   if (error) {
@@ -307,39 +387,64 @@ const AdminViewManagers: React.FC = () => {
           {/* Search Field */}
           <input
             type="text"
-            placeholder="Search manager..."
+            placeholder="Search manager by name, phone, or education..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ 
               padding: "10px", 
               borderRadius: "8px", 
-              width: "250px", 
+              width: "300px", 
               border: "1px solid #ddd",
-              backgroundColor: loading ? "#f5f5f5" : "white",
-              color: loading ? "#999" : "inherit"
+              backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
+              color: loading ? "#7a6648" : "#4c3f30",  
             }}
             disabled={loading}
           />
 
           {/* Filter Dropdown */}
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value)}
-            style={{ 
-              padding: "10px", 
-              borderRadius: "8px", 
-              border: "1px solid #ddd",
-              backgroundColor: loading ? "#f5f5f5" : "white",
-              color: loading ? "#999" : "inherit"
-            }}
-            disabled={loading}
-          >
-            <option value="All">All Types</option>
-            <option value="Owner">Owner</option>
-            <option value="Employee">Employee</option>
-            <option value="Manager">Manager</option>
-          </select>
+          <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+            <span style={{ color: "#666", fontSize: "14px" }}>Filter by type:</span>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value)}
+              style={{ 
+                padding: "10px", 
+                borderRadius: "8px", 
+                border: "1px solid #ddd",
+                backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
+                color: loading ? "#7a6648" : "#4c3f30",  
+                minWidth: "150px"
+              }}
+              disabled={loading}
+            >
+              <option value="All">All Types ({managers.length})</option>
+              {managerTypes.map((type) => (
+                <option key={type} value={type}>
+                  {type} ({managers.filter(m => m.type === type).length})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
+
+        {/* RESULTS SUMMARY */}
+        {!loading && (
+          <div style={{ 
+            marginBottom: "15px", 
+            color: "#666", 
+            fontSize: "14px",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px"
+          }}>
+            <i className="fa-solid fa-info-circle"></i>
+            <span>
+              Showing {filteredManagers.length} of {managers.length} manager(s)
+              {filterType !== "All" && ` (filtered by: ${filterType})`}
+              {search && ` (search: "${search}")`}
+            </span>
+          </div>
+        )}
 
         {/* TABLE */}
         <div className={styles.tableCard}>
@@ -382,58 +487,94 @@ const AdminViewManagers: React.FC = () => {
                   <tr key={m.id}>
                     <td>{m.name}</td>
                     <td>{m.phone}</td>
-                    <td>{m.type}</td>
-                    <td>{m.education}</td>
-                    <td>{m.operatingHours}</td>
                     <td>
-                      <button className={styles.actionBtn}>View</button>{" "}
-                      <button className={`${styles.actionBtn}`} style={{ background: "#c0392b" }}>
-                        Delete
-                      </button>
+                      <span style={{
+                        display: "inline-block",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontSize: "12px",
+                        fontWeight: "bold",
+                        backgroundColor: 
+                          m.type === "Owner" ? "#e8f5e8" : 
+                          m.type === "Employee" ? "#e8f5ff" : 
+                          m.type === "Manager" ? "#f5f0ff" : "#f5f5f5",
+                        color: 
+                          m.type === "Owner" ? "#2e7d32" : 
+                          m.type === "Employee" ? "#1565c0" : 
+                          m.type === "Manager" ? "#5e35b1" : "#666"
+                      }}>
+                        {m.type}
+                      </span>
+                    </td>
+                    <td>{m.education}</td>
+                    <td>{m.operatingHours} hours</td>
+                    <td>
+                      <Link 
+                        to={`/admin/managers/${m.id}`}
+                        className={styles.actionBtn}
+                        style={{ 
+                          display: "inline-block",
+                          padding: "8px 16px",
+                          backgroundColor: "#3498db",
+                          color: "white",
+                          border: "none",
+                          borderRadius: "4px",
+                          cursor: "pointer",
+                          textDecoration: "none",
+                          textAlign: "center",
+                          width: "100%"
+                        }}
+                      >
+                        <i className="fa-solid fa-eye"></i> View Details
+                      </Link>
                     </td>
                   </tr>
                 ))
-              ) : search || filterType !== "All" ? (
-                <tr>
-                  <td colSpan={6} style={{ 
-                    textAlign: "center", 
-                    padding: "20px",
-                    color: "#666"
-                  }}>
-                    <div style={{ 
-                      display: "flex", 
-                      alignItems: "center", 
-                      justifyContent: "center",
-                      gap: "10px"
-                    }}>
-                      <i className="fa-solid fa-search" style={{ 
-                        marginRight: "10px", 
-                        color: "#666",
-                        fontSize: "18px"
-                      }}></i>
-                      No managers found matching your search criteria.
-                    </div>
-                  </td>
-                </tr>
               ) : (
                 <tr>
                   <td colSpan={6} style={{ 
                     textAlign: "center", 
-                    padding: "20px",
+                    padding: "40px 20px",
                     color: "#666"
                   }}>
                     <div style={{ 
                       display: "flex", 
+                      flexDirection: "column",
                       alignItems: "center", 
                       justifyContent: "center",
-                      gap: "10px"
+                      gap: "15px"
                     }}>
-                      <i className="fa-solid fa-user-tie" style={{ 
-                        marginRight: "10px", 
-                        color: "#666",
-                        fontSize: "18px"
+                      <i className="fa-solid fa-user-slash" style={{ 
+                        fontSize: "48px",
+                        color: "#ddd"
                       }}></i>
-                      No managers found in the system.
+                      <div>
+                        <h4 style={{ marginBottom: "5px" }}>No managers found</h4>
+                        <p style={{ margin: 0, fontSize: "14px", maxWidth: "400px" }}>
+                          {search || filterType !== "All" 
+                            ? `No managers match your ${search ? `search "${search}"` : ""}${search && filterType !== "All" ? ' and ' : ''}${filterType !== "All" ? `filter "${filterType}"` : ''}.`
+                            : "There are no managers in the system yet."}
+                        </p>
+                        {(search || filterType !== "All") && (
+                          <button 
+                            onClick={() => {
+                              setSearch("");
+                              setFilterType("All");
+                            }}
+                            style={{
+                              marginTop: "15px",
+                              padding: "8px 16px",
+                              backgroundColor: "#3498db",
+                              color: "white",
+                              border: "none",
+                              borderRadius: "4px",
+                              cursor: "pointer"
+                            }}
+                          >
+                            Clear filters
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </td>
                 </tr>
