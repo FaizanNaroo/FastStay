@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import StudentProfile from "./pages/Student_Profile";
 import EditProfile from "./pages/Edit_Profile";
@@ -15,10 +14,6 @@ import AdminManagerProfile from './pages/admin_manager_review';
 import AdminStudentProfile from './pages/admin_students_review';
 import AdminViewHostels from './pages/admin_hostels_review';
 import LogoutConfirm from './pages/admin_signout';
-
-
-// Update App.tsx to include the hostel detail route
-
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import StudentDemographics from "./pages/StudentDemographics";
@@ -43,27 +38,14 @@ function App() {
         <Route path="/student/hostelDetails" element={<HostelDetails/>}/>
         <Route path="/student/ownerDetails" element={<OwnerDetails/>}/>
         <Route path="/student/rooms" element={<Rooms/>}/>
-        {/* Dashboard Route */}
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="admin/logout" element={<LogoutConfirm />} />
-        
-        {/* Admin Main Pages */}
         <Route path="/admin/hostels" element={<ViewHostels />} />
         <Route path="/admin/students" element={<AdminViewStudents />} />
         <Route path="/admin/managers" element={<AdminViewManagers />} />
-        
-        {/* Detail Pages with ID parameters */}
         <Route path="/admin/hostels/:id" element={<AdminViewHostels />} />
-        {/* OR if using separate component: */}
-        {/* <Route path="/admin/hostels/:id" element={<HostelDetail />} /> */}
-        
         <Route path="/admin/managers/:id" element={<AdminManagerProfile />} />
         <Route path="/admin/students/:id" element={<AdminStudentProfile />} />
-        
-        {/* Redirect root to admin dashboard */}
-        <Route path="/" element={<AdminDashboard />} />
-        
-        {/* 404 Page */}
         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
         <Route path="/" element={<Login />} />
         <Route path="/manager/dashboard" element={<HostelDashboard />} />

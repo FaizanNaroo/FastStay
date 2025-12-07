@@ -10,6 +10,7 @@ const LogoutConfirm: React.FC = () => {
 
   const handleLogout = () => {
     console.log("User clicked Sign Out – stay on same page");
+    navigate("/");
     // Later you can clear tokens and redirect to login page
   };
 
