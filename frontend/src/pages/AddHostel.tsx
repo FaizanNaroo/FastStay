@@ -423,7 +423,7 @@ export default function AddHostel() {
                     <Link to={`/manager/add_hostel?user_id=${managerId}`} className={styles.active}>Add Hostel</Link>
                     <Link to={`/manager/add_room?user_id=${managerId}`}>Add Room</Link>
                     <Link to={`/manager/profile?user_id=${managerId}`}>Your Profile</Link>
-                    <Link to="/logout">Logout</Link>
+                    <Link to="/">Logout</Link>
                 </div>
             </nav>
 

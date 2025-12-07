@@ -311,7 +311,7 @@ export default function HostelDashboard() {
                         Your Profile
                     </Link>
 
-                    <Link to="/logout">
+                    <Link to="/">
                         Logout
                     </Link>
                 </div>

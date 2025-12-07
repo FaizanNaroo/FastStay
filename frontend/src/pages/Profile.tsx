@@ -191,7 +191,7 @@ export default function Profile() {
             Your Profile
           </Link>
 
-          <Link to="/logout">
+          <Link to="/">
             Logout
           </Link>
         </div>

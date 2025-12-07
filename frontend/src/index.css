@@ -8,6 +8,28 @@
 }
 
 body {
-    background: #3b2c24; /* Deep Coffee Brown */
+    background: #3b2c24;
+    /* Deep Coffee Brown */
+    min-height: 100vh;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    display: block;
+    /* remove flex centering */
+}
+
+#root {
+    width: 100%;
+    min-height: 100vh;
+}
+
+body {
+    margin: 0;
+    display: flex;
+    place-items: center;
+    min-width: 320px;
     min-height: 100vh;
 }
