@@ -411,7 +411,7 @@ const HostelDetails: React.FC = () => {
           <a href={`/student/home?user_id=${userId}`} className={styles.navLink}>Home</a>
           <a href={`/student/profile?user_id=${userId}`} className={styles.navLink}>My Profile</a>
           <a href={`/student/suggestions?user_id=${userId}`} className={styles.navLink}>Suggestions</a>
-          <a href="/logout" className={styles.navLink}>Logout</a>
+          <a href="/" className={styles.navLink}>Logout</a>
         </div>
       </nav>
       

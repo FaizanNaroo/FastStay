@@ -444,7 +444,7 @@ const ViewRooms: React.FC = () => {
             <a href={`/student/home?user_id=${userId}`} className={styles.navLink}>Home</a>
             <a href={`/student/profile?user_id=${userId}`} className={styles.navLink}>My Profile</a>
             <a href={`/student/suggestions?user_id=${userId}`} className={styles.navLink}>Suggestions</a>
-            <a href="/logout" className={styles.navLink}>Logout</a>
+            <a href="/" className={styles.navLink}>Logout</a>
           </div>
         </nav>
 
@@ -476,7 +476,7 @@ const ViewRooms: React.FC = () => {
           <a href={`/student/home?user_id=${userId}`} className={styles.navLink}>Home</a>
           <a href={`/student/profile?user_id=${userId}`} className={styles.navLink}>My Profile</a>
           <a href={`/student/suggestions?user_id=${userId}`} className={styles.navLink}>Suggestions</a>
-          <a href="/logout" className={styles.navLink}>Logout</a>
+          <a href="/" className={styles.navLink}>Logout</a>
         </div>
       </nav>
 
@@ -572,9 +572,8 @@ const ViewRooms: React.FC = () => {
                 onChange={(e) => handleFilterChange("bedType", e.target.value)}
               >
                 <option value="all">All Bed Types</option>
-                <option value="Single">Single Bed</option>
-                <option value="Double">Double Bed</option>
-                <option value="Bunk">Bunk Bed</option>
+                <option value="Bed">Single Bed</option>
+                <option value="Matress">Matress</option>
               </select>
             </div>
 

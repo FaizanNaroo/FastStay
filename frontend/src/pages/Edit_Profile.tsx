@@ -153,7 +153,7 @@ const EditProfile: React.FC = () => {
           <a href="/suggestions" className={styles.navLinkItem}>
             Suggestions
           </a>
-          <Link to="/logout" className={styles.navLinkItem}>
+          <Link to="/" className={styles.navLinkItem}>
             Logout
           </Link>
         </div>

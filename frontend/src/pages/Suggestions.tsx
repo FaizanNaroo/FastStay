@@ -366,7 +366,7 @@ const Suggestions: React.FC = () => {
           >
             <i className="fa-solid fa-comment-medical"></i> Feedback
           </button>
-          <Link to="/logout" className={styles.navLinkItem}>
+          <Link to="/" className={styles.navLinkItem}>
             Logout
           </Link>
         </div>

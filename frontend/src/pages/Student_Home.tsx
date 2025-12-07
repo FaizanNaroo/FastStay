@@ -432,7 +432,7 @@ const StudentHome: React.FC = () => {
           <Link to={`/student/suggestions?user_id=${userId}`} className={styles.navLinkItem}>
             Suggestions
           </Link>
-          <Link to="/logout" className={styles.navLinkItem}>
+          <Link to="/" className={styles.navLinkItem}>
             Logout
           </Link>
         </div>
