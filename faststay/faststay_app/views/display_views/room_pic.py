@@ -26,7 +26,7 @@ class RoomPicView(View):
             info_list = self.hostel_service.room_pic(hostel_id)
             if info_list:
 
-                return JsonResponse(info_list[0], status=200)
+                return JsonResponse(info_list, safe=False, status=200)
             else:
                 return JsonResponse({'error': f'information not found for Hostel ID {hostel_id}'}, status=404)
 

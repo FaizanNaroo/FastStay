@@ -14,7 +14,6 @@ interface Room {
   p_isVentilated: boolean;
   p_isCarpet: boolean;
   p_isMiniFridge: boolean;
-  image?: string;
 }
 
 interface HostelInfo {
@@ -25,6 +24,12 @@ interface HostelInfo {
   averageRating?: number;
 }
 
+interface RoomPic {
+  p_PhotoLink: string;
+  p_RoomNo: number | null;
+  p_RoomSeaterNo: number;
+}
+
 const ViewRooms: React.FC = () => {
   const [rooms, setRooms] = useState<Room[]>([]);
   const [filteredRooms, setFilteredRooms] = useState<Room[]>([]);
@@ -32,7 +37,10 @@ const ViewRooms: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [showRoomDetails, setShowRoomDetails] = useState(false);
-  const [roomImage, setRoomImage] = useState<string>("");
+  
+  // State for room pictures
+  const [roomPics, setRoomPics] = useState<RoomPic[]>([]);
+  const [roomPicIndices, setRoomPicIndices] = useState<{ [key: number]: number }>({});
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,39 +97,112 @@ const ViewRooms: React.FC = () => {
     }
   };
 
-  // Helper function to get room images
-  const getRoomImage = async (): Promise<string> => {
-    if (!hostelId) return "";
-    
+  // Fetch room pictures for the hostel
+  const fetchRoomPics = async (hostelId: string) => {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/display/room_pic?p_HostelId=${hostelId}`
       );
       
-      console.log("Room image API response:", response.data);
+      console.log("Room pics response:", response.data);
       
-      // Handle the response based on your Django view
-      if (response.data && response.data.p_photolink) {
-        const photoLink = response.data.p_photolink;
-        return photoLink;
-      }
-      
-      // Alternative field names
-      if (response.data && response.data.p_PhotoLink) {
-        return response.data.p_PhotoLink;
-      }
-      
-      console.warn("No room image found for hostel");
-      return "";
-    } catch (error: any) {
-      // Check if it's a 404 or 500 (no image for this hostel)
-      if (error.response?.status === 404 || error.response?.status === 500) {
-        console.log("No room image found (expected)");
+      if (response.status === 200) {
+        let picsData: RoomPic[] = [];
+        
+        // Handle different response formats
+        if (Array.isArray(response.data)) {
+          picsData = response.data.map((pic: any) => ({
+            p_PhotoLink: pic.p_PhotoLink || pic.photolink || pic.p_photolink,
+            p_RoomNo: pic.p_RoomNo !== undefined ? pic.p_RoomNo : null,
+            p_RoomSeaterNo: pic.p_RoomSeaterNo || pic.seaterno || 0
+          }));
+        } else if (response.data.p_PhotoLink) {
+          // Single picture object
+          picsData = [{
+            p_PhotoLink: response.data.p_PhotoLink,
+            p_RoomNo: response.data.p_RoomNo || null,
+            p_RoomSeaterNo: response.data.p_RoomSeaterNo || 0
+          }];
+        }
+        
+        console.log(`Found ${picsData.length} room pictures for hostel ${hostelId}`);
+        setRoomPics(picsData);
+        
+        // Initialize picture indices for all rooms
+        const initialIndices: { [key: number]: number } = {};
+        rooms.forEach(room => {
+          initialIndices[room.p_RoomNo] = 0;
+        });
+        setRoomPicIndices(initialIndices);
+        
       } else {
-        console.error("Failed to fetch room image:", error);
+        console.log("No pictures found or empty response");
+        setRoomPics([]);
       }
-      return "";
+    } catch (error: any) {
+      // Don't treat 404/500 as errors - just means no pictures
+      if (error.response?.status === 404 || error.response?.status === 500) {
+        console.log("No room pictures found (expected)");
+        setRoomPics([]);
+      } else {
+        console.error("Error fetching room pictures:", error);
+        setRoomPics([]);
+      }
     }
+  };
+
+  // Get pictures for a specific room - MATCHING THE AddRoom LOGIC
+  const getRoomPics = (room: Room): string[] => {
+    if (!roomPics.length) return [];
+    
+    const roomPicsList: string[] = [];
+    
+    // 1. Specific room pics (roomno matches exactly)
+    const roomSpecific = roomPics
+      .filter(pic => pic.p_RoomNo === (room.p_RoomNo / 100))
+      .map(pic => pic.p_PhotoLink);
+    
+    roomPicsList.push(...roomSpecific);
+    
+    // 2. Shared seater pics (roomno is null, roomseaterno matches)
+    const sharedSeater = roomPics
+      .filter(pic =>
+        pic.p_RoomNo === null &&
+        pic.p_RoomSeaterNo === room.p_SeaterNo
+      )
+      .map(pic => pic.p_PhotoLink);
+    
+    roomPicsList.push(...sharedSeater);
+    
+    // Remove duplicates (in case same photo exists in both)
+    return [...new Set(roomPicsList)];
+  };
+
+  // Navigation for picture slider - PER ROOM
+  const nextPic = (roomNo: number) => {
+    const room = rooms.find(r => r.p_RoomNo === roomNo);
+    if (!room) return;
+    
+    const roomPicsList = getRoomPics(room);
+    if (roomPicsList.length <= 1) return;
+    
+    setRoomPicIndices(prev => ({
+      ...prev,
+      [roomNo]: (prev[roomNo] + 1) % roomPicsList.length
+    }));
+  };
+
+  const prevPic = (roomNo: number) => {
+    const room = rooms.find(r => r.p_RoomNo === roomNo);
+    if (!room) return;
+    
+    const roomPicsList = getRoomPics(room);
+    if (roomPicsList.length <= 1) return;
+    
+    setRoomPicIndices(prev => ({
+      ...prev,
+      [roomNo]: (prev[roomNo] - 1 + roomPicsList.length) % roomPicsList.length
+    }));
   };
 
   // Fetch all rooms for the hostel using DisplayAllHostel API
@@ -139,6 +220,9 @@ const ViewRooms: React.FC = () => {
       const info = await getHostelInfo();
       setHostelInfo(info);
       
+      // Fetch room pictures
+      await fetchRoomPics(hostelId);
+      
       // Fetch ALL rooms for this hostel using the correct API
       console.log("Fetching all rooms for hostel:", hostelId);
       const response = await axios.post(
@@ -151,7 +235,7 @@ const ViewRooms: React.FC = () => {
       if (response.data.success && response.data.result && Array.isArray(response.data.result)) {
         // Process rooms and add room numbers
         const fetchedRooms = response.data.result.map((room: any, index: number) => ({
-          p_RoomNo: (parseInt(room.floorNo) * 100) + index + 1, // Generate room numbers if not provided
+          p_RoomNo: (parseInt( room.floorNo || 1) * 100) + index + 1,
           p_FloorNo: room.floorNo || 1,
           p_SeaterNo: room.seaterNo || 1,
           p_BedType: room.bedType || "Single",
@@ -174,10 +258,6 @@ const ViewRooms: React.FC = () => {
         console.log("Processed rooms:", fetchedRooms);
         setRooms(fetchedRooms);
         setFilteredRooms(fetchedRooms);
-        
-        // Get room image
-        const image = await getRoomImage();
-        setRoomImage(image);
         
       } else {
         console.log("No rooms found or invalid response:", response.data);
@@ -333,6 +413,12 @@ const ViewRooms: React.FC = () => {
   // Helper function to format currency
   const formatCurrency = (amount: number): string => {
     return `PKR ${amount.toLocaleString()}`;
+  };
+
+  // Get first image for a room (for modal display)
+  const getRoomImage = (room: Room): string => {
+    const roomPicsList = getRoomPics(room);
+    return roomPicsList.length > 0 ? roomPicsList[0] : `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&auto=format&fit=crop&q=80`;
   };
 
   // Render loading state
@@ -584,96 +670,144 @@ const ViewRooms: React.FC = () => {
               </button>
             </div>
           ) : (
-            filteredRooms.map((room) => (
-              <div key={room.p_RoomNo} className={styles.roomCard}>
-                <div className={styles.cardImage}>
-                  <img 
-                    src={roomImage || `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80`}
-                    alt={`Room ${room.p_RoomNo}`}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80`;
-                    }}
-                  />
-                  <div className={styles.cardBadges}>
-                    <span className={`${styles.seaterBadge} ${
-                      room.p_SeaterNo === 1 ? styles.seater1 :
-                      room.p_SeaterNo === 2 ? styles.seater2 :
-                      room.p_SeaterNo === 3 ? styles.seater3 :
-                      styles.seater4
-                    }`}>
-                      {room.p_SeaterNo}-Seater
-                    </span>
-                    <span className={styles.floorBadge}>
-                      Floor {room.p_FloorNo}
-                    </span>
-                    {room.p_isMiniFridge && (
-                      <span className={styles.fridgeBadge}>
-                        <i className="fa-solid fa-snowflake"></i> Fridge
-                      </span>
+            filteredRooms.map((room) => {
+              const roomPicsList = getRoomPics(room);
+              const currentIndex = roomPicIndices[room.p_RoomNo] || 0;
+              const currentImage = roomPicsList.length > 0 
+                ? roomPicsList[currentIndex]
+                : `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80`;
+              
+              return (
+                <div key={room.p_RoomNo} className={styles.roomCard}>
+                  <div className={styles.cardImage}>
+                    <img 
+                      src={currentImage}
+                      alt={`Room ${room.p_RoomNo}`}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&auto=format&fit=crop&q=80`;
+                      }}
+                    />
+                    
+                    {/* Picture navigation buttons (only show if multiple pictures) */}
+                    {roomPicsList.length > 1 && (
+                      <>
+                        <button
+                          className={`${styles.sliderBtn} ${styles.prevBtn}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            prevPic(room.p_RoomNo);
+                          }}
+                        >
+                          <i className="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button
+                          className={`${styles.sliderBtn} ${styles.nextBtn}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            nextPic(room.p_RoomNo);
+                          }}
+                        >
+                          <i className="fa-solid fa-chevron-right"></i>
+                        </button>
+                        <div className={styles.sliderDots}>
+                          {roomPicsList.map((_, idx) => (
+                            <span
+                              key={idx}
+                              className={`${styles.dot} ${idx === currentIndex ? styles.activeDot : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setRoomPicIndices(prev => ({
+                                  ...prev,
+                                  [room.p_RoomNo]: idx
+                                }));
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </>
                     )}
+                    
+                    <div className={styles.cardBadges}>
+                      <span className={`${styles.seaterBadge} ${
+                        room.p_SeaterNo === 1 ? styles.seater1 :
+                        room.p_SeaterNo === 2 ? styles.seater2 :
+                        room.p_SeaterNo === 3 ? styles.seater3 :
+                        styles.seater4
+                      }`}>
+                        {room.p_SeaterNo}-Seater
+                      </span>
+                      <span className={styles.floorBadge}>
+                        Floor {room.p_FloorNo}
+                      </span>
+                      {room.p_isMiniFridge && (
+                        <span className={styles.fridgeBadge}>
+                          <i className="fa-solid fa-snowflake"></i> Fridge
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className={styles.cardContent}>
+                    <div className={styles.cardHeader}>
+                      <h3>Room #{room.p_RoomNo}</h3>
+                      <div className={styles.roomPrice}>
+                        {formatCurrency(room.p_RoomRent)}
+                        <span>/month</span>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.roomDetails}>
+                      <div className={styles.detailItem}>
+                        <i className="fa-solid fa-bed"></i>
+                        <span>{room.p_BedType} Bed</span>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <i className="fa-solid fa-toilet"></i>
+                        <span>{room.p_WashroomType} Washroom</span>
+                      </div>
+                      <div className={styles.detailItem}>
+                        <i className="fa-solid fa-cabinet-filing"></i>
+                        <span>{room.p_CupboardType} Cupboard</span>
+                      </div>
+                    </div>
+                    
+                    <div className={styles.roomFeatures}>
+                      {room.p_isVentilated && (
+                        <span className={styles.feature}>
+                          <i className="fa-solid fa-wind"></i> Ventilated
+                        </span>
+                      )}
+                      {room.p_isCarpet && (
+                        <span className={styles.feature}>
+                          <i className="fa-solid fa-carpet"></i> Carpet
+                        </span>
+                      )}
+                      {room.p_isMiniFridge && (
+                        <span className={styles.feature}>
+                          <i className="fa-solid fa-snowflake"></i> Mini Fridge
+                        </span>
+                      )}
+                    </div>
+                    
+                    <div className={styles.cardButtons}>
+                      <button
+                        className={styles.detailsBtn}
+                        onClick={() => handleViewRoomDetails(room)}
+                      >
+                        <i className="fa-solid fa-eye"></i> View Details
+                      </button>
+                      <button
+                        className={styles.bookBtn}
+                        onClick={() => handleBookRoom(room)}
+                      >
+                        <i className="fa-solid fa-calendar-check"></i> Book Now
+                      </button>
+                    </div>
                   </div>
                 </div>
-                
-                <div className={styles.cardContent}>
-                  <div className={styles.cardHeader}>
-                    <h3>Room #{room.p_RoomNo}</h3>
-                    <div className={styles.roomPrice}>
-                      {formatCurrency(room.p_RoomRent)}
-                      <span>/month</span>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.roomDetails}>
-                    <div className={styles.detailItem}>
-                      <i className="fa-solid fa-bed"></i>
-                      <span>{room.p_BedType} Bed</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <i className="fa-solid fa-toilet"></i>
-                      <span>{room.p_WashroomType} Washroom</span>
-                    </div>
-                    <div className={styles.detailItem}>
-                      <i className="fa-solid fa-cabinet-filing"></i>
-                      <span>{room.p_CupboardType} Cupboard</span>
-                    </div>
-                  </div>
-                  
-                  <div className={styles.roomFeatures}>
-                    {room.p_isVentilated && (
-                      <span className={styles.feature}>
-                        <i className="fa-solid fa-wind"></i> Ventilated
-                      </span>
-                    )}
-                    {room.p_isCarpet && (
-                      <span className={styles.feature}>
-                        <i className="fa-solid fa-carpet"></i> Carpet
-                      </span>
-                    )}
-                    {room.p_isMiniFridge && (
-                      <span className={styles.feature}>
-                        <i className="fa-solid fa-snowflake"></i> Mini Fridge
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className={styles.cardButtons}>
-                    <button
-                      className={styles.detailsBtn}
-                      onClick={() => handleViewRoomDetails(room)}
-                    >
-                      <i className="fa-solid fa-eye"></i> View Details
-                    </button>
-                    <button
-                      className={styles.bookBtn}
-                      onClick={() => handleBookRoom(room)}
-                    >
-                      <i className="fa-solid fa-calendar-check"></i> Book Now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
@@ -695,9 +829,16 @@ const ViewRooms: React.FC = () => {
             <div className={styles.modalContent}>
               <div className={styles.modalImage}>
                 <img 
-                  src={roomImage || `https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&auto=format&fit=crop&q=80`}
+                  src={getRoomImage(selectedRoom)}
                   alt={`Room ${selectedRoom.p_RoomNo}`}
                 />
+                {/* Picture count indicator */}
+                {getRoomPics(selectedRoom).length > 1 && (
+                  <div className={styles.picCountIndicator}>
+                    <i className="fa-solid fa-images"></i>
+                    {getRoomPics(selectedRoom).length} photos available
+                  </div>
+                )}
               </div>
               
               <div className={styles.detailGrid}>
