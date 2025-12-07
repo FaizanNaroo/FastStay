@@ -1,28 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-import { getHostelDetails, type HostelTableRow } from "../api/admin_hostels_review";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import { getHostelDetails, deleteHostel, type HostelTableRow } from "../api/admin_hostels_review";
 import styles from "../styles/admin_dashboard.module.css";
 import "../AdminViewHostels.css";
 
 const AdminViewHostels: React.FC = () => {
-  const { id } = useParams<{ id: string }>(); // Get hostel ID from URL
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [hostel, setHostel] = useState<HostelTableRow | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isApproved, setIsApproved] = useState(false);
+  const [showApproveSuccess, setShowApproveSuccess] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchHostel = async () => {
       try {
         setLoading(true);
+        setActionError(null);
         const hostelId = parseInt(id || "0");
-        // Use the new getHostelDetails function which fetches pictures separately
         const hostelDetails = await getHostelDetails(hostelId);
         
         if (hostelDetails) {
           setHostel(hostelDetails);
-          // Set the first image as selected if available
           if (hostelDetails.photos && hostelDetails.photos.length > 0) {
             setSelectedImage(hostelDetails.photos[0]);
           }
@@ -39,6 +44,58 @@ const AdminViewHostels: React.FC = () => {
     
     fetchHostel();
   }, [id]);
+
+  const handleApprove = () => {
+    if (!hostel) return;
+    
+    // Fake approval - no API call
+    console.log(`Fake approving hostel ${hostel.id}`);
+    setIsApproved(true);
+    setShowApproveSuccess(true);
+    
+    // Hide success message after 3 seconds
+    setTimeout(() => {
+      setShowApproveSuccess(false);
+    }, 3000);
+  };
+
+
+  // In your AdminViewHostels component, update the handleDelete function:
+
+const handleDelete = async () => {
+    if (!hostel) return;
+    
+    try {
+        setDeleteLoading(true);
+        setActionError(null);
+        
+        console.log(`Deleting hostel ID: ${hostel.id}`);
+        
+        // Call the updated API function
+        const success = await deleteHostel(hostel.id);
+        
+        if (success) {
+            // Show success message
+            setActionError("Hostel deleted successfully! Redirecting...");
+            
+            // Redirect to hostels list after 1.5 seconds
+            setTimeout(() => {
+                navigate("/admin/hostels");
+            }, 1500);
+        } else {
+            setActionError("Failed to delete hostel. Hostel may not exist or there was a server error.");
+        }
+    } catch (err) {
+        console.error("Delete error:", err);
+        setActionError("Error deleting hostel. Please try again.");
+    } finally {
+        setDeleteLoading(false);
+        setShowDeleteConfirm(false);
+    }
+};
+
+
+
 
   const handleNextImage = () => {
     if (hostel?.photos && hostel.photos.length > 0) {
@@ -111,6 +168,21 @@ const AdminViewHostels: React.FC = () => {
             </Link>
           </div>
 
+          {/* Action Messages */}
+          {showApproveSuccess && (
+            <div className="custom-success-message">
+              <i className="fa-solid fa-check-circle"></i>
+              <span>Hostel approved successfully!</span>
+            </div>
+          )}
+
+          {actionError && (
+            <div className={`custom-message ${actionError.includes("successfully") ? "custom-success-message" : "custom-error-message"}`}>
+              <i className={`fa-solid ${actionError.includes("successfully") ? "fa-check-circle" : "fa-exclamation-circle"}`}></i>
+              <span>{actionError}</span>
+            </div>
+          )}
+
           {/* Loading state within the page */}
           {loading ? (
             <div className="custom-card">
@@ -169,6 +241,11 @@ const AdminViewHostels: React.FC = () => {
             <>
               <h2 className="custom-title">
                 <i className="fa-solid fa-building-circle-check"></i> Review Hostel: {hostel.name}
+                {isApproved && (
+                  <span className="custom-approved-badge">
+                    <i className="fa-solid fa-check"></i> Approved
+                  </span>
+                )}
               </h2>
               <p className="custom-subtitle">
                 Hostel ID: {hostel.id} | Verify details before approval.
@@ -341,27 +418,82 @@ const AdminViewHostels: React.FC = () => {
 
                 {/* APPROVAL BUTTONS */}
                 <div className="custom-btn-row">
-                  <button 
-                    className="custom-btn custom-btn-approve"
-                    onClick={() => {
-                      // Add your approve logic here
-                      console.log(`Approving hostel ${hostel.id}`);
-                    }}
-                  >
-                    <i className="fa-solid fa-check"></i> Approve
-                  </button>
-                  <button 
-                    className="custom-btn custom-btn-reject"
-                    onClick={() => {
-                      // Add your reject logic here
-                      console.log(`Rejecting hostel ${hostel.id}`);
-                    }}
-                  >
-                    <i className="fa-solid fa-times"></i> Reject
-                  </button>
+                  {!isApproved ? (
+                    <>
+                      <button 
+                        className="custom-btn custom-btn-approve"
+                        onClick={handleApprove}
+                      >
+                        <i className="fa-solid fa-check"></i> Approve
+                      </button>
+                      
+                      <button 
+                        className="custom-btn custom-btn-delete"
+                        onClick={() => setShowDeleteConfirm(true)}
+                        disabled={deleteLoading}
+                      >
+                        {deleteLoading ? (
+                          <>
+                            <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
+                          </>
+                        ) : (
+                          <>
+                            <i className="fa-solid fa-trash"></i> Delete Hostel
+                          </>
+                        )}
+                      </button>
+                    </>
+                  ) : (
+                    <div className="custom-approved-message">
+                      <i className="fa-solid fa-check-circle"></i>
+                      <span>This hostel has been approved</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </>
+          )}
+
+          {/* Delete Confirmation Modal */}
+          {showDeleteConfirm && (
+            <div className="custom-modal-overlay">
+              <div className="custom-modal">
+                <div className="custom-modal-header">
+                  <i className="fa-solid fa-exclamation-triangle" style={{ color: "#dc3545", marginRight: "10px" }}></i>
+                  <h3>Confirm Delete</h3>
+                </div>
+                <div className="custom-modal-body">
+                  <p>Are you sure you want to delete <strong>{hostel?.name}</strong>?</p>
+                  <p className="custom-warning-text">
+                    <i className="fa-solid fa-exclamation-circle"></i> This action cannot be undone. All hostel data will be permanently removed.
+                  </p>
+                </div>
+                <div className="custom-modal-footer">
+                  <button 
+                    className="custom-btn custom-btn-cancel"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleteLoading}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    className="custom-btn custom-btn-confirm-delete"
+                    onClick={handleDelete}
+                    disabled={deleteLoading}
+                  >
+                    {deleteLoading ? (
+                      <>
+                        <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-trash"></i> Delete
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
           )}
         </div>
       </div>

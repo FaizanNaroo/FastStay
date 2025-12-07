@@ -1,34 +1,4 @@
 
-
-
-// function App() {
-//   return (
-//     <BrowserRouter>
-//       <Routes>
-//         {/* Dashboard Route */}
-//         <Route path="/admin" element={<AdminDashboard />} />
-//         <Route path="admin/logout" element={<LogoutConfirm />} />
-//         {/* Admin Main Pages */}
-//         <Route path="/admin/hostels" element={<ViewHostels />} />
-//         <Route path="/admin/students" element={<AdminViewStudents />} />
-//         <Route path="/admin/managers" element={<AdminViewManagers />} />
-        
-//         {/* Detail Pages with ID parameters */}
-//         <Route path="/admin/hostels/:id" element={<AdminViewHostels />} />
-//         <Route path="/admin/managers/:id" element={<AdminManagerProfile />} />
-//         <Route path="/admin/students/:id" element={<AdminStudentProfile />} />
-        
-//         {/* Redirect root to admin dashboard */}
-//         <Route path="/" element={<AdminDashboard />} />
-        
-//         {/* 404 Page */}
-//         <Route path="*" element={<h1>404 - Page Not Found</h1>} />
-//       </Routes>
-//     </BrowserRouter>
-//   );
-// }
-
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminDashboard from './pages/admin_dashboard';
 import AdminViewStudents from './pages/admin_student';

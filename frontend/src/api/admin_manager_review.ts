@@ -43,6 +43,48 @@ export interface ManagerTableRow {
     photoLink?: string;
 }
 
+
+// In your admin_manager_review.ts file, add this delete function:
+
+// ---- Delete Manager ----
+export const deleteManager = async (managerId: number): Promise<boolean> => {
+    try {
+        console.log(`Attempting to delete manager with ID: ${managerId}`);
+        
+        const response = await axios.delete(
+            `${API_BASE_URL}/faststay_app/ManagerDetails/delete/`,
+            {
+                data: { p_ManagerId: managerId },
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }
+        );
+        
+        console.log("Delete Manager API Response:", response.data);
+        
+        // Check response format based on your backend
+        if (response.data.result !== undefined) {
+            return response.data.result === true || response.data.result === "true";
+        } else if (response.data.success !== undefined) {
+            return response.data.success === true;
+        }
+        
+        return false;
+        
+    } catch (error: unknown) {
+        console.error(`Error deleting manager ${managerId}:`, error);
+        if (axios.isAxiosError(error)) {
+            console.error("Axios Error Details:", {
+                status: error.response?.status,
+                data: error.response?.data,
+                headers: error.response?.headers
+            });
+        }
+        return false;
+    }
+};
+
 // ---- API Functions ----
 
 // 1. Get all managers with user details (combined)
