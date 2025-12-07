@@ -98,9 +98,8 @@ const HostelDetails: React.FC = () => {
   const getHostelImages = async (hostelId: number): Promise<HostelImage[]> => {
     try {
       console.log(`Fetching images for hostel ${hostelId}`);
-      const response = await axios.post(
-        `${API_BASE_URL}/display/hostel_pic`,
-        { p_HostelId: hostelId.toString() }
+      const response = await axios.get(
+        `${API_BASE_URL}/display/hostel_pic?p_HostelId=${hostelId}`
       );
       
       console.log(`Images API response for hostel ${hostelId}:`, response.data);
@@ -641,6 +640,11 @@ const HostelDetails: React.FC = () => {
           <button className={styles.btn} onClick={handleWhatsApp}>
             <i className="fa-brands fa-whatsapp"></i> WhatsApp
           </button>
+          <button 
+          className={styles.btn}
+              onClick={() => navigate(`/student/rooms?hostel_id=${hostelId}&user_id=${userId}`)}>
+            <i className="fa-solid fa-door-open"></i> View Rooms
+        </button>
           <button className={styles.btn} onClick={handleGetDirections}>
             <i className="fa-solid fa-map-location-dot"></i> Get Directions
           </button>

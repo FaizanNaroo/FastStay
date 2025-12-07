@@ -4,7 +4,7 @@ import axios from "axios";
 import styles from "../styles/Suggestions.module.css";
 
 interface Hostel {
-  hostel_id: number;
+  p_hostelid: number;
   p_name: string;
   p_blockno: string;
   p_houseno: string;
@@ -21,7 +21,7 @@ interface Hostel {
   available_rooms: number;
   rating: number;
   distance_from_university: number;
-  images?: string[];
+  images?: string;
 }
 
 interface StudentProfile {
@@ -119,7 +119,7 @@ const Suggestions: React.FC = () => {
       );
       
       if (response.data.hostels && Array.isArray(response.data.hostels)) {
-        console.log("Hostels loaded:", response.data.hostels.length);
+        console.log("Hostels loaded:", response.data.hostels);
         return response.data.hostels.slice(0, 3); // Take first 3 for demo
       }
       return [];
@@ -145,20 +145,20 @@ const Suggestions: React.FC = () => {
         hostelsData.map(async (hostel: any) => {
           try {
             // Get images
-            let images: string[] = [];
+            let images: string = '';
             try {
-              const imagesResponse = await axios.post(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_pic`,
-                { p_HostelId: hostel.hostel_id.toString() }
+              const imagesResponse = await axios.get(
+                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostel.p_hostelid}`
               );
               
-              if (imagesResponse.data && imagesResponse.data.p_photolink) {
-                const photoLink = imagesResponse.data.p_photolink;
-                images = [photoLink.startsWith('/') ? `http://127.0.0.1:8000${photoLink}` : photoLink];
+              console.log(`Photos of Hostel ${hostel.p_hostelid}:`, imagesResponse.data[0].p_photolink)
+              if (imagesResponse.data && imagesResponse.data[0].p_photolink) {
+                const photoLink = imagesResponse.data[0].p_photolink;
+                images = photoLink;
               }
             } catch (imgError) {
               // Use default image
-              images = [];
+              images = '';
             }
             
             // Get expenses for rent
@@ -167,7 +167,7 @@ const Suggestions: React.FC = () => {
             try {
               const expensesResponse = await axios.post(
                 `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
-                { p_HostelId: hostel.hostel_id }
+                { p_HostelId: hostel.p_hostelid }
               );
               
               if (expensesResponse.data.result && expensesResponse.data.result.RoomCharges && 
@@ -201,7 +201,7 @@ const Suggestions: React.FC = () => {
               
               if (ratingsResponse.data?.ratings) {
                 const hostelRatings = ratingsResponse.data.ratings.filter(
-                  (r: any) => r.p_hostelid === hostel.hostel_id || r.hostel_id === hostel.hostel_id
+                  (r: any) => r.p_hostelid === hostel.p_hostelid || r.p_hostelid === hostel.p_hostelid
                 );
                 
                 if (hostelRatings.length > 0) {
@@ -223,10 +223,10 @@ const Suggestions: React.FC = () => {
               distance_from_university: hostel.distance_from_university || -1
             };
           } catch (error) {
-            console.error(`Error enhancing hostel ${hostel.hostel_id}:`, error);
+            console.error(`Error enhancing hostel ${hostel.p_hostelid}:`, error);
             return {
               ...hostel,
-              images: [],
+              images: '',
               monthly_rent: -1,
               available_rooms: Math.floor(Math.random() * 21),
               rating: -1,
@@ -471,7 +471,7 @@ const Suggestions: React.FC = () => {
                   const scoreColor = getScoreColor(matchScore);
                   
                   return (
-                    <div key={hostel.hostel_id} className={styles.recommendationCard}>
+                    <div key={hostel.p_hostelid} className={styles.recommendationCard}>
                       <div className={styles.cardHeader}>
                         <div className={styles.rankBadge}>
                           <i className="fa-solid fa-crown"></i> #{index + 1}
@@ -487,7 +487,7 @@ const Suggestions: React.FC = () => {
                       <div className={styles.cardImage}>
                         <img 
                           src={hostel.images && hostel.images.length > 0 
-                            ? hostel.images[0] 
+                            ? hostel.images 
                             : `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`
                           } 
                           alt={hostel.p_name}
@@ -566,7 +566,7 @@ const Suggestions: React.FC = () => {
                         <div className={styles.cardActions}>
                           <button
                             className={styles.viewDetailsBtn}
-                            onClick={() => handleViewHostelDetails(hostel.hostel_id)}
+                            onClick={() => handleViewHostelDetails(hostel.p_hostelid)}
                           >
                             <i className="fa-solid fa-eye"></i> View Details
                           </button>

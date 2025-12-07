@@ -16,8 +16,7 @@ interface Hostel {
   p_messprovide: boolean;      
   p_geezerflag: boolean;       
   p_name: string;
-  hostel_id: number;
-  p_hostelid?: number;         
+  p_hostelid: number;         
   p_managerid?: number;        
   distance_from_university: number;
   rating: number;
@@ -105,18 +104,17 @@ const StudentHome: React.FC = () => {
     hasGeyser: null
   });
 
-  // Helper function to get hostel images from API - CORRECTED for POST
+  // Helper function to get hostel images from API
   const getHostelImages = async (hostelId: number): Promise<string[]> => {
     try {
-      const response = await axios.post(
-        `http://127.0.0.1:8000/faststay_app/display/hostel_pic`,
-        { p_HostelId: hostelId.toString() }
+      const response = await axios.get(
+        `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`
       );
       
       console.log(`Images API response for hostel ${hostelId}:`, response.data);
       
       // Your view returns info_list[0] which is a single object
-      const imageData = response.data;
+      const imageData = response.data[0];
       
       // Handle the single object response
       if (imageData && imageData.p_photolink) {
@@ -146,7 +144,7 @@ const StudentHome: React.FC = () => {
   };
 
   // Helper function to get expenses (for monthly rent) from API
-  const getHostelExpenses = async (hostelId: number): Promise<{monthly_rent: number, available_rooms: number}> => {
+  const getHostelExpenses = async (hostelId: number): Promise<{monthly_rent: number}> => {
     try {
       // Try POST first (as per your initial code)
       const response = await axios.post(
@@ -160,23 +158,19 @@ const StudentHome: React.FC = () => {
           response.data.result.RoomCharges.length > 0) {
         // Use the first room charge as monthly rent
         const monthly_rent = response.data.result.RoomCharges[0];
-        // Mock available rooms calculation
-        const available_rooms = Math.max(1, Math.floor(Math.random() * 10) + 1);
         
-        return { monthly_rent, available_rooms };
+        return { monthly_rent};
       }
       
       // Return -1 for both if no data found
       return { 
         monthly_rent: -1, 
-        available_rooms: Math.floor(Math.random() * 21)
       };
       
     } catch (error: any) {
       console.error(`Failed to fetch expenses for hostel ${hostelId}:`, error.response?.data || error.message);
       return { 
         monthly_rent: -1, 
-        available_rooms: Math.floor(Math.random() * 21)
       };
     }
   };
@@ -229,14 +223,14 @@ const StudentHome: React.FC = () => {
       if (response.data.hostels && Array.isArray(response.data.hostels)) {
         // Process each hostel to add missing data from APIs
         const processedHostels = await Promise.all(
-          response.data.hostels.map(async (hostel: any, index: number) => {
-            const hostelId = hostel.hostel_id || index + 1;
+          response.data.hostels.map(async (hostel: any) => {
+            const hostelId = hostel.p_hostelid;
             
             console.log(`Processing hostel ${hostelId}: ${hostel.p_name}`);
             
             // Fetch additional data from APIs
             let images: string[] = [];
-            let expenses = { monthly_rent: -1, available_rooms: -1 };
+            let expenses = { monthly_rent: -1};
             let rating = -1;
             
             try {
@@ -274,7 +268,7 @@ const StudentHome: React.FC = () => {
               hostel_id: hostelId,
               images: images.length > 0 ? images : [],
               monthly_rent: expenses.monthly_rent,
-              available_rooms: expenses.available_rooms,
+              available_rooms: hostel.p_numrooms,
               rating: rating,
               distance_from_university: distance_from_university
             };
@@ -477,7 +471,7 @@ const StudentHome: React.FC = () => {
                 .slice(0, 5)
                 .map(hostel => (
                   <div 
-                    key={hostel.hostel_id}
+                    key={hostel.p_hostelid}
                     className={styles.suggestionItem}
                     onClick={() => {
                       setSearchQuery(hostel.p_name);
@@ -622,7 +616,7 @@ const StudentHome: React.FC = () => {
           </div>
         ) : (
           filteredHostels.map((hostel) => (
-            <div key={hostel.hostel_id} className={styles.hostelCard}>
+            <div key={hostel.p_hostelid} className={styles.hostelCard}>
               <div className={styles.cardImage}>
                 <img 
                   src={hostel.images && hostel.images.length > 0 
@@ -710,13 +704,13 @@ const StudentHome: React.FC = () => {
                 <div className={styles.cardButtons}>
                   <button
                     className={styles.viewBtn}
-                    onClick={() => handleViewDetails(hostel.hostel_id)}
+                    onClick={() => handleViewDetails(hostel.p_hostelid)}
                   >
                     <i className="fa-solid fa-eye"></i> View Details
                   </button>
                   <button
                     className={styles.ownerBtn}
-                    onClick={() => handleViewOwner(hostel.hostel_id)}
+                    onClick={() => handleViewOwner(hostel.p_hostelid)}
                   >
                     <i className="fa-solid fa-user-tie"></i> View Owner
                   </button>

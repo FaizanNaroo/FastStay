@@ -12,8 +12,8 @@ class RoomPicView(View):
 
     def get(self, request, *args, **kwargs):
         
-        data = json.loads(request.body)
-        hostel_id_str = data.get("p_HostelId")
+        hostel_id_str = request.GET.get("p_HostelId")
+        
         if not hostel_id_str:
             return JsonResponse({'error': 'Missing required query parameter:  p_HostelId'}, status=400)
             
