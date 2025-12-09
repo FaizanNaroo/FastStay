@@ -34,9 +34,8 @@ const StudentProfile: React.FC = () => {
   const navigate = useNavigate();
 
   // Extract user_id from URL query parameter (static for testing)
-  // const queryParams = new URLSearchParams(window.location.search);
-  // const userId = queryParams.get("user_id");
-  const userId = "5";
+  const queryParams = new URLSearchParams(window.location.search);
+  const userId = queryParams.get("user_id");
 
   useEffect(() => {
     const fetchStudent = async () => {
