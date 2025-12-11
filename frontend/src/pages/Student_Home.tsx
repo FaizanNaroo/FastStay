@@ -4,20 +4,20 @@ import axios from "axios";
 import styles from "../styles/StudentHome.module.css";
 
 interface Hostel {
-  p_blockno: string;           
-  p_houseno: string;             
-  p_hosteltype: string;        
+  p_blockno: string;
+  p_houseno: string;
+  p_hosteltype: string;
   p_isparking: boolean;
   p_numrooms: number;
   p_numfloors: number;
   p_watertimings: string;
   p_cleanlinesstenure: number;
-  p_issueresolvingtenure: number; 
-  p_messprovide: boolean;      
-  p_geezerflag: boolean;       
+  p_issueresolvingtenure: number;
+  p_messprovide: boolean;
+  p_geezerflag: boolean;
   p_name: string;
-  p_hostelid: number;         
-  p_managerid?: number;        
+  p_hostelid: number;
+  p_managerid?: number;
   distance_from_university: number;
   rating: number;
   monthly_rent: number;
@@ -45,24 +45,24 @@ const formatValue = (value: number, options?: {
   isDistance?: boolean;
 }): string => {
   if (value === -1) return "N/A";
-  
+
   let displayValue = value;
-  
+
   // Apply decimal places if specified
   if (options?.decimals !== undefined) {
     displayValue = parseFloat(displayValue.toFixed(options.decimals));
   }
-  
+
   // Format as currency if needed
   if (options?.isCurrency) {
     return `${options.prefix || ''}${displayValue.toLocaleString()}${options.suffix || ' PKR'}`;
   }
-  
+
   // Format as distance if needed
   if (options?.isDistance) {
     return `${displayValue.toFixed(1)}${options.suffix || ' km'}`;
   }
-  
+
   // Default formatting
   return `${options?.prefix || ''}${displayValue}${options?.suffix || ''}`;
 };
@@ -86,9 +86,9 @@ const StudentHome: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   const navigate = useNavigate();
-  
+
   // Extract user_id from URL query parameter
   const queryParams = new URLSearchParams(window.location.search);
   const userId = queryParams.get("user_id");
@@ -110,12 +110,12 @@ const StudentHome: React.FC = () => {
       const response = await axios.get(
         `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`
       );
-      
+
       console.log(`Images API response for hostel ${hostelId}:`, response.data);
-      
+
       // Your view returns info_list[0] which is a single object
       const imageData = response.data[0];
-      
+
       // Handle the single object response
       if (imageData && imageData.p_photolink) {
         const photoLink = imageData.p_photolink;
@@ -125,7 +125,7 @@ const StudentHome: React.FC = () => {
         }
         return [photoLink];
       }
-      
+
       // If no image link found
       console.warn(`No p_photolink found for hostel ${hostelId}`);
       return [];
@@ -135,8 +135,8 @@ const StudentHome: React.FC = () => {
         console.log(`No images found for hostel ${hostelId} (expected)`);
         return [];
       }
-      
-      console.error(`Failed to fetch images for hostel ${hostelId}:`, 
+
+      console.error(`Failed to fetch images for hostel ${hostelId}:`,
         error.response?.data || error.message
       );
       return [];
@@ -144,33 +144,33 @@ const StudentHome: React.FC = () => {
   };
 
   // Helper function to get expenses (for monthly rent) from API
-  const getHostelExpenses = async (hostelId: number): Promise<{monthly_rent: number}> => {
+  const getHostelExpenses = async (hostelId: number): Promise<{ monthly_rent: number }> => {
     try {
       // Try POST first (as per your initial code)
       const response = await axios.post(
         `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
         { p_HostelId: hostelId }
       );
-      
+
       console.log(`Expenses response for hostel ${hostelId}:`, response.data);
-      
-      if (response.data.result && response.data.result.RoomCharges && 
-          response.data.result.RoomCharges.length > 0) {
+
+      if (response.data.result && response.data.result.RoomCharges &&
+        response.data.result.RoomCharges.length > 0) {
         // Use the first room charge as monthly rent
         const monthly_rent = response.data.result.RoomCharges[0];
-        
-        return { monthly_rent};
+
+        return { monthly_rent };
       }
-      
+
       // Return -1 for both if no data found
-      return { 
-        monthly_rent: -1, 
+      return {
+        monthly_rent: -1,
       };
-      
+
     } catch (error: any) {
       console.error(`Failed to fetch expenses for hostel ${hostelId}:`, error.response?.data || error.message);
-      return { 
-        monthly_rent: -1, 
+      return {
+        monthly_rent: -1,
       };
     }
   };
@@ -182,28 +182,28 @@ const StudentHome: React.FC = () => {
       const response = await axios.get(
         `http://127.0.0.1:8000/faststay_app/display/hostel_rating`
       );
-      
+
       console.log(`All ratings API response:`, response.data);
-      
+
       // Filter ratings for this specific hostel
       if (response.data && Array.isArray(response.data.ratings)) {
         const hostelRatings = response.data.ratings.filter(
           (rating: any) => rating.p_hostelid === hostelId || rating.hostel_id === hostelId
         );
-        
+
         if (hostelRatings.length > 0) {
-          const total = hostelRatings.reduce((sum: number, rating: any) => 
+          const total = hostelRatings.reduce((sum: number, rating: any) =>
             sum + (rating.p_ratingstar || rating.rating || 0), 0);
           const average = total / hostelRatings.length;
-          
+
           // Round to 1 decimal place
           return parseFloat(average.toFixed(1));
         }
       }
-      
+
       // Return -1 if no ratings found
       return -1;
-      
+
     } catch (error: any) {
       console.error(`Failed to fetch ratings:`, error.response?.data || error.message);
       return -1;
@@ -215,69 +215,72 @@ const StudentHome: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await axios.get(
+      // Fetch basic hostel data
+      const hostelsResponse = await axios.get(
         "http://127.0.0.1:8000/faststay_app/display/all_hostels"
       );
-      
-      console.log("Basic hostel data:", response.data);
-      if (response.data.hostels && Array.isArray(response.data.hostels)) {
-        // Process each hostel to add missing data from APIs
-        const processedHostels = await Promise.all(
-          response.data.hostels.map(async (hostel: any) => {
+
+      console.log("Basic hostel data:", hostelsResponse.data);
+
+      if (hostelsResponse.data.hostels && Array.isArray(hostelsResponse.data.hostels)) {
+        // Show basic data immediately
+        const basicHostels = hostelsResponse.data.hostels.map((hostel: any) => ({
+          ...hostel,
+          hostel_id: hostel.p_hostelid,
+          images: [],
+          monthly_rent: -1,
+          available_rooms: hostel.p_numrooms,
+          rating: -1,
+          distance_from_university: hostel.distance_from_university || -1
+        }));
+
+        setHostels(basicHostels);
+        setFilteredHostels(basicHostels);
+
+        // Fetch additional data in parallel
+        const enhancedHostels = await Promise.all(
+          hostelsResponse.data.hostels.map(async (hostel: any) => {
             const hostelId = hostel.p_hostelid;
-            
-            console.log(`Processing hostel ${hostelId}: ${hostel.p_name}`);
-            
-            // Fetch additional data from APIs
-            let images: string[] = [];
-            let expenses = { monthly_rent: -1};
-            let rating = -1;
-            
+
             try {
-              // Get images
-              images = await getHostelImages(hostelId);
-            } catch (imgError) {
-              console.log(`Image fetch skipped for hostel ${hostelId}`);
+              // Fetch all additional data in parallel for this hostel
+              const [images, expenses, rating] = await Promise.allSettled([
+                getHostelImages(hostelId),
+                getHostelExpenses(hostelId),
+                getHostelRatings(hostelId)
+              ]);
+
+              return {
+                ...hostel,
+                hostel_id: hostelId,
+                images: images.status === 'fulfilled' && images.value.length > 0
+                  ? images.value
+                  : [],
+                monthly_rent: expenses.status === 'fulfilled'
+                  ? expenses.value.monthly_rent
+                  : -1,
+                available_rooms: hostel.p_numrooms,
+                rating: rating.status === 'fulfilled' ? rating.value : -1,
+                distance_from_university: hostel.distance_from_university || -1
+              };
+            } catch (error) {
+              console.error(`Error enhancing hostel ${hostelId}:`, error);
+              return {
+                ...hostel,
+                hostel_id: hostelId,
+                images: [],
+                monthly_rent: -1,
+                available_rooms: hostel.p_numrooms,
+                rating: -1,
+                distance_from_university: hostel.distance_from_university || -1
+              };
             }
-            
-            try {
-              // Get expenses
-              expenses = await getHostelExpenses(hostelId);
-            } catch (expError) {
-              console.log(`Expense fetch skipped for hostel ${hostelId}`);
-            }
-            
-            try {
-              // Get rating
-              rating = await getHostelRatings(hostelId);
-            } catch (ratingError) {
-              console.log(`Rating fetch skipped for hostel ${hostelId}`);
-            }
-            
-            console.log(`Hostel ${hostelId} processed:`, {
-              images: images.length,
-              rent: expenses.monthly_rent,
-              rating: rating
-            });
-            
-            const distance_from_university = hostel.distance_from_university || -1;
-            
-            return {
-              ...hostel,
-              hostel_id: hostelId,
-              images: images.length > 0 ? images : [],
-              monthly_rent: expenses.monthly_rent,
-              available_rooms: hostel.p_numrooms,
-              rating: rating,
-              distance_from_university: distance_from_university
-            };
           })
         );
 
-        console.log("Processed all hostels:", processedHostels);
-        
-        setHostels(processedHostels);
-        setFilteredHostels(processedHostels);
+        console.log("Enhanced hostels:", enhancedHostels);
+        setHostels(enhancedHostels);
+        setFilteredHostels(enhancedHostels);
       } else {
         throw new Error("Invalid response format");
       }
@@ -313,7 +316,7 @@ const StudentHome: React.FC = () => {
     // Max rent filter (skip if rent is -1/N/A)
     if (filters.maxRent) {
       const maxRentValue = parseInt(filters.maxRent);
-      filtered = filtered.filter(hostel => 
+      filtered = filtered.filter(hostel =>
         hostel.monthly_rent !== -1 && hostel.monthly_rent <= maxRentValue
       );
     }
@@ -321,14 +324,14 @@ const StudentHome: React.FC = () => {
     // Distance filter (skip if distance is -1/N/A)
     if (filters.distance) {
       const maxDistance = parseFloat(filters.distance);
-      filtered = filtered.filter(hostel => 
+      filtered = filtered.filter(hostel =>
         hostel.distance_from_university !== -1 && hostel.distance_from_university <= maxDistance
       );
     }
 
     // Hostel type filter
     if (filters.hostelType) {
-      filtered = filtered.filter(hostel => 
+      filtered = filtered.filter(hostel =>
         hostel.p_hosteltype === filters.hostelType
       );
     }
@@ -336,7 +339,7 @@ const StudentHome: React.FC = () => {
     // Rating filter (skip if rating is -1/N/A)
     if (filters.rating) {
       const minRating = parseFloat(filters.rating);
-      filtered = filtered.filter(hostel => 
+      filtered = filtered.filter(hostel =>
         hostel.rating !== -1 && hostel.rating >= minRating
       );
     }
@@ -345,11 +348,11 @@ const StudentHome: React.FC = () => {
     if (filters.hasParking !== null) {
       filtered = filtered.filter(hostel => hostel.p_isparking === filters.hasParking);
     }
-    
+
     if (filters.hasMess !== null) {
       filtered = filtered.filter(hostel => hostel.p_messprovide === filters.hasMess);
     }
-    
+
     if (filters.hasGeyser !== null) {
       filtered = filtered.filter(hostel => hostel.p_geezerflag === filters.hasGeyser);
     }
@@ -440,7 +443,7 @@ const StudentHome: React.FC = () => {
       {/* SEARCH SECTION */}
       <div className={styles.searchSection}>
         <h2>Find the Perfect Hostel</h2>
-        
+
         <form onSubmit={handleSearch} className={styles.searchContainer}>
           <div className={styles.searchBar}>
             <i className="fa-solid fa-magnifying-glass"></i>
@@ -458,18 +461,18 @@ const StudentHome: React.FC = () => {
               Search
             </button>
           </div>
-          
+
           {/* Search suggestions dropdown */}
           {showSuggestions && searchQuery && (
             <div className={styles.suggestionsDropdown}>
               {hostels
-                .filter(hostel => 
+                .filter(hostel =>
                   hostel.p_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   hostel.p_blockno.toLowerCase().includes(searchQuery.toLowerCase())
                 )
                 .slice(0, 5)
                 .map(hostel => (
-                  <div 
+                  <div
                     key={hostel.p_hostelid}
                     className={styles.suggestionItem}
                     onClick={() => {
@@ -605,7 +608,7 @@ const StudentHome: React.FC = () => {
               <button onClick={clearFilters} className={styles.resetBtn}>
                 Clear All Filters
               </button>
-              <button 
+              <button
                 onClick={() => navigate(`/student/suggestions?user_id=${userId}`)}
                 className={styles.suggestionsLinkBtn}
               >
@@ -617,12 +620,12 @@ const StudentHome: React.FC = () => {
           filteredHostels.map((hostel) => (
             <div key={hostel.p_hostelid} className={styles.hostelCard}>
               <div className={styles.cardImage}>
-                <img 
-                  src={hostel.images && hostel.images.length > 0 
-                    ? hostel.images[0] 
+                <img
+                  src={hostel.images && hostel.images.length > 0
+                    ? hostel.images[0]
                     : `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`
-                  } 
-                  alt={hostel.p_name} 
+                  }
+                  alt={hostel.p_name}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
                     target.src = `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`;
@@ -648,7 +651,7 @@ const StudentHome: React.FC = () => {
                   )}
                 </div>
               </div>
-              
+
               <div className={styles.cardContent}>
                 <h3>{hostel.p_name}</h3>
                 <p className={styles.cardAddress}>
@@ -660,7 +663,7 @@ const StudentHome: React.FC = () => {
                     </span>
                   )}
                 </p>
-                
+
                 <div className={styles.cardStats}>
                   <div className={styles.statItem}>
                     <i className="fa-solid fa-money-bill-wave"></i>
@@ -671,7 +674,7 @@ const StudentHome: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className={styles.statItem}>
                     <i className="fa-solid fa-star"></i>
                     <div>
@@ -681,7 +684,7 @@ const StudentHome: React.FC = () => {
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className={styles.statItem}>
                     <i className="fa-solid fa-door-closed"></i>
                     <div>
@@ -722,7 +725,7 @@ const StudentHome: React.FC = () => {
 
       {/* Click outside to close suggestions */}
       {showSuggestions && (
-        <div 
+        <div
           className={styles.overlay}
           onClick={() => setShowSuggestions(false)}
         />
