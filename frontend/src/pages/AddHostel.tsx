@@ -57,14 +57,16 @@ export default function AddHostel() {
         p_IssueResolvingTenure: "",
         p_MessProvide: false,
         p_GeezerFlag: false,
-        p_name: ""
+        p_name: "",
+        p_Latitude: "",
+        p_Longitude: ""
     });
 
-     // Add this useEffect to scroll to top when component mounts or editHostelId changes
-     useEffect(() => {
+    // Add this useEffect to scroll to top when component mounts or editHostelId changes
+    useEffect(() => {
         // Scroll to top immediately when component loads
         window.scrollTo(0, 0);
-        
+
         // Also scroll to top when editHostelId changes (which happens after hostel loads)
         if (editHostelId) {
             // Use setTimeout to ensure DOM is ready
@@ -168,7 +170,9 @@ export default function AddHostel() {
                     p_IssueResolvingTenure: hostel.p_IssueResolvingTenure?.toString() || "",
                     p_MessProvide: hostel.p_MessProvide || false,
                     p_GeezerFlag: hostel.p_GeezerFlag || false,
-                    p_name: hostel.p_name || ""
+                    p_name: hostel.p_name || "",
+                    p_Latitude: hostel.p_Latitude?.toString() || "",
+                    p_Longitude: hostel.p_Longitude?.toString() || ""
                 }));
 
                 setActiveSection("basic");
@@ -258,7 +262,9 @@ export default function AddHostel() {
             p_IssueResolvingTenure: "",
             p_MessProvide: false,
             p_GeezerFlag: false,
-            p_name: ""
+            p_name: "",
+            p_Latitude: "",
+            p_Longitude: ""
         });
     }
 
@@ -281,6 +287,8 @@ export default function AddHostel() {
                 p_WaterTimings: parseInt(form.p_WaterTimings) || 0,
                 p_CleanlinessTenure: parseInt(form.p_CleanlinessTenure) || 0,
                 p_IssueResolvingTenure: parseInt(form.p_IssueResolvingTenure) || 0,
+                p_Latitude: parseFloat(form.p_Latitude),
+                p_Longitude: parseFloat(form.p_Longitude),
             };
 
             const res = await fetch(url, {
@@ -305,7 +313,7 @@ export default function AddHostel() {
                     // Clear edit_hostel parameter for new hostels
                     const newUrl = window.location.pathname + `?user_id=${managerId}&hostel_id=${data.hostelid}`;
                     window.history.replaceState({}, '', newUrl);
-                } 
+                }
                 else if (editingMode && selectedHostelId) {
                     // Refresh hostel details
                     fetchHostelDetails(selectedHostelId);
@@ -533,12 +541,12 @@ export default function AddHostel() {
                     {/* Message Display */}
                     {message && (
                         <div className={`${styles.message} ${message.includes("Successfully") ||
-                                message.includes("successfully") ||
-                                message.includes("Added") ||
-                                message.includes("Updated") ||
-                                message.includes("success")
-                                ? styles.success
-                                : styles.error
+                            message.includes("successfully") ||
+                            message.includes("Added") ||
+                            message.includes("Updated") ||
+                            message.includes("success")
+                            ? styles.success
+                            : styles.error
                             }`}>
                             {message}
                         </div>

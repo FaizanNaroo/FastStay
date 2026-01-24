@@ -228,7 +228,7 @@ export default function KitchenDetailsSection({
                     </button>
 
                     {message && (
-                        <p className={`${styles.message} ${message.includes("Successfully") ? styles.success : styles.error
+                        <p className={`${styles.message} ${message.includes("Successfuly") ? styles.success : styles.error
                             }`}>
                             {message}
                         </p>

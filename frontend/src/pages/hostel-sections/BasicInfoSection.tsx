@@ -1,6 +1,7 @@
 // src/components/hostel-sections/BasicInfoSection.tsx
 import React from 'react';
 import styles from "../../styles/AddHostel.module.css";
+import MapPicker from '../MapPicker';
 
 interface BasicInfoSectionProps {
     form: {
@@ -18,6 +19,8 @@ interface BasicInfoSectionProps {
         p_MessProvide: boolean;
         p_GeezerFlag: boolean;
         p_name: string;
+        p_Latitude: string;
+        p_Longitude: string;
     };
     handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
     handleSubmit: (e: React.FormEvent) => void;
@@ -35,18 +38,17 @@ export default function BasicInfoSection({
     handleSubmit,
     message,
     editingMode,
-    selectedHostelId,
     hostelId,
     hostelPics,
     onFileChange
 }: BasicInfoSectionProps) {
-    
+
     return (
         <div className={styles.card} id="basic">
             <div className={styles.cardHead}>
                 <h3>Basic Information</h3>
             </div>
-            
+
             <form onSubmit={handleSubmit} className={styles.sectionForm}>
                 <div className={styles.row}>
                     <div className={styles.inputGroup}>
@@ -242,26 +244,58 @@ export default function BasicInfoSection({
                     </div>
                 )}
 
-                <button 
-                    className={styles.btn} 
+                <div className={styles.row}>
+                    <div className={styles.inputGroup}>
+                        <label>Hostel Location *</label>
+
+                        <MapPicker
+                            lat={form.p_Latitude ? parseFloat(form.p_Latitude) : null}
+                            lng={form.p_Longitude ? parseFloat(form.p_Longitude) : null}
+                            onSelect={(lat, lng) => {
+                                handleChange({
+                                    target: {
+                                        name: "p_Latitude",
+                                        value: lat.toFixed(6)
+                                    }
+                                } as any);
+
+                                handleChange({
+                                    target: {
+                                        name: "p_Longitude",
+                                        value: lng.toFixed(6)
+                                    }
+                                } as any);
+                            }}
+
+                        />
+
+                        <p style={{ fontSize: "12px" }}>
+                            Click on map to select hostel location
+                        </p>
+                    </div>
+                </div>
+
+                <button
+                    className={styles.btn}
                     type="submit"
+                    disabled={!form.p_Latitude || !form.p_Longitude}
                 >
                     {editingMode ? "Update Hostel" : "Save Hostel"}
                 </button>
 
                 {message && (
-                    <div className={`${styles.message} ${
-                        message.includes("Successfully") || 
-                        message.includes("successfully") || 
-                        message.includes("Added") || 
+                    <div className={`${styles.message} ${message.includes("Successfully") ||
+                        message.includes("successfully") ||
+                        message.includes("Added") ||
                         message.includes("Updated") ||
                         message.includes("success")
-                            ? styles.success 
-                            : styles.error
-                    }`}>
+                        ? styles.success
+                        : styles.error
+                        }`}>
                         {message}
                     </div>
                 )}
+
             </form>
         </div>
     );

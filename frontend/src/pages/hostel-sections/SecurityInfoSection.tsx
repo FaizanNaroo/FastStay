@@ -260,7 +260,7 @@ export default function SecurityInfoSection({
 
                     {message && (
                         <p className={`${styles.message} ${
-                            message.includes("Successfully") ? styles.success : styles.error
+                            message.includes("successfully") ? styles.success : styles.error
                         }`}>
                             {message}
                         </p>

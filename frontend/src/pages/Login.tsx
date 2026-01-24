@@ -1,12 +1,38 @@
 import { useState } from "react";
 import axios from "axios";
 import styles from "../styles/Login.module.css";
+import { useGoogleLogin } from "@react-oauth/google";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        const userInfo = await axios.get(
+          "https://www.googleapis.com/oauth2/v3/userinfo",
+          {
+            headers: {
+              Authorization: `Bearer ${tokenResponse.access_token}`,
+            },
+          }
+        );
+  
+        // Autofill email field
+        setEmail(userInfo.data.email);
+        document.querySelector<HTMLInputElement>('input[type="password"]')?.focus();
+  
+      } catch (err) {
+        alert("Failed to fetch Google account info");
+      }
+    },
+    onError: () => {
+      alert("Google Login Failed");
+    },
+  });  
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,10 +105,11 @@ const Login: React.FC = () => {
             <button
               className={styles.googleBtn}
               type="button"
-              onClick={() => alert("Google login coming soon")}
+              onClick={() => googleLogin()}
             >
               <i className="fa-brands fa-google"></i> Login with Google
             </button>
+
 
             <p className={styles.bottomText}>
               Don’t have an account?
