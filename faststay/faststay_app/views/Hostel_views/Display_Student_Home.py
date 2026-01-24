@@ -1,14 +1,13 @@
 from django.http import JsonResponse
 from django.views import View
-from faststay_app.services.display_service.detail_all_hostels import DetailAllHostels
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
+from faststay_app.services.display_service.display_student_home import DetailStudentHome
 
 @method_decorator(csrf_exempt, name='dispatch')
-class DisplayAllHostelsView(View):
+class DisplayStudentHomeView(View):
     def get(self, request, *args, **kwargs):
-        hostel_service =  DetailAllHostels()
+        hostel_service =  DetailStudentHome()
         try:
             hostels_list = hostel_service.detail_all_hostels()
 

@@ -24,6 +24,11 @@ interface Hostel {
   available_rooms: number;
   images?: string[];
   location?: string;
+  p_latitude: number;
+  p_longitude: number;
+  p_photolinks?: string;
+  p_ratingstar?: number;
+  p_roomcharges?: number[];
 }
 
 interface FilterState {
@@ -35,6 +40,20 @@ interface FilterState {
   hasMess: boolean | null;
   hasGeyser: boolean | null;
 }
+
+// Helper function to calculate distance between two coordinates (Haversine formula)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = 
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.sin(dLon/2) * Math.sin(dLon/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const distance = R * c;
+  return parseFloat(distance.toFixed(2)); // Return distance in km with 2 decimal places
+};
 
 // Helper function to display values with N/A for -1
 const formatValue = (value: number, options?: {
@@ -89,6 +108,10 @@ const StudentHome: React.FC = () => {
 
   const navigate = useNavigate();
 
+  // University coordinates (Fast Lahore)
+  const UNIVERSITY_LAT = 31.48104;
+  const UNIVERSITY_LNG = 74.303449;
+
   // Extract user_id from URL query parameter
   const queryParams = new URLSearchParams(window.location.search);
   const userId = queryParams.get("user_id");
@@ -104,183 +127,102 @@ const StudentHome: React.FC = () => {
     hasGeyser: null
   });
 
-  // Helper function to get hostel images from API
-  const getHostelImages = async (hostelId: number): Promise<string[]> => {
-    try {
-      const response = await axios.get(
-        `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`
+  // Process hostel data from the combined API response
+  const processHostelData = (hostelData: any): Hostel => {
+    const hostelId = hostelData.p_hostelid;
+    
+    // Calculate distance from university if coordinates are available
+    let distance = -1;
+    if (hostelData.p_latitude && hostelData.p_longitude) {
+      distance = calculateDistance(
+        UNIVERSITY_LAT,
+        UNIVERSITY_LNG,
+        parseFloat(hostelData.p_latitude),
+        parseFloat(hostelData.p_longitude)
       );
-
-      console.log(`Images API response for hostel ${hostelId}:`, response.data);
-
-      // Your view returns info_list[0] which is a single object
-      const imageData = response.data[0];
-
-      // Handle the single object response
-      if (imageData && imageData.p_photolink) {
-        const photoLink = imageData.p_photolink;
-        // Check if it's a relative path and prepend base URL if needed
-        if (photoLink && photoLink.startsWith('/')) {
-          return [`http://127.0.0.1:8000${photoLink}`];
-        }
-        return [photoLink];
-      }
-
-      // If no image link found
-      console.warn(`No p_photolink found for hostel ${hostelId}`);
-      return [];
-    } catch (error: any) {
-      // Check if it's a 404 (no image for this hostel)
-      if (error.response?.status === 404) {
-        console.log(`No images found for hostel ${hostelId} (expected)`);
-        return [];
-      }
-
-      console.error(`Failed to fetch images for hostel ${hostelId}:`,
-        error.response?.data || error.message
-      );
-      return [];
     }
+
+    // Parse photo links (assuming it's a string that can be split)
+    let images: string[] = [];
+    if (hostelData.p_photolinks) {
+      // If it's a string, split by comma or handle as single URL
+      if (typeof hostelData.p_photolinks === 'string') {
+        const links = hostelData.p_photolinks.split(',');
+        images = links
+          .map((link: string) => link.trim())
+          .filter((link: string) => link.length > 0)
+          .map((link: string) => {
+            // Check if it's a relative path
+            if (link.startsWith('/')) {
+              return `http://127.0.0.1:8000${link}`;
+            }
+            return link;
+          });
+      }
+    }
+
+    // Calculate average rating
+    let rating = -1;
+    if (hostelData.p_ratingstar) {
+      rating = parseFloat(hostelData.p_ratingstar.toFixed(1));
+    }
+
+    // Get monthly rent from room charges array
+    let monthly_rent = -1;
+    if (hostelData.p_roomcharges && Array.isArray(hostelData.p_roomcharges) && hostelData.p_roomcharges.length > 0) {
+      // Use the first room charge or calculate average
+      monthly_rent = hostelData.p_roomcharges[0];
+    }
+
+    return {
+      p_blockno: hostelData.p_blockno || "",
+      p_houseno: hostelData.p_houseno || "",
+      p_hosteltype: hostelData.p_hosteltype || "",
+      p_isparking: hostelData.p_isparking || false,
+      p_numrooms: hostelData.p_numrooms || 0,
+      p_numfloors: hostelData.p_numfloors || 0,
+      p_watertimings: hostelData.p_watertimings?.toString() || "",
+      p_cleanlinesstenure: hostelData.p_cleanlinesstenure || 0,
+      p_issueresolvingtenure: hostelData.p_issueresolvingtenure || 0,
+      p_messprovide: hostelData.p_messprovide || false,
+      p_geezerflag: hostelData.p_geezerflag || false,
+      p_name: hostelData.p_name || "",
+      p_hostelid: hostelId,
+      p_managerid: hostelData.p_managerid,
+      distance_from_university: distance,
+      rating: rating,
+      monthly_rent: monthly_rent,
+      available_rooms: hostelData.p_numrooms || 0, // Assuming all rooms are available initially
+      images: images,
+      p_latitude: hostelData.p_latitude,
+      p_longitude: hostelData.p_longitude,
+      p_photolinks: hostelData.p_photolinks,
+      p_ratingstar: hostelData.p_ratingstar,
+      p_roomcharges: hostelData.p_roomcharges
+    };
   };
 
-  // Helper function to get expenses (for monthly rent) from API
-  const getHostelExpenses = async (hostelId: number): Promise<{ monthly_rent: number }> => {
-    try {
-      // Try POST first (as per your initial code)
-      const response = await axios.post(
-        `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
-        { p_HostelId: hostelId }
-      );
-
-      console.log(`Expenses response for hostel ${hostelId}:`, response.data);
-
-      if (response.data.result && response.data.result.RoomCharges &&
-        response.data.result.RoomCharges.length > 0) {
-        // Use the first room charge as monthly rent
-        const monthly_rent = response.data.result.RoomCharges[0];
-
-        return { monthly_rent };
-      }
-
-      // Return -1 for both if no data found
-      return {
-        monthly_rent: -1,
-      };
-
-    } catch (error: any) {
-      console.error(`Failed to fetch expenses for hostel ${hostelId}:`, error.response?.data || error.message);
-      return {
-        monthly_rent: -1,
-      };
-    }
-  };
-
-  // Helper function to get ratings from API - CORRECTED for GET
-  const getHostelRatings = async (hostelId: number): Promise<number> => {
-    try {
-      // You said this is a GET request that returns all ratings
-      const response = await axios.get(
-        `http://127.0.0.1:8000/faststay_app/display/hostel_rating`
-      );
-
-      console.log(`All ratings API response:`, response.data);
-
-      // Filter ratings for this specific hostel
-      if (response.data && Array.isArray(response.data.ratings)) {
-        const hostelRatings = response.data.ratings.filter(
-          (rating: any) => rating.p_hostelid === hostelId || rating.hostel_id === hostelId
-        );
-
-        if (hostelRatings.length > 0) {
-          const total = hostelRatings.reduce((sum: number, rating: any) =>
-            sum + (rating.p_ratingstar || rating.rating || 0), 0);
-          const average = total / hostelRatings.length;
-
-          // Round to 1 decimal place
-          return parseFloat(average.toFixed(1));
-        }
-      }
-
-      // Return -1 if no ratings found
-      return -1;
-
-    } catch (error: any) {
-      console.error(`Failed to fetch ratings:`, error.response?.data || error.message);
-      return -1;
-    }
-  };
-
-  // Fetch hostels from backend
+  // Fetch all hostels from the combined API endpoint
   const fetchAllHostels = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Fetch basic hostel data
-      const hostelsResponse = await axios.get(
-        "http://127.0.0.1:8000/faststay_app/display/all_hostels"
+      // Single API call to get all hostel data
+      const response = await axios.get(
+        "http://127.0.0.1:8000/faststay_app/display/StudentHome"
       );
 
-      console.log("Basic hostel data:", hostelsResponse.data);
+      console.log("Combined hostel data:", response.data);
 
-      if (hostelsResponse.data.hostels && Array.isArray(hostelsResponse.data.hostels)) {
-        // Show basic data immediately
-        const basicHostels = hostelsResponse.data.hostels.map((hostel: any) => ({
-          ...hostel,
-          hostel_id: hostel.p_hostelid,
-          images: [],
-          monthly_rent: -1,
-          available_rooms: hostel.p_numrooms,
-          rating: -1,
-          distance_from_university: hostel.distance_from_university || -1
-        }));
-
-        setHostels(basicHostels);
-        setFilteredHostels(basicHostels);
-
-        // Fetch additional data in parallel
-        const enhancedHostels = await Promise.all(
-          hostelsResponse.data.hostels.map(async (hostel: any) => {
-            const hostelId = hostel.p_hostelid;
-
-            try {
-              // Fetch all additional data in parallel for this hostel
-              const [images, expenses, rating] = await Promise.allSettled([
-                getHostelImages(hostelId),
-                getHostelExpenses(hostelId),
-                getHostelRatings(hostelId)
-              ]);
-
-              return {
-                ...hostel,
-                hostel_id: hostelId,
-                images: images.status === 'fulfilled' && images.value.length > 0
-                  ? images.value
-                  : [],
-                monthly_rent: expenses.status === 'fulfilled'
-                  ? expenses.value.monthly_rent
-                  : -1,
-                available_rooms: hostel.p_numrooms,
-                rating: rating.status === 'fulfilled' ? rating.value : -1,
-                distance_from_university: hostel.distance_from_university || -1
-              };
-            } catch (error) {
-              console.error(`Error enhancing hostel ${hostelId}:`, error);
-              return {
-                ...hostel,
-                hostel_id: hostelId,
-                images: [],
-                monthly_rent: -1,
-                available_rooms: hostel.p_numrooms,
-                rating: -1,
-                distance_from_university: hostel.distance_from_university || -1
-              };
-            }
-          })
+      if (response.data.hostels && Array.isArray(response.data.hostels)) {
+        // Process each hostel's data
+        const processedHostels = response.data.hostels.map((hostel: any) => 
+          processHostelData(hostel)
         );
 
-        console.log("Enhanced hostels:", enhancedHostels);
-        setHostels(enhancedHostels);
-        setFilteredHostels(enhancedHostels);
+        console.log("Processed hostels:", processedHostels);
+        setHostels(processedHostels);
+        setFilteredHostels(processedHostels);
       } else {
         throw new Error("Invalid response format");
       }
