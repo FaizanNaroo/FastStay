@@ -495,7 +495,7 @@ const StudentHome: React.FC = () => {
                   checked={filters.hasParking === true}
                   onChange={(e) => handleFilterChange('hasParking', e.target.checked ? true : null)}
                 />
-                <span> Parking Available</span>
+                <span style={{position: 'relative', bottom: '4px'}}> Parking Available </span>
               </label>
             </div>
 
@@ -506,7 +506,7 @@ const StudentHome: React.FC = () => {
                   checked={filters.hasMess === true}
                   onChange={(e) => handleFilterChange('hasMess', e.target.checked ? true : null)}
                 />
-                <span> Mess Provided</span>
+                <span style={{position: 'relative', bottom: '4px'}}> Mess Provided</span>
               </label>
             </div>
 
@@ -517,12 +517,12 @@ const StudentHome: React.FC = () => {
                   checked={filters.hasGeyser === true}
                   onChange={(e) => handleFilterChange('hasGeyser', e.target.checked ? true : null)}
                 />
-                <span> Geyser Available</span>
+                <span style={{position: 'relative', bottom: '4px'}}> Geyser Available</span>
               </label>
             </div>
 
             <div className={styles.filterGroup}>
-              <button onClick={clearFilters} className={styles.clearBtn}>
+              <button style={{position: 'relative', bottom: '20px'}} onClick={clearFilters} className={styles.clearBtn}>
                 <i className="fa-solid fa-times"></i> Clear All Filters
               </button>
             </div>
