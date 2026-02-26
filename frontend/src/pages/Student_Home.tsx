@@ -41,9 +41,8 @@ interface FilterState {
   hasGeyser: boolean | null;
 }
 
-// Helper function to calculate distance between two coordinates (Haversine formula)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-  const R = 6371; // Earth's radius in kilometers
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = 
@@ -52,10 +51,9 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   const distance = R * c;
-  return parseFloat(distance.toFixed(2)); // Return distance in km with 2 decimal places
+  return parseFloat(distance.toFixed(2));
 };
 
-// Helper function to display values with N/A for -1
 const formatValue = (value: number, options?: {
   prefix?: string;
   suffix?: string;
@@ -64,35 +62,24 @@ const formatValue = (value: number, options?: {
   isDistance?: boolean;
 }): string => {
   if (value === -1) return "N/A";
-
   let displayValue = value;
-
-  // Apply decimal places if specified
   if (options?.decimals !== undefined) {
     displayValue = parseFloat(displayValue.toFixed(options.decimals));
   }
-
-  // Format as currency if needed
   if (options?.isCurrency) {
     return `${options.prefix || ''}${displayValue.toLocaleString()}${options.suffix || ' PKR'}`;
   }
-
-  // Format as distance if needed
   if (options?.isDistance) {
     return `${displayValue.toFixed(1)}${options.suffix || ' km'}`;
   }
-
-  // Default formatting
   return `${options?.prefix || ''}${displayValue}${options?.suffix || ''}`;
 };
 
-// Helper for ratings specifically
 const formatRating = (rating: number): string => {
   if (rating === -1) return "N/A";
   return `${rating.toFixed(1)}/5.0`;
 };
 
-// Helper for rooms specifically
 const formatRooms = (rooms: number): string => {
   if (rooms === -1) return "N/A";
   return `${rooms}`;
@@ -108,15 +95,12 @@ const StudentHome: React.FC = () => {
 
   const navigate = useNavigate();
 
-  // University coordinates (Fast Lahore)
   const UNIVERSITY_LAT = 31.48104;
   const UNIVERSITY_LNG = 74.303449;
 
-  // Extract user_id from URL query parameter
   const queryParams = new URLSearchParams(window.location.search);
   const userId = queryParams.get("user_id");
 
-  // Filter states
   const [filters, setFilters] = useState<FilterState>({
     maxRent: "",
     distance: "",
@@ -127,11 +111,9 @@ const StudentHome: React.FC = () => {
     hasGeyser: null
   });
 
-  // Process hostel data from the combined API response
   const processHostelData = (hostelData: any): Hostel => {
     const hostelId = hostelData.p_hostelid;
     
-    // Calculate distance from university if coordinates are available
     let distance = -1;
     if (hostelData.p_latitude && hostelData.p_longitude) {
       distance = calculateDistance(
@@ -142,17 +124,14 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Parse photo links (assuming it's a string that can be split)
     let images: string[] = [];
     if (hostelData.p_photolinks) {
-      // If it's a string, split by comma or handle as single URL
       if (typeof hostelData.p_photolinks === 'string') {
         const links = hostelData.p_photolinks.split(',');
         images = links
           .map((link: string) => link.trim())
           .filter((link: string) => link.length > 0)
           .map((link: string) => {
-            // Check if it's a relative path
             if (link.startsWith('/')) {
               return `http://127.0.0.1:8000${link}`;
             }
@@ -161,16 +140,13 @@ const StudentHome: React.FC = () => {
       }
     }
 
-    // Calculate average rating
     let rating = -1;
     if (hostelData.p_ratingstar) {
       rating = parseFloat(hostelData.p_ratingstar.toFixed(1));
     }
 
-    // Get monthly rent from room charges array
     let monthly_rent = -1;
     if (hostelData.p_roomcharges && Array.isArray(hostelData.p_roomcharges) && hostelData.p_roomcharges.length > 0) {
-      // Use the first room charge or calculate average
       monthly_rent = hostelData.p_roomcharges[0];
     }
 
@@ -192,7 +168,7 @@ const StudentHome: React.FC = () => {
       distance_from_university: distance,
       rating: rating,
       monthly_rent: monthly_rent,
-      available_rooms: hostelData.p_numrooms || 0, // Assuming all rooms are available initially
+      available_rooms: hostelData.p_numrooms || 0,
       images: images,
       p_latitude: hostelData.p_latitude,
       p_longitude: hostelData.p_longitude,
@@ -202,25 +178,18 @@ const StudentHome: React.FC = () => {
     };
   };
 
-  // Fetch all hostels from the combined API endpoint
   const fetchAllHostels = async () => {
     setLoading(true);
     setError(null);
     try {
-      // Single API call to get all hostel data
       const response = await axios.get(
         "http://127.0.0.1:8000/faststay_app/display/StudentHome"
       );
 
-      console.log("Combined hostel data:", response.data);
-
       if (response.data.hostels && Array.isArray(response.data.hostels)) {
-        // Process each hostel's data
         const processedHostels = response.data.hostels.map((hostel: any) => 
           processHostelData(hostel)
         );
-
-        console.log("Processed hostels:", processedHostels);
         setHostels(processedHostels);
         setFilteredHostels(processedHostels);
       } else {
@@ -245,7 +214,6 @@ const StudentHome: React.FC = () => {
   const applyFilters = () => {
     let filtered = [...hostels];
 
-    // Search filter
     if (searchQuery && searchQuery.trim()) {
       filtered = filtered.filter(hostel =>
         hostel.p_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -255,7 +223,6 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Max rent filter (skip if rent is -1/N/A)
     if (filters.maxRent) {
       const maxRentValue = parseInt(filters.maxRent);
       filtered = filtered.filter(hostel =>
@@ -263,7 +230,6 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Distance filter (skip if distance is -1/N/A)
     if (filters.distance) {
       const maxDistance = parseFloat(filters.distance);
       filtered = filtered.filter(hostel =>
@@ -271,14 +237,12 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Hostel type filter
     if (filters.hostelType) {
       filtered = filtered.filter(hostel =>
         hostel.p_hosteltype === filters.hostelType
       );
     }
 
-    // Rating filter (skip if rating is -1/N/A)
     if (filters.rating) {
       const minRating = parseFloat(filters.rating);
       filtered = filtered.filter(hostel =>
@@ -286,7 +250,6 @@ const StudentHome: React.FC = () => {
       );
     }
 
-    // Boolean filters
     if (filters.hasParking !== null) {
       filtered = filtered.filter(hostel => hostel.p_isparking === filters.hasParking);
     }
@@ -335,18 +298,8 @@ const StudentHome: React.FC = () => {
     navigate(`/student/ownerDetails?id=${hostelId}&user_id=${userId}`);
   };
 
-  // Render loading state
-  if (loading) {
-    return (
-      <div className={styles.loadingContainer}>
-        <div className={styles.spinner}></div>
-        <p>Loading hostels...</p>
-      </div>
-    );
-  }
-
-  // Render error state
-  if (error && hostels.length === 0) {
+  // Render error state (only if no hostels loaded at all)
+  if (error && hostels.length === 0 && !loading) {
     return (
       <div className={styles.errorContainer}>
         <i className="fa-solid fa-exclamation-circle"></i>
@@ -404,7 +357,6 @@ const StudentHome: React.FC = () => {
             </button>
           </div>
 
-          {/* Search suggestions dropdown */}
           {showSuggestions && searchQuery && (
             <div className={styles.suggestionsDropdown}>
               {hostels
@@ -541,7 +493,12 @@ const StudentHome: React.FC = () => {
 
       {/* HOSTEL GRID */}
       <div className={styles.hostelGrid}>
-        {filteredHostels.length === 0 ? (
+        {loading ? (
+          <div className={styles.loadingGrid}>
+            <div className={styles.spinner}></div>
+            <p>Loading hostels...</p>
+          </div>
+        ) : filteredHostels.length === 0 ? (
           <div className={styles.noResults}>
             <i className="fa-solid fa-search"></i>
             <h3>No hostels found</h3>
@@ -665,7 +622,6 @@ const StudentHome: React.FC = () => {
         )}
       </div>
 
-      {/* Click outside to close suggestions */}
       {showSuggestions && (
         <div
           className={styles.overlay}

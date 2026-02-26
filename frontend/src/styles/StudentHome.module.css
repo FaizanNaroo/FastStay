@@ -51,6 +51,30 @@
   100% { transform: rotate(360deg); }
 }
 
+/* Loading Grid - for inline loading spinner */
+.loadingGrid {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+}
+
+.loadingGrid .spinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid #f8f3e7;
+  border-top: 5px solid #8d5f3a;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+.loadingGrid p {
+  color: #f8f3e7;
+}
+
 /* === NAVBAR === */
 .navbar {
   padding: 3vh 2vw;
@@ -145,6 +169,7 @@
   color: #3b2c24;
   padding: 5px 0;
   font-family: "Poppins", sans-serif;
+  text-align: left;
 }
 
 .searchBar input::placeholder {
@@ -212,6 +237,7 @@
 .suggestionItem div {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
 .suggestionItem strong {

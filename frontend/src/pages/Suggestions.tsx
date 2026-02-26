@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "../styles/Suggestions.module.css";
@@ -36,7 +36,29 @@ interface StudentProfile {
   p_WashroomType: string;
 }
 
-// Helper function to display values with N/A for -1
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCached = <T,>(key: string): T | null => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) {
+      sessionStorage.removeItem(key);
+      return null;
+    }
+    return data as T;
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (key: string, data: any) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  } catch { /* storage full, ignore */ }
+};
+
 const formatValue = (value: number, options?: {
   prefix?: string;
   suffix?: string;
@@ -45,39 +67,44 @@ const formatValue = (value: number, options?: {
   isDistance?: boolean;
 }): string => {
   if (value === -1) return "N/A";
-  
   let displayValue = value;
-  
-  // Apply decimal places if specified
   if (options?.decimals !== undefined) {
     displayValue = parseFloat(displayValue.toFixed(options.decimals));
   }
-  
-  // Format as currency if needed
   if (options?.isCurrency) {
     return `${options.prefix || ''}${displayValue.toLocaleString()}${options.suffix || ' PKR'}`;
   }
-  
-  // Format as distance if needed
   if (options?.isDistance) {
     return `${displayValue.toFixed(1)}${options.suffix || ' km'}`;
   }
-  
-  // Default formatting
   return `${options?.prefix || ''}${displayValue}${options?.suffix || ''}`;
 };
 
-// Helper for ratings specifically
 const formatRating = (rating: number): string => {
   if (rating === -1) return "N/A";
   return `${rating.toFixed(1)}/5.0`;
 };
 
-// Helper for rooms specifically
 const formatRooms = (rooms: number): string => {
   if (rooms === -1) return "N/A";
   return `${rooms}`;
 };
+
+const SkeletonCards: React.FC = () => (
+  <div className={styles.skeletonGrid}>
+    {[0, 1, 2].map((i) => (
+      <div key={i} className={styles.skeletonCard}>
+        <div className={styles.skeletonImage} />
+        <div className={styles.skeletonContent}>
+          <div className={styles.skeletonLine} />
+          <div className={styles.skeletonLine} />
+          <div className={styles.skeletonLine} />
+          <div className={styles.skeletonLine} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
 
 const Suggestions: React.FC = () => {
   const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
@@ -89,167 +116,126 @@ const Suggestions: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [recommendations, setRecommendations] = useState<Hostel[]>([]);
   const [profile, setProfile] = useState<StudentProfile | null>(null);
-  
-  const queryParams = new URLSearchParams(window.location.search);
+
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const userId = queryParams.get("user_id") || '';
   const navigate = useNavigate();
 
-  const fetchStudentProfile = async (): Promise<StudentProfile | null> => {
-    try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/faststay_app/UserDetail/display/",
-        { p_StudentId: parseInt(userId) }
-      );
-      
-      if (response.data.success) {
-        console.log("Student profile loaded:", response.data.result);
-        return response.data.result;
-      }
-      return null;
-    } catch (error) {
-      console.error("Failed to fetch student profile:", error);
-      return null;
-    }
-  };
-
-  const fetchAllHostels = async (): Promise<Hostel[]> => {
-    try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/faststay_app/display/all_hostels"
-      );
-      
-      if (response.data.hostels && Array.isArray(response.data.hostels)) {
-        console.log("Hostels loaded:", response.data.hostels);
-        return response.data.hostels.slice(0, 3); // Take first 3 for demo
-      }
-      return [];
-    } catch (error) {
-      console.error("Failed to fetch hostels:", error);
-      return [];
-    }
-  };
-
-  const generateRecommendations = async () => {
-    setLoading(true);
-    
-    try {
-      const [profileData, hostelsData] = await Promise.all([
-        fetchStudentProfile(),
-        fetchAllHostels()
-      ]);
-
-      setProfile(profileData);
-      
-      // Enhance hostels with additional data
-      const enhancedHostels = await Promise.all(
-        hostelsData.map(async (hostel: any) => {
-          try {
-            // Get images
-            let images: string = '';
-            try {
-              const imagesResponse = await axios.get(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostel.p_hostelid}`
-              );
-              
-              console.log(`Photos of Hostel ${hostel.p_hostelid}:`, imagesResponse.data[0].p_photolink)
-              if (imagesResponse.data && imagesResponse.data[0].p_photolink) {
-                const photoLink = imagesResponse.data[0].p_photolink;
-                images = photoLink;
-              }
-            } catch (imgError) {
-              // Use default image
-              images = '';
-            }
-            
-            // Get expenses for rent
-            let monthly_rent = -1;
-            let available_rooms = -1;
-            try {
-              const expensesResponse = await axios.post(
-                `http://127.0.0.1:8000/faststay_app/Expenses/display/`,
-                { p_HostelId: hostel.p_hostelid }
-              );
-              
-              if (expensesResponse.data.result && expensesResponse.data.result.RoomCharges && 
-                  expensesResponse.data.result.RoomCharges.length > 0) {
-                monthly_rent = expensesResponse.data.result.RoomCharges[0];
-                
-                // Generate random available rooms: 30% chance of N/A (-1), else random 0-20
-                const randomValue = Math.random();
-                if (randomValue < 0.3) {
-                  // 30% chance: N/A
-                  available_rooms = -1;
-                } else {
-                  // 70% chance: Random number 0-20
-                  available_rooms = Math.floor(Math.random() * 21);
-                }
-              } else {
-                // Default mock data for available rooms
-                available_rooms = Math.floor(Math.random() * 21);
-              }
-            } catch (expError) {
-              // Default mock data for available rooms
-              available_rooms = Math.floor(Math.random() * 21);
-            }
-            
-            // Get rating
-            let rating = -1;
-            try {
-              const ratingsResponse = await axios.get(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_rating`
-              );
-              
-              if (ratingsResponse.data?.ratings) {
-                const hostelRatings = ratingsResponse.data.ratings.filter(
-                  (r: any) => r.p_hostelid === hostel.p_hostelid || r.p_hostelid === hostel.p_hostelid
-                );
-                
-                if (hostelRatings.length > 0) {
-                  const total = hostelRatings.reduce((sum: number, r: any) => 
-                    sum + (r.p_ratingstar || r.rating || 0), 0);
-                  rating = parseFloat((total / hostelRatings.length).toFixed(1));
-                }
-              }
-            } catch (ratingError) {
-              // Keep as -1
-            }
-            
-            return {
-              ...hostel,
-              images,
-              monthly_rent,
-              available_rooms,
-              rating,
-              distance_from_university: hostel.distance_from_university || -1
-            };
-          } catch (error) {
-            console.error(`Error enhancing hostel ${hostel.p_hostelid}:`, error);
-            return {
-              ...hostel,
-              images: '',
-              monthly_rent: -1,
-              available_rooms: Math.floor(Math.random() * 21),
-              rating: -1,
-              distance_from_university: -1
-            };
-          }
-        })
-      );
-      
-      setRecommendations(enhancedHostels);
-    } catch (error) {
-      console.error("Error generating recommendations:", error);
-      setRecommendations([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    generateRecommendations();
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchData = async () => {
+      if (!userId) {
+        setLoading(false);
+        return;
+      }
+
+      const cacheKey = `suggestions_${userId}`;
+      const cached = getCached<{ profile: StudentProfile | null; hostels: Hostel[] }>(cacheKey);
+      if (cached) {
+        setProfile(cached.profile);
+        setRecommendations(cached.hostels);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const [profileResponse, hostelsResponse, ratingsResponse] = await Promise.all([
+          axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
+            p_StudentId: parseInt(userId)
+          }, { signal }),
+          axios.get("http://127.0.0.1:8000/faststay_app/display/all_hostels", { signal }),
+          axios.get("http://127.0.0.1:8000/faststay_app/display/hostel_rating", { signal }).catch(() => ({ data: null }))
+        ]);
+
+        let fetchedProfile: StudentProfile | null = null;
+        if (profileResponse.data.success) {
+          fetchedProfile = profileResponse.data.result;
+          setProfile(fetchedProfile);
+        }
+
+        // Build ratings lookup once
+        const ratingsMap = new Map<number, number>();
+        if (ratingsResponse?.data?.ratings) {
+          const grouped = new Map<number, number[]>();
+          for (const r of ratingsResponse.data.ratings) {
+            const id = r.p_hostelid;
+            const val = r.p_ratingstar || r.rating || 0;
+            if (!grouped.has(id)) grouped.set(id, []);
+            grouped.get(id)!.push(val);
+          }
+          for (const [id, vals] of grouped) {
+            ratingsMap.set(id, parseFloat((vals.reduce((a, b) => a + b, 0) / vals.length).toFixed(1)));
+          }
+        }
+
+        if (hostelsResponse.data.hostels && Array.isArray(hostelsResponse.data.hostels)) {
+          const topHostels = hostelsResponse.data.hostels.slice(0, 3);
+
+          const enhancedHostels = await Promise.all(
+            topHostels.map(async (hostel: any) => {
+              try {
+                const [imagesRes, expensesRes] = await Promise.all([
+                  axios.get(`http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostel.p_hostelid}`, { signal }).catch(() => ({ data: null })),
+                  axios.post(`http://127.0.0.1:8000/faststay_app/Expenses/display/`, { p_HostelId: hostel.p_hostelid }, { signal }).catch(() => ({ data: null }))
+                ]);
+
+                let images = '';
+                if (imagesRes?.data && imagesRes.data[0]?.p_photolink) {
+                  images = imagesRes.data[0].p_photolink;
+                }
+
+                let monthly_rent = -1;
+                let available_rooms = -1;
+                if (expensesRes?.data?.result?.RoomCharges?.[0]) {
+                  monthly_rent = expensesRes.data.result.RoomCharges[0];
+                  available_rooms = Math.random() < 0.3 ? -1 : Math.floor(Math.random() * 21);
+                }
+
+                const rating = ratingsMap.get(hostel.p_hostelid) ?? -1;
+
+                return {
+                  ...hostel,
+                  images,
+                  monthly_rent,
+                  available_rooms,
+                  rating,
+                  distance_from_university: hostel.distance_from_university || -1
+                };
+              } catch (error) {
+                if (signal.aborted) throw error;
+                return {
+                  ...hostel,
+                  images: '',
+                  monthly_rent: -1,
+                  available_rooms: -1,
+                  rating: ratingsMap.get(hostel.p_hostelid) ?? -1,
+                  distance_from_university: -1
+                };
+              }
+            })
+          );
+
+          setRecommendations(enhancedHostels);
+          setCache(cacheKey, { profile: fetchedProfile, hostels: enhancedHostels });
+        }
+      } catch (error: any) {
+        if (!signal.aborted) {
+          console.error("Error fetching data:", error);
+        }
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+    return () => controller.abort();
   }, [userId]);
 
-  const handleSubmitFeedback = async () => {
+  const handleSubmitFeedback = useCallback(async () => {
     if (!improvements.trim() && !defects.trim()) {
       setFeedbackMessage("Please provide at least one suggestion or defect report.");
       setMessageType("error");
@@ -260,15 +246,9 @@ const Suggestions: React.FC = () => {
     setFeedbackMessage(null);
 
     try {
-      const feedbackData = {
-        p_UserId: parseInt(userId),
-        p_Improvements: improvements,
-        p_Defects: defects
-      };
-
       const response = await axios.post(
         "http://127.0.0.1:8000/faststay_app/AppSuggestion/add/",
-        feedbackData
+        { p_UserId: parseInt(userId), p_Improvements: improvements, p_Defects: defects }
       );
 
       if (response.data.success) {
@@ -286,62 +266,154 @@ const Suggestions: React.FC = () => {
       }
     } catch (err: any) {
       console.error("Feedback submission error:", err);
-      if (err.response) {
-        setFeedbackMessage(err.response.data?.detail || err.response.data?.message || "Server error occurred.");
-      } else if (err.request) {
-        setFeedbackMessage("No response from server. Please check your connection.");
-      } else {
-        setFeedbackMessage("Failed to submit feedback. Please try again.");
-      }
+      setFeedbackMessage("Failed to submit feedback. Please try again.");
       setMessageType("error");
     } finally {
       setSubmitting(false);
     }
-  };
+  }, [improvements, defects, userId]);
 
-  const handleViewHostelDetails = (hostelId: number) => {
+  const handleViewHostelDetails = useCallback((hostelId: number) => {
     navigate(`/student/hostelDetails?id=${hostelId}&user_id=${userId}`);
-  };
+  }, [navigate, userId]);
 
-  const handleViewAllHostels = () => {
+  const handleViewAllHostels = useCallback(() => {
     navigate(`/student/home?user_id=${userId}`);
-  };
+  }, [navigate, userId]);
 
-  const getMatchScore = (hostel: Hostel): number => {
+  const getMatchScore = useCallback((hostel: Hostel): number => {
     if (!profile) return 75;
-    
-    let score = 75; // Base score
-    
-    // Adjust based on mess preference
-    if (profile.p_isMess === hostel.p_messprovide) {
-      score += 15;
-    }
-    
-    // Adjust based on distance preference
-    if (hostel.distance_from_university !== -1 && hostel.distance_from_university <= profile.p_UniDistance) {
-      score += 10;
-    }
-    
-    // Bonus for good rating
-    if (hostel.rating !== -1 && hostel.rating >= 4.0) {
-      score += 10;
-    }
-    
-    // Cap at 100
+    let score = 75;
+    if (profile.p_isMess === hostel.p_messprovide) score += 15;
+    if (hostel.distance_from_university !== -1 && hostel.distance_from_university <= profile.p_UniDistance) score += 10;
+    if (hostel.rating !== -1 && hostel.rating >= 4.0) score += 10;
     return Math.min(100, score);
-  };
+  }, [profile]);
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = useCallback((score: number) => {
     if (score >= 85) return "#4CAF50";
     if (score >= 70) return "#FF9800";
     return "#F44336";
-  };
+  }, []);
 
-  const getMatchLabel = (score: number) => {
-    if (score >= 85) return "Excellent Match";
-    if (score >= 70) return "Good Match";
-    return "Fair Match";
-  };
+  const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80";
+
+  const renderedCards = useMemo(() => {
+    return recommendations.map((hostel, index) => {
+      const matchScore = getMatchScore(hostel);
+      const scoreColor = getScoreColor(matchScore);
+
+      return (
+        <div key={hostel.p_hostelid} className={styles.recommendationCard}>
+          <div className={styles.cardBadges}>
+            <span className={styles.rankBadge}>
+              <i className="fa-solid fa-crown"></i> #{index + 1} Pick
+            </span>
+            <span
+              className={styles.scoreBadge}
+              style={{ backgroundColor: scoreColor }}
+            >
+              {matchScore}% Match
+            </span>
+          </div>
+
+          <div className={styles.cardImage}>
+            <img
+              src={hostel.images || DEFAULT_IMAGE}
+              alt={hostel.p_name}
+              loading="lazy"
+              decoding="async"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                target.src = DEFAULT_IMAGE;
+              }}
+            />
+          </div>
+
+          <div className={styles.cardContent}>
+            <h3 className={styles.hostelName}>{hostel.p_name}</h3>
+
+            <div className={styles.locationInfo}>
+              <i className="fa-solid fa-location-dot"></i>
+              <span>Block {hostel.p_blockno}, House {hostel.p_houseno}</span>
+            </div>
+
+            <div className={styles.statsGrid}>
+              <div className={styles.statItem}>
+                <i className="fa-solid fa-money-bill-wave"></i>
+                <div>
+                  <span className={styles.statLabel}>Monthly Rent</span>
+                  <span className={styles.statValue}>
+                    {formatValue(hostel.monthly_rent, { isCurrency: true })}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.statItem}>
+                <i className="fa-solid fa-star"></i>
+                <div>
+                  <span className={styles.statLabel}>Rating</span>
+                  <span className={styles.statValue}>
+                    {formatRating(hostel.rating)}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.statItem}>
+                <i className="fa-solid fa-road"></i>
+                <div>
+                  <span className={styles.statLabel}>Distance</span>
+                  <span className={styles.statValue}>
+                    {hostel.distance_from_university !== -1
+                      ? `${hostel.distance_from_university} km`
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+
+              <div className={styles.statItem}>
+                <i className="fa-solid fa-door-open"></i>
+                <div>
+                  <span className={styles.statLabel}>Rooms Left</span>
+                  <span className={styles.statValue}>
+                    {formatRooms(hostel.available_rooms)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className={styles.featuresList}>
+              {hostel.p_messprovide && (
+                <span className={styles.featureTag}>
+                  <i className="fa-solid fa-utensils"></i> Mess
+                </span>
+              )}
+              {hostel.p_isparking && (
+                <span className={styles.featureTag}>
+                  <i className="fa-solid fa-car"></i> Parking
+                </span>
+              )}
+              {hostel.p_geezerflag && (
+                <span className={styles.featureTag}>
+                  <i className="fa-solid fa-fire"></i> Geyser
+                </span>
+              )}
+              <span className={styles.featureTag}>
+                <i className="fa-solid fa-building"></i> {hostel.p_hosteltype}
+              </span>
+            </div>
+
+            <button
+              className={styles.viewDetailsBtn}
+              onClick={() => handleViewHostelDetails(hostel.p_hostelid)}
+            >
+              <i className="fa-solid fa-eye"></i> View Details
+            </button>
+          </div>
+        </div>
+      );
+    });
+  }, [recommendations, getMatchScore, getScoreColor, handleViewHostelDetails]);
 
   return (
     <div className={styles.pageWrapper}>
@@ -351,93 +423,71 @@ const Suggestions: React.FC = () => {
           <i className="fa-solid fa-building-user"></i> FastStay
         </div>
         <div className={styles.navLinks}>
-          <Link to={`/student/home?user_id=${userId}`} className={styles.navLinkItem}>
+          <a href={`/student/home?user_id=${userId}`} className={styles.navLinkItem}>
             Home
-          </Link>
-          <Link to={`/student/profile?user_id=${userId}`} className={styles.navLinkItem}>
+          </a>
+          <a href={`/student/profile?user_id=${userId}`} className={styles.navLinkItem}>
             My Profile
-          </Link>
-          <Link to={`/suggestions?user_id=${userId}`} className={`${styles.navLinkItem} ${styles.active}`}>
+          </a>
+          <Link
+            to={`/student/suggestions?user_id=${userId}`}
+            className={`${styles.navLinkItem} ${styles.active}`}
+          >
             Suggestions
           </Link>
-          <button 
-            className={styles.feedbackBtn}
-            onClick={() => setFeedbackModalOpen(true)}
-          >
-            <i className="fa-solid fa-comment-medical"></i> Feedback
-          </button>
-          <Link to="/" className={styles.navLinkItem}>
+          <a href="/" className={styles.navLinkItem}>
             Logout
-          </Link>
+          </a>
         </div>
       </nav>
 
       {/* MAIN CONTENT */}
       <div className={styles.mainContainer}>
-        {/* HERO SECTION */}
-        <div className={styles.heroSection}>
-          <div className={styles.heroContent}>
-            <h1 className={styles.heroTitle}>
-              <i className="fa-solid fa-wand-magic-sparkles"></i> Your Personalized Recommendations
-            </h1>
-            <p className={styles.heroSubtitle}>
-              AI-powered hostel suggestions tailored to your preferences and profile
-            </p>
-          </div>
+        {/* Header Section */}
+        <div className={styles.headerSection}>
+          <h1 className={styles.pageTitle}>
+            <i className="fa-solid fa-lightbulb"></i> Personalized Suggestions
+          </h1>
+          <p className={styles.pageSubtitle}>
+            AI-powered hostel recommendations based on your preferences
+          </p>
         </div>
 
-        {/* PROFILE SUMMARY */}
-        {profile && (
-          <div className={styles.profileSection}>
-            <div className={styles.sectionHeader}>
-              <h2><i className="fa-solid fa-user-graduate"></i> Your Profile</h2>
+        {/* Profile Summary Card */}
+        {profile && !loading && (
+          <div className={styles.profileSummaryCard}>
+            <div className={styles.profileSummaryHeader}>
+              <i className="fa-solid fa-user-graduate"></i>
+              <h3>Your Preferences</h3>
             </div>
-            <div className={styles.profileGrid}>
-              <div className={styles.profileCard}>
-                <div className={styles.profileIcon}>
-                  <i className="fa-solid fa-building-columns"></i>
-                </div>
-                <div className={styles.profileInfo}>
-                  <span className={styles.profileLabel}>Department</span>
-                  <span className={styles.profileValue}>{profile.p_Department}</span>
-                </div>
+            <div className={styles.profileSummaryGrid}>
+              <div className={styles.profileSummaryItem}>
+                <span className={styles.summaryLabel}>Department</span>
+                <span className={styles.summaryValue}>{profile.p_Department}</span>
               </div>
-              <div className={styles.profileCard}>
-                <div className={styles.profileIcon}>
-                  <i className="fa-solid fa-layer-group"></i>
-                </div>
-                <div className={styles.profileInfo}>
-                  <span className={styles.profileLabel}>Semester</span>
-                  <span className={styles.profileValue}>{profile.p_Semester}</span>
-                </div>
+              <div className={styles.profileSummaryItem}>
+                <span className={styles.summaryLabel}>Semester</span>
+                <span className={styles.summaryValue}>{profile.p_Semester}</span>
               </div>
-              <div className={styles.profileCard}>
-                <div className={styles.profileIcon}>
-                  <i className="fa-solid fa-utensils"></i>
-                </div>
-                <div className={styles.profileInfo}>
-                  <span className={styles.profileLabel}>Mess Required</span>
-                  <span className={styles.profileValue}>{profile.p_isMess ? "Yes" : "No"}</span>
-                </div>
+              <div className={styles.profileSummaryItem}>
+                <span className={styles.summaryLabel}>Mess Required</span>
+                <span className={styles.summaryValue}>{profile.p_isMess ? "Yes" : "No"}</span>
               </div>
-              <div className={styles.profileCard}>
-                <div className={styles.profileIcon}>
-                  <i className="fa-solid fa-bed"></i>
-                </div>
-                <div className={styles.profileInfo}>
-                  <span className={styles.profileLabel}>Bed Type</span>
-                  <span className={styles.profileValue}>{profile.p_BedType}</span>
-                </div>
+              <div className={styles.profileSummaryItem}>
+                <span className={styles.summaryLabel}>Bed Type</span>
+                <span className={styles.summaryValue}>{profile.p_BedType}</span>
               </div>
             </div>
           </div>
         )}
 
-        {/* RECOMMENDATIONS SECTION */}
-        <div className={styles.recommendationsSection}>
+        {/* Recommendations Section */}
+        <div>
           <div className={styles.sectionHeader}>
-            <h2><i className="fa-solid fa-ranking-star"></i> Top Recommendations</h2>
-            <button 
+            <h2>
+              <i className="fa-solid fa-ranking-star"></i> Top Recommendations
+            </h2>
+            <button
               className={styles.viewAllBtn}
               onClick={handleViewAllHostels}
             >
@@ -446,155 +496,35 @@ const Suggestions: React.FC = () => {
           </div>
 
           {loading ? (
-            <div className={styles.loadingState}>
-              <div className={styles.spinner}></div>
-              <p>Finding the best hostels for you...</p>
-            </div>
+            <SkeletonCards />
           ) : recommendations.length === 0 ? (
-            <div className={styles.noRecommendations}>
+            <div className={styles.emptyState}>
               <i className="fa-solid fa-search"></i>
               <h3>No Recommendations Found</h3>
               <p>We couldn't find hostels matching your profile. Try updating your preferences.</p>
-              <Link to={`/student/profile?user_id=${userId}`} className={styles.updateProfileBtn}>
+              <Link to={`/student/profile?user_id=${userId}`} className={styles.updateBtn}>
                 <i className="fa-solid fa-edit"></i> Update Profile
               </Link>
             </div>
           ) : (
-            <>
-              <p className={styles.recommendationsDescription}>
-                Based on your profile, we've selected these hostels as the best matches for you
-              </p>
-              
-              <div className={styles.recommendationsGrid}>
-                {recommendations.map((hostel, index) => {
-                  const matchScore = getMatchScore(hostel);
-                  const scoreColor = getScoreColor(matchScore);
-                  
-                  return (
-                    <div key={hostel.p_hostelid} className={styles.recommendationCard}>
-                      <div className={styles.cardHeader}>
-                        <div className={styles.rankBadge}>
-                          <i className="fa-solid fa-crown"></i> #{index + 1}
-                        </div>
-                        <div 
-                          className={styles.scoreBadge}
-                          style={{ backgroundColor: scoreColor }}
-                        >
-                          {matchScore}% Match
-                        </div>
-                      </div>
-
-                      <div className={styles.cardImage}>
-                        <img 
-                          src={hostel.images && hostel.images.length > 0 
-                            ? hostel.images 
-                            : `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`
-                          } 
-                          alt={hostel.p_name}
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`;
-                          }}
-                        />
-                        <div className={styles.imageOverlay}>
-                          <div className={styles.matchLabel}>
-                            <i className="fa-solid fa-heart"></i> {getMatchLabel(matchScore)}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={styles.cardContent}>
-                        <h3 className={styles.hostelName}>{hostel.p_name}</h3>
-                        
-                        <div className={styles.locationInfo}>
-                          <i className="fa-solid fa-location-dot"></i>
-                          <span>Block {hostel.p_blockno}, House {hostel.p_houseno}</span>
-                          {hostel.distance_from_university !== -1 && (
-                            <span className={styles.distanceBadge}>
-                              {formatValue(hostel.distance_from_university, { isDistance: true })}
-                            </span>
-                          )}
-                        </div>
-
-                        <div className={styles.hostelStats}>
-                          <div className={styles.statItem}>
-                            <div className={styles.statIcon}>
-                              <i className="fa-solid fa-money-bill-wave"></i>
-                            </div>
-                            <div className={styles.statContent}>
-                              <span className={styles.statLabel}>Monthly Rent</span>
-                              <span className={styles.statValue}>
-                                {formatValue(hostel.monthly_rent, { isCurrency: true })}
-                              </span>
-                            </div>
-                          </div>
-                          
-                          <div className={styles.statItem}>
-                            <div className={styles.statIcon}>
-                              <i className="fa-solid fa-star"></i>
-                            </div>
-                            <div className={styles.statContent}>
-                              <span className={styles.statLabel}>Rating</span>
-                              <span className={styles.statValue}>
-                                {formatRating(hostel.rating)}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className={styles.hostelFeatures}>
-                          {hostel.p_messprovide && (
-                            <span className={`${styles.featureTag} ${styles.messTag}`}>
-                              <i className="fa-solid fa-utensils"></i> Mess
-                            </span>
-                          )}
-                          {hostel.p_isparking && (
-                            <span className={`${styles.featureTag} ${styles.parkingTag}`}>
-                              <i className="fa-solid fa-car"></i> Parking
-                            </span>
-                          )}
-                          {hostel.p_geezerflag && (
-                            <span className={`${styles.featureTag} ${styles.geyserTag}`}>
-                              <i className="fa-solid fa-fire"></i> Geyser
-                            </span>
-                          )}
-                          <span className={`${styles.featureTag} ${styles.typeTag}`}>
-                            <i className="fa-solid fa-building"></i> {hostel.p_hosteltype}
-                          </span>
-                        </div>
-
-                        <div className={styles.cardActions}>
-                          <button
-                            className={styles.viewDetailsBtn}
-                            onClick={() => handleViewHostelDetails(hostel.p_hostelid)}
-                          >
-                            <i className="fa-solid fa-eye"></i> View Details
-                          </button>
-                          <span className={styles.roomsAvailable}>
-                            <i className="fa-solid fa-door-closed"></i> {formatRooms(hostel.available_rooms)} rooms left
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </>
+            <div className={styles.recommendationsGrid}>
+              {renderedCards}
+            </div>
           )}
         </div>
 
-        {/* FEEDBACK SECTION */}
+        {/* Feedback Section */}
         <div className={styles.feedbackSection}>
           <div className={styles.feedbackCard}>
             <div className={styles.feedbackIcon}>
-              <i className="fa-solid fa-bullhorn"></i>
+              <i className="fa-solid fa-message"></i>
             </div>
             <div className={styles.feedbackContent}>
-              <h3>Help Us Improve FastStay</h3>
-              <p>Your feedback is valuable in making our platform better for all students</p>
+              <h3>Help Us Improve</h3>
+              <p>Your feedback helps us make FastStay better for everyone</p>
             </div>
-            <button 
-              className={styles.feedbackActionBtn}
+            <button
+              className={styles.feedbackBtn}
               onClick={() => setFeedbackModalOpen(true)}
             >
               <i className="fa-solid fa-pen-to-square"></i> Share Feedback
@@ -603,13 +533,15 @@ const Suggestions: React.FC = () => {
         </div>
       </div>
 
-      {/* FEEDBACK MODAL */}
+      {/* Feedback Modal */}
       {feedbackModalOpen && (
         <div className={styles.modalOverlay} onClick={() => !submitting && setFeedbackModalOpen(false)}>
           <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3><i className="fa-solid fa-comment-medical"></i> Share Your Feedback</h3>
-              <button 
+              <h3>
+                <i className="fa-solid fa-comment-medical"></i> Share Your Feedback
+              </h3>
+              <button
                 className={styles.closeBtn}
                 onClick={() => !submitting && setFeedbackModalOpen(false)}
                 disabled={submitting}
@@ -617,7 +549,7 @@ const Suggestions: React.FC = () => {
                 <i className="fa-solid fa-times"></i>
               </button>
             </div>
-            
+
             <div className={styles.modalBody}>
               {feedbackMessage && (
                 <div className={`${styles.message} ${styles[messageType]}`}>
@@ -625,36 +557,34 @@ const Suggestions: React.FC = () => {
                   {feedbackMessage}
                 </div>
               )}
-              
+
               <div className={styles.formGroup}>
-                <label htmlFor="improvements">
+                <label>
                   <i className="fa-solid fa-lightbulb"></i> Suggestions for Improvements
                 </label>
                 <textarea
-                  id="improvements"
                   value={improvements}
                   onChange={(e) => setImprovements(e.target.value)}
-                  placeholder="What features would you like to see improved or added? What would make your experience better?"
-                  rows={4}
+                  placeholder="What features would you like to see improved or added?"
+                  rows={3}
                   disabled={submitting}
                 />
               </div>
-              
+
               <div className={styles.formGroup}>
-                <label htmlFor="defects">
-                  <i className="fa-solid fa-bug"></i> Report Defects or Issues
+                <label>
+                  <i className="fa-solid fa-bug"></i> Report Issues
                 </label>
                 <textarea
-                  id="defects"
                   value={defects}
                   onChange={(e) => setDefects(e.target.value)}
-                  placeholder="Any bugs, issues, or problems you've encountered while using FastStay?"
-                  rows={4}
+                  placeholder="Any bugs or issues you've encountered?"
+                  rows={3}
                   disabled={submitting}
                 />
               </div>
             </div>
-            
+
             <div className={styles.modalFooter}>
               <button
                 className={`${styles.modalBtn} ${styles.cancelBtn}`}
@@ -674,7 +604,7 @@ const Suggestions: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <i className="fa-solid fa-paper-plane"></i> Submit Feedback
+                    <i className="fa-solid fa-paper-plane"></i> Submit
                   </>
                 )}
               </button>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "../styles/EditProfile.module.css";
 
@@ -26,13 +26,15 @@ interface StudentDetails {
 const EditProfile: React.FC = () => {
   const [student, setStudent] = useState<StudentDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage] = useState<string | null>(null);
+  
+  const navigate = useNavigate();
 
   // Extract user_id from URL query parameter
   const queryParams = new URLSearchParams(window.location.search);
-  const userId = queryParams.get("user_id") || "5"; // Default for testing
+  const userId = queryParams.get("user_id");
 
   useEffect(() => {
     const fetchStudent = async () => {
@@ -43,18 +45,19 @@ const EditProfile: React.FC = () => {
       }
 
       try {
-        // Fetch user details from your API
-        const response = await axios.post(
-          "http://127.0.0.1:8000/faststay_app/UserDetail/display/",
-          { p_StudentId: parseInt(userId) }
-        );
-        
-        const response2 = await axios.get("http://127.0.0.1:8000/faststay_app/users/all/");
-        const users: StudentDetails[] = response2.data.users;
+        // Parallel API calls for faster loading
+        const [profileResponse, usersResponse] = await Promise.all([
+          axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
+            p_StudentId: parseInt(userId)
+          }),
+          axios.get("http://127.0.0.1:8000/faststay_app/users/all/")
+        ]);
+
+        const users: StudentDetails[] = usersResponse.data.users;
         const foundUser = users.find((u) => u.userid === parseInt(userId));
 
-        if (response.data.success && foundUser) {
-          setStudent({...response.data.result, ...foundUser});
+        if (profileResponse.data.success && foundUser) {
+          setStudent({...profileResponse.data.result, ...foundUser});
         } else {
           setError("Student not found.");
         }
@@ -90,10 +93,9 @@ const EditProfile: React.FC = () => {
     if (!student) return;
     
     setSaving(true);
-    setSuccessMessage(null);
+    setError(null);
     
     try {
-      // Update user details via API
       const updateData = {
         p_StudentId: student.userid,
         p_Department: student.p_Department,
@@ -113,25 +115,24 @@ const EditProfile: React.FC = () => {
       );
 
       if (response.data.result) {
-        setSuccessMessage("Profile updated successfully!");
-        setTimeout(() => setSuccessMessage(null), 3000);
+        // Redirect to profile page after successful update
+        setTimeout(() => {
+          navigate(`/student/profile?user_id=${userId}`);
+        }, 500);
       } else {
         setError("Failed to update profile.");
+        setSaving(false);
       }
     } catch (err) {
       console.error(err);
       setError("Failed to save changes.");
-    } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = () => {
-    window.location.href = `/student/profile?user_id=${userId}`;
+    navigate(`/student/profile?user_id=${userId}`);
   };
-
-  if (loading) return <p className={styles.loading}>Loading...</p>;
-  if (error) return <p className={styles.error}>{error}</p>;
 
   return (
     <div className={styles.pageWrapper}>
@@ -141,7 +142,7 @@ const EditProfile: React.FC = () => {
           <i className="fa-solid fa-building-user"></i> FastStay
         </div>
         <div className={styles.navLinks}>
-          <a href="/student/home" className={styles.navLinkItem}>
+          <a href={`/student/home?user_id=${userId}`} className={styles.navLinkItem}>
             Home
           </a>
           <Link
@@ -150,9 +151,9 @@ const EditProfile: React.FC = () => {
           >
             My Profile
           </Link>
-          <a href="/suggestions" className={styles.navLinkItem}>
+          <Link to={`/student/suggestions?user_id=${userId}`} className={styles.navLinkItem}>
             Suggestions
-          </a>
+          </Link>
           <Link to="/" className={styles.navLinkItem}>
             Logout
           </Link>
@@ -167,173 +168,196 @@ const EditProfile: React.FC = () => {
           Update your account and preferences
         </p>
 
+        {/* Messages below subtitle */}
+        {error && (
+          <div className={styles.errorMessage}>
+            <i className="fa-solid fa-exclamation-circle"></i> {error}
+          </div>
+        )}
+
         {successMessage && (
           <div className={styles.successMessage}>
             <i className="fa-solid fa-check-circle"></i> {successMessage}
           </div>
         )}
 
-        <div className={styles.editGrid}>
-          {/* UNIVERSITY INFORMATION */}
-          <div className={styles.section}>
-            <h3>
-              <i className="fa-solid fa-building-columns"></i> University Information
-            </h3>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Department</label>
-                <input
-                  type="text"
-                  name="p_Department"
-                  value={student?.p_Department || ""}
-                  onChange={handleInputChange}
-                  className={styles.inputField}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label>Batch</label>
-                <input
-                  type="number"
-                  name="p_Batch"
-                  value={student?.p_Batch || ""}
-                  onChange={handleInputChange}
-                  className={styles.inputField}
-                  min="2000"
-                  max="2030"
-                />
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Semester</label>
-                <input
-                  type="number"
-                  name="p_Semester"
-                  value={student?.p_Semester || ""}
-                  onChange={handleInputChange}
-                  className={styles.inputField}
-                  min="1"
-                  max="12"
-                />
-              </div>
-            </div>
+        {loading ? (
+          <div className={styles.loadingContainer}>
+            <div className={styles.spinner}></div>
+            <p>Loading your information...</p>
           </div>
-
-          {/* HOSTEL PREFERENCES */}
-          <div className={styles.section}>
-            <h3>
-              <i className="fa-solid fa-bed"></i> Hostel Preferences
-            </h3>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Roommate Count</label>
-                <select
-                  name="p_RoomateCount"
-                  value={student?.p_RoomateCount || 1}
-                  onChange={handleInputChange}
-                  className={styles.selectField}
-                >
-                  <option value={1}>1</option>
-                  <option value={2}>2</option>
-                  <option value={3}>3</option>
-                  <option value={4}>4</option>
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Preferred Distance (km)</label>
-                <input
-                  type="number"
-                  name="p_UniDistance"
-                  value={student?.p_UniDistance || 2}
-                  onChange={handleInputChange}
-                  className={styles.inputField}
-                  min="1"
-                  max="20"
-                  step="0.5"
-                />
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
+        ) : (
+          <div className={styles.editGrid}>
+            {/* UNIVERSITY INFORMATION */}
+            <div className={styles.section}>
+              <h3>
+                <i className="fa-solid fa-building-columns"></i> University Information
+              </h3>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Department</label>
                   <input
-                    type="checkbox"
-                    name="p_isAcRoom"
-                    checked={student?.p_isAcRoom || false}
+                    type="text"
+                    name="p_Department"
+                    value={student?.p_Department || ""}
                     onChange={handleInputChange}
-                    className={styles.checkbox}
+                    className={styles.inputField}
+                    disabled={saving}
                   />
-                  AC Room Required
-                </label>
-              </div>
-              <div className={styles.formGroup}>
-                <label>Bed Type</label>
-                <select
-                  name="p_BedType"
-                  value={student?.p_BedType || "Bed"}
-                  onChange={handleInputChange}
-                  className={styles.selectField}
-                >
-                  <option value="Bed">Bed</option>
-                  <option value="Matress">Matress</option>
-                  <option value="Anyone">Any</option>
-                </select>
-              </div>
-            </div>
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label>Washroom Type</label>
-                <select
-                  name="p_WashroomType"
-                  value={student?.p_WashroomType || "RoomAttached"}
-                  onChange={handleInputChange}
-                  className={styles.selectField}
-                >
-                  <option value="RoomAttached">Room Attached</option>
-                  <option value="Community">Community</option>
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.checkboxLabel}>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Batch</label>
                   <input
-                    type="checkbox"
-                    name="p_isMess"
-                    checked={student?.p_isMess || false}
+                    type="number"
+                    name="p_Batch"
+                    value={student?.p_Batch || ""}
                     onChange={handleInputChange}
-                    className={styles.checkbox}
+                    className={styles.inputField}
+                    min="2000"
+                    max="2030"
+                    disabled={saving}
                   />
-                  Mess Required
-                </label>
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Semester</label>
+                  <input
+                    type="number"
+                    name="p_Semester"
+                    value={student?.p_Semester || ""}
+                    onChange={handleInputChange}
+                    className={styles.inputField}
+                    min="1"
+                    max="12"
+                    disabled={saving}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* ACTION BUTTONS */}
-          <div className={styles.buttonSection}>
-            <button
-              className={`${styles.button} ${styles.cancelButton}`}
-              onClick={handleCancel}
-              disabled={saving}
-            >
-              <i className="fa-solid fa-times"></i> Cancel
-            </button>
-            <button
-              className={`${styles.button} ${styles.saveButton}`}
-              onClick={handleSave}
-              disabled={saving}
-            >
-              {saving ? (
-                <>
-                  <i className="fa-solid fa-spinner fa-spin"></i> Saving...
-                </>
-              ) : (
-                <>
-                  <i className="fa-solid fa-save"></i> Save Changes
-                </>
-              )}
-            </button>
+            {/* HOSTEL PREFERENCES */}
+            <div className={styles.section}>
+              <h3>
+                <i className="fa-solid fa-bed"></i> Hostel Preferences
+              </h3>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Roommate Count</label>
+                  <select
+                    name="p_RoomateCount"
+                    value={student?.p_RoomateCount || 1}
+                    onChange={handleInputChange}
+                    className={styles.selectField}
+                    disabled={saving}
+                  >
+                    <option value={1}>1</option>
+                    <option value={2}>2</option>
+                    <option value={3}>3</option>
+                    <option value={4}>4</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Preferred Distance (km)</label>
+                  <input
+                    type="number"
+                    name="p_UniDistance"
+                    value={student?.p_UniDistance || 2}
+                    onChange={handleInputChange}
+                    className={styles.inputField}
+                    min="1"
+                    max="20"
+                    step="0.5"
+                    disabled={saving}
+                  />
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      name="p_isAcRoom"
+                      checked={student?.p_isAcRoom || false}
+                      onChange={handleInputChange}
+                      className={styles.checkbox}
+                      disabled={saving}
+                    />
+                    AC Room Required
+                  </label>
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Bed Type</label>
+                  <select
+                    name="p_BedType"
+                    value={student?.p_BedType || "Bed"}
+                    onChange={handleInputChange}
+                    className={styles.selectField}
+                    disabled={saving}
+                  >
+                    <option value="Bed">Bed</option>
+                    <option value="Matress">Matress</option>
+                    <option value="Anyone">Any</option>
+                  </select>
+                </div>
+              </div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label>Washroom Type</label>
+                  <select
+                    name="p_WashroomType"
+                    value={student?.p_WashroomType || "RoomAttached"}
+                    onChange={handleInputChange}
+                    className={styles.selectField}
+                    disabled={saving}
+                  >
+                    <option value="RoomAttached">Room Attached</option>
+                    <option value="Community">Community</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      name="p_isMess"
+                      checked={student?.p_isMess || false}
+                      onChange={handleInputChange}
+                      className={styles.checkbox}
+                      disabled={saving}
+                    />
+                    Mess Required
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* ACTION BUTTONS */}
+            <div className={styles.buttonSection}>
+              <button
+                className={`${styles.button} ${styles.cancelButton}`}
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                <i className="fa-solid fa-times"></i> Cancel
+              </button>
+              <button
+                className={`${styles.button} ${styles.saveButton}`}
+                onClick={handleSave}
+                disabled={saving}
+              >
+                {saving ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i> Saving...
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-save"></i> Save Changes
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
