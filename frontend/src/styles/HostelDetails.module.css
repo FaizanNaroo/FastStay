@@ -17,7 +17,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 60vh;
   background: #3b2c24;
 }
 
@@ -42,7 +42,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 60vh;
   background: #3b2c24;
   text-align: center;
   padding: 20px;
@@ -258,6 +258,40 @@
   margin-right: 8px;
 }
 
+/* === SKELETON LOADER === */
+.skeletonHeader {
+  width: 100%;
+  height: 340px;
+  background: linear-gradient(110deg, #4a3830 8%, #5c4a3e 18%, #4a3830 33%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.skeletonBox {
+  background: #f8f3e7;
+  padding: 20px 25px;
+  border-radius: 14px;
+  margin-bottom: 22px;
+}
+
+.skeletonLine {
+  height: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  background: linear-gradient(110deg, #e8dfd2 8%, #f0e8da 18%, #e8dfd2 33%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s linear infinite;
+}
+
+.skeletonLine:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .navbar {
@@ -309,6 +343,10 @@
   .btn {
     width: 100%;
   }
+
+  .skeletonHeader {
+    height: 280px;
+  }
 }
 
 @media (max-width: 480px) {
@@ -332,5 +370,9 @@
   
   .box h2 {
     font-size: 18px;
+  }
+
+  .skeletonHeader {
+    height: 220px;
   }
 }

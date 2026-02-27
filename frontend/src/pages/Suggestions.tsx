@@ -291,9 +291,9 @@ const Suggestions: React.FC = () => {
   }, [profile]);
 
   const getScoreColor = useCallback((score: number) => {
-    if (score >= 85) return "#4CAF50";
-    if (score >= 70) return "#FF9800";
-    return "#F44336";
+    if (score >= 85) return "#43a047";
+    if (score >= 70) return "#ef6c00";
+    return "#e53935";
   }, []);
 
   const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80";
