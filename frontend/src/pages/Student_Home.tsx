@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import styles from "../styles/StudentHome.module.css";
@@ -41,6 +41,32 @@ interface FilterState {
   hasGeyser: boolean | null;
 }
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCached = <T,>(key: string): T | null => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) {
+      sessionStorage.removeItem(key);
+      return null;
+    }
+    return data as T;
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (key: string, data: any) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  } catch { /* storage full, ignore */ }
+};
+
+const UNIVERSITY_LAT = 31.48104;
+const UNIVERSITY_LNG = 74.303449;
+
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -50,8 +76,7 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
     Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const distance = R * c;
-  return parseFloat(distance.toFixed(2));
+  return parseFloat((R * c).toFixed(2));
 };
 
 const formatValue = (value: number, options?: {
@@ -85,9 +110,75 @@ const formatRooms = (rooms: number): string => {
   return `${rooms}`;
 };
 
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80";
+
+const processHostelData = (hostelData: any): Hostel => {
+  let distance = -1;
+  if (hostelData.p_latitude && hostelData.p_longitude) {
+    distance = calculateDistance(
+      UNIVERSITY_LAT, UNIVERSITY_LNG,
+      parseFloat(hostelData.p_latitude),
+      parseFloat(hostelData.p_longitude)
+    );
+  }
+
+  let images: string[] = [];
+  if (hostelData.p_photolinks) {
+    if (typeof hostelData.p_photolinks === 'string') {
+      images = hostelData.p_photolinks.split(',')
+        .map((link: string) => link.trim())
+        .filter((link: string) => link.length > 0)
+        .map((link: string) => link.startsWith('/') ? `http://127.0.0.1:8000${link}` : link);
+    }
+  }
+
+  let rating = -1;
+  if (hostelData.p_ratingstar) {
+    rating = parseFloat(hostelData.p_ratingstar.toFixed(1));
+  }
+
+  let monthly_rent = -1;
+  if (hostelData.p_roomcharges && Array.isArray(hostelData.p_roomcharges) && hostelData.p_roomcharges.length > 0) {
+    monthly_rent = hostelData.p_roomcharges[0];
+  }
+
+  return {
+    p_blockno: hostelData.p_blockno || "",
+    p_houseno: hostelData.p_houseno || "",
+    p_hosteltype: hostelData.p_hosteltype || "",
+    p_isparking: hostelData.p_isparking || false,
+    p_numrooms: hostelData.p_numrooms || 0,
+    p_numfloors: hostelData.p_numfloors || 0,
+    p_watertimings: hostelData.p_watertimings?.toString() || "",
+    p_cleanlinesstenure: hostelData.p_cleanlinesstenure || 0,
+    p_issueresolvingtenure: hostelData.p_issueresolvingtenure || 0,
+    p_messprovide: hostelData.p_messprovide || false,
+    p_geezerflag: hostelData.p_geezerflag || false,
+    p_name: hostelData.p_name || "",
+    p_hostelid: hostelData.p_hostelid,
+    p_managerid: hostelData.p_managerid,
+    distance_from_university: distance,
+    rating,
+    monthly_rent,
+    available_rooms: hostelData.p_numrooms || 0,
+    images,
+    p_latitude: hostelData.p_latitude,
+    p_longitude: hostelData.p_longitude,
+    p_photolinks: hostelData.p_photolinks,
+    p_ratingstar: hostelData.p_ratingstar,
+    p_roomcharges: hostelData.p_roomcharges
+  };
+};
+
+const SkeletonCards: React.FC = () => (
+  <div className={styles.loadingGrid}>
+    <div className={styles.spinner}></div>
+    <p>Loading hostels...</p>
+  </div>
+);
+
 const StudentHome: React.FC = () => {
   const [hostels, setHostels] = useState<Hostel[]>([]);
-  const [filteredHostels, setFilteredHostels] = useState<Hostel[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,11 +186,8 @@ const StudentHome: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const UNIVERSITY_LAT = 31.48104;
-  const UNIVERSITY_LNG = 74.303449;
-
-  const queryParams = new URLSearchParams(window.location.search);
-  const userId = queryParams.get("user_id");
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []);
+  const userId = queryParams.get("user_id") || '';
 
   const [filters, setFilters] = useState<FilterState>({
     maxRent: "",
@@ -111,115 +199,64 @@ const StudentHome: React.FC = () => {
     hasGeyser: null
   });
 
-  const processHostelData = (hostelData: any): Hostel => {
-    const hostelId = hostelData.p_hostelid;
-    
-    let distance = -1;
-    if (hostelData.p_latitude && hostelData.p_longitude) {
-      distance = calculateDistance(
-        UNIVERSITY_LAT,
-        UNIVERSITY_LNG,
-        parseFloat(hostelData.p_latitude),
-        parseFloat(hostelData.p_longitude)
-      );
-    }
-
-    let images: string[] = [];
-    if (hostelData.p_photolinks) {
-      if (typeof hostelData.p_photolinks === 'string') {
-        const links = hostelData.p_photolinks.split(',');
-        images = links
-          .map((link: string) => link.trim())
-          .filter((link: string) => link.length > 0)
-          .map((link: string) => {
-            if (link.startsWith('/')) {
-              return `http://127.0.0.1:8000${link}`;
-            }
-            return link;
-          });
-      }
-    }
-
-    let rating = -1;
-    if (hostelData.p_ratingstar) {
-      rating = parseFloat(hostelData.p_ratingstar.toFixed(1));
-    }
-
-    let monthly_rent = -1;
-    if (hostelData.p_roomcharges && Array.isArray(hostelData.p_roomcharges) && hostelData.p_roomcharges.length > 0) {
-      monthly_rent = hostelData.p_roomcharges[0];
-    }
-
-    return {
-      p_blockno: hostelData.p_blockno || "",
-      p_houseno: hostelData.p_houseno || "",
-      p_hosteltype: hostelData.p_hosteltype || "",
-      p_isparking: hostelData.p_isparking || false,
-      p_numrooms: hostelData.p_numrooms || 0,
-      p_numfloors: hostelData.p_numfloors || 0,
-      p_watertimings: hostelData.p_watertimings?.toString() || "",
-      p_cleanlinesstenure: hostelData.p_cleanlinesstenure || 0,
-      p_issueresolvingtenure: hostelData.p_issueresolvingtenure || 0,
-      p_messprovide: hostelData.p_messprovide || false,
-      p_geezerflag: hostelData.p_geezerflag || false,
-      p_name: hostelData.p_name || "",
-      p_hostelid: hostelId,
-      p_managerid: hostelData.p_managerid,
-      distance_from_university: distance,
-      rating: rating,
-      monthly_rent: monthly_rent,
-      available_rooms: hostelData.p_numrooms || 0,
-      images: images,
-      p_latitude: hostelData.p_latitude,
-      p_longitude: hostelData.p_longitude,
-      p_photolinks: hostelData.p_photolinks,
-      p_ratingstar: hostelData.p_ratingstar,
-      p_roomcharges: hostelData.p_roomcharges
-    };
-  };
-
-  const fetchAllHostels = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const response = await axios.get(
-        "http://127.0.0.1:8000/faststay_app/display/StudentHome"
-      );
-
-      if (response.data.hostels && Array.isArray(response.data.hostels)) {
-        const processedHostels = response.data.hostels.map((hostel: any) => 
-          processHostelData(hostel)
-        );
-        setHostels(processedHostels);
-        setFilteredHostels(processedHostels);
-      } else {
-        throw new Error("Invalid response format");
-      }
-    } catch (error: any) {
-      console.error("Failed to fetch hostels:", error);
-      setError(error.response?.data?.error || "Failed to load hostels. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
+    const fetchAllHostels = async () => {
+      setLoading(true);
+      setError(null);
+
+      const cacheKey = `student_home_hostels`;
+      const cached = getCached<Hostel[]>(cacheKey);
+      if (cached) {
+        setHostels(cached);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await axios.get(
+          "http://127.0.0.1:8000/faststay_app/display/StudentHome",
+          { signal }
+        );
+
+        if (response.data.hostels && Array.isArray(response.data.hostels)) {
+          const processedHostels = response.data.hostels.map((hostel: any) =>
+            processHostelData(hostel)
+          );
+          setHostels(processedHostels);
+          setCache(cacheKey, processedHostels);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (error: any) {
+        if (!signal.aborted) {
+          console.error("Failed to fetch hostels:", error);
+          setError(error.response?.data?.error || "Failed to load hostels. Please try again.");
+        }
+      } finally {
+        if (!signal.aborted) {
+          setLoading(false);
+        }
+      }
+    };
+
     fetchAllHostels();
+    return () => controller.abort();
   }, [userId]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [hostels, searchQuery, filters]);
-
-  const applyFilters = () => {
-    let filtered = [...hostels];
+  // Memoized filtering instead of useEffect + separate state
+  const filteredHostels = useMemo(() => {
+    let filtered = hostels;
 
     if (searchQuery && searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(hostel =>
-        hostel.p_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hostel.p_blockno.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        hostel.p_houseno.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (hostel.location && hostel.location.toLowerCase().includes(searchQuery.toLowerCase()))
+        hostel.p_name.toLowerCase().includes(query) ||
+        hostel.p_blockno.toLowerCase().includes(query) ||
+        hostel.p_houseno.toLowerCase().includes(query) ||
+        (hostel.location && hostel.location.toLowerCase().includes(query))
       );
     }
 
@@ -262,22 +299,21 @@ const StudentHome: React.FC = () => {
       filtered = filtered.filter(hostel => hostel.p_geezerflag === filters.hasGeyser);
     }
 
-    setFilteredHostels(filtered);
-  };
+    return filtered;
+  }, [hostels, searchQuery, filters]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
-    applyFilters();
-  };
+  }, []);
 
-  const handleFilterChange = (key: keyof FilterState, value: any) => {
+  const handleFilterChange = useCallback((key: keyof FilterState, value: any) => {
     setFilters(prev => ({
       ...prev,
       [key]: value
     }));
-  };
+  }, []);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setFilters({
       maxRent: "",
       distance: "",
@@ -288,24 +324,144 @@ const StudentHome: React.FC = () => {
       hasGeyser: null
     });
     setSearchQuery("");
-  };
+  }, []);
 
-  const handleViewDetails = (hostelId: number) => {
+  const handleViewDetails = useCallback((hostelId: number) => {
     navigate(`/student/hostelDetails?id=${hostelId}&user_id=${userId}`);
-  };
+  }, [navigate, userId]);
 
-  const handleViewOwner = (hostelId: number) => {
+  const handleViewOwner = useCallback((hostelId: number) => {
     navigate(`/student/ownerDetails?id=${hostelId}&user_id=${userId}`);
-  };
+  }, [navigate, userId]);
 
-  // Render error state (only if no hostels loaded at all)
+  const handleRetry = useCallback(() => {
+    sessionStorage.removeItem('student_home_hostels');
+    window.location.reload();
+  }, []);
+
+  const searchSuggestions = useMemo(() => {
+    if (!searchQuery) return [];
+    return hostels
+      .filter(hostel =>
+        hostel.p_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        hostel.p_blockno.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+      .slice(0, 5);
+  }, [hostels, searchQuery]);
+
+  const renderedCards = useMemo(() => {
+    return filteredHostels.map((hostel) => (
+      <div key={hostel.p_hostelid} className={styles.hostelCard}>
+        <div className={styles.cardImage}>
+          <img
+            src={hostel.images && hostel.images.length > 0 ? hostel.images[0] : DEFAULT_IMAGE}
+            alt={hostel.p_name}
+            loading="lazy"
+            decoding="async"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.src = DEFAULT_IMAGE;
+            }}
+          />
+          <div className={styles.cardBadges}>
+            {hostel.p_hosteltype === "Portion" && (
+              <span className={styles.acBadge}>Portion</span>
+            )}
+            {hostel.p_messprovide && (
+              <span className={styles.messBadge}>Mess</span>
+            )}
+            {hostel.p_isparking && (
+              <span className={styles.parkingBadge}>Parking</span>
+            )}
+            {hostel.p_geezerflag && (
+              <span className={styles.geyserBadge}>Geyser</span>
+            )}
+            {hostel.available_rooms !== -1 && hostel.available_rooms < 5 && (
+              <span className={styles.roomsBadge}>
+                Only {hostel.available_rooms} left
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.cardContent}>
+          <h3>{hostel.p_name}</h3>
+          <p className={styles.cardAddress}>
+            <i className="fa-solid fa-location-dot"></i>
+            Block {hostel.p_blockno}, House {hostel.p_houseno}
+            {hostel.distance_from_university !== -1 && (
+              <span className={styles.distance}>
+                • {formatValue(hostel.distance_from_university, { isDistance: true })} from university
+              </span>
+            )}
+          </p>
+
+          <div className={styles.cardStats}>
+            <div className={styles.statItem}>
+              <i className="fa-solid fa-money-bill-wave"></i>
+              <div>
+                <span className={styles.statLabel}>Monthly Rent</span>
+                <span className={styles.statValue}>
+                  {formatValue(hostel.monthly_rent, { isCurrency: true })}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.statItem}>
+              <i className="fa-solid fa-star"></i>
+              <div>
+                <span className={styles.statLabel}>Rating</span>
+                <span className={styles.statValue}>
+                  {formatRating(hostel.rating)}
+                </span>
+              </div>
+            </div>
+
+            <div className={styles.statItem}>
+              <i className="fa-solid fa-door-closed"></i>
+              <div>
+                <span className={styles.statLabel}>Available Rooms</span>
+                <span className={styles.statValue}>
+                  {formatRooms(hostel.available_rooms)}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.cardDetails}>
+            <p><i className="fa-solid fa-building"></i> {hostel.p_numrooms} Rooms, {hostel.p_numfloors} Floors</p>
+            <p><i className="fa-solid fa-droplet"></i> Water: {hostel.p_watertimings}</p>
+            <p><i className="fa-solid fa-broom"></i> Cleaning every {hostel.p_cleanlinesstenure} days</p>
+            <p><i className="fa-solid fa-tools"></i> Issues resolved in {hostel.p_issueresolvingtenure} days</p>
+          </div>
+
+          <div className={styles.cardButtons}>
+            <button
+              className={styles.viewBtn}
+              onClick={() => handleViewDetails(hostel.p_hostelid)}
+            >
+              <i className="fa-solid fa-eye"></i> View Details
+            </button>
+            <button
+              className={styles.ownerBtn}
+              onClick={() => handleViewOwner(hostel.p_hostelid)}
+            >
+              <i className="fa-solid fa-user-tie"></i> View Owner
+            </button>
+          </div>
+        </div>
+      </div>
+    ));
+  }, [filteredHostels, handleViewDetails, handleViewOwner]);
+
+  // Render error state
   if (error && hostels.length === 0 && !loading) {
     return (
       <div className={styles.errorContainer}>
         <i className="fa-solid fa-exclamation-circle"></i>
         <h3>Error Loading Hostels</h3>
         <p>{error}</p>
-        <button onClick={fetchAllHostels} className={styles.retryBtn}>
+        <button onClick={handleRetry} className={styles.retryBtn}>
           <i className="fa-solid fa-rotate"></i> Retry
         </button>
       </div>
@@ -359,29 +515,22 @@ const StudentHome: React.FC = () => {
 
           {showSuggestions && searchQuery && (
             <div className={styles.suggestionsDropdown}>
-              {hostels
-                .filter(hostel =>
-                  hostel.p_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  hostel.p_blockno.toLowerCase().includes(searchQuery.toLowerCase())
-                )
-                .slice(0, 5)
-                .map(hostel => (
-                  <div
-                    key={hostel.p_hostelid}
-                    className={styles.suggestionItem}
-                    onClick={() => {
-                      setSearchQuery(hostel.p_name);
-                      setShowSuggestions(false);
-                      applyFilters();
-                    }}
-                  >
-                    <i className="fa-solid fa-building"></i>
-                    <div>
-                      <strong>{hostel.p_name}</strong>
-                      <small>{hostel.p_blockno}, {hostel.p_houseno}</small>
-                    </div>
+              {searchSuggestions.map(hostel => (
+                <div
+                  key={hostel.p_hostelid}
+                  className={styles.suggestionItem}
+                  onClick={() => {
+                    setSearchQuery(hostel.p_name);
+                    setShowSuggestions(false);
+                  }}
+                >
+                  <i className="fa-solid fa-building"></i>
+                  <div>
+                    <strong>{hostel.p_name}</strong>
+                    <small>{hostel.p_blockno}, {hostel.p_houseno}</small>
                   </div>
-                ))}
+                </div>
+              ))}
             </div>
           )}
         </form>
@@ -494,10 +643,7 @@ const StudentHome: React.FC = () => {
       {/* HOSTEL GRID */}
       <div className={styles.hostelGrid}>
         {loading ? (
-          <div className={styles.loadingGrid}>
-            <div className={styles.spinner}></div>
-            <p>Loading hostels...</p>
-          </div>
+          <SkeletonCards />
         ) : filteredHostels.length === 0 ? (
           <div className={styles.noResults}>
             <i className="fa-solid fa-search"></i>
@@ -516,109 +662,7 @@ const StudentHome: React.FC = () => {
             </div>
           </div>
         ) : (
-          filteredHostels.map((hostel) => (
-            <div key={hostel.p_hostelid} className={styles.hostelCard}>
-              <div className={styles.cardImage}>
-                <img
-                  src={hostel.images && hostel.images.length > 0
-                    ? hostel.images[0]
-                    : `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`
-                  }
-                  alt={hostel.p_name}
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.src = `https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-1.2.1&auto=format&fit=crop&w=600&q=80`;
-                  }}
-                />
-                <div className={styles.cardBadges}>
-                  {hostel.p_hosteltype === "Portion" && (
-                    <span className={styles.acBadge}>Portion</span>
-                  )}
-                  {hostel.p_messprovide && (
-                    <span className={styles.messBadge}>Mess</span>
-                  )}
-                  {hostel.p_isparking && (
-                    <span className={styles.parkingBadge}>Parking</span>
-                  )}
-                  {hostel.p_geezerflag && (
-                    <span className={styles.geyserBadge}>Geyser</span>
-                  )}
-                  {hostel.available_rooms !== -1 && hostel.available_rooms < 5 && (
-                    <span className={styles.roomsBadge}>
-                      Only {hostel.available_rooms} left
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className={styles.cardContent}>
-                <h3>{hostel.p_name}</h3>
-                <p className={styles.cardAddress}>
-                  <i className="fa-solid fa-location-dot"></i>
-                  Block {hostel.p_blockno}, House {hostel.p_houseno}
-                  {hostel.distance_from_university !== -1 && (
-                    <span className={styles.distance}>
-                      • {formatValue(hostel.distance_from_university, { isDistance: true })} from university
-                    </span>
-                  )}
-                </p>
-
-                <div className={styles.cardStats}>
-                  <div className={styles.statItem}>
-                    <i className="fa-solid fa-money-bill-wave"></i>
-                    <div>
-                      <span className={styles.statLabel}>Monthly Rent</span>
-                      <span className={styles.statValue}>
-                        {formatValue(hostel.monthly_rent, { isCurrency: true })}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.statItem}>
-                    <i className="fa-solid fa-star"></i>
-                    <div>
-                      <span className={styles.statLabel}>Rating</span>
-                      <span className={styles.statValue}>
-                        {formatRating(hostel.rating)}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className={styles.statItem}>
-                    <i className="fa-solid fa-door-closed"></i>
-                    <div>
-                      <span className={styles.statLabel}>Available Rooms</span>
-                      <span className={styles.statValue}>
-                        {formatRooms(hostel.available_rooms)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.cardDetails}>
-                  <p><i className="fa-solid fa-building"></i> {hostel.p_numrooms} Rooms, {hostel.p_numfloors} Floors</p>
-                  <p><i className="fa-solid fa-droplet"></i> Water: {hostel.p_watertimings}</p>
-                  <p><i className="fa-solid fa-broom"></i> Cleaning every {hostel.p_cleanlinesstenure} days</p>
-                  <p><i className="fa-solid fa-tools"></i> Issues resolved in {hostel.p_issueresolvingtenure} days</p>
-                </div>
-
-                <div className={styles.cardButtons}>
-                  <button
-                    className={styles.viewBtn}
-                    onClick={() => handleViewDetails(hostel.p_hostelid)}
-                  >
-                    <i className="fa-solid fa-eye"></i> View Details
-                  </button>
-                  <button
-                    className={styles.ownerBtn}
-                    onClick={() => handleViewOwner(hostel.p_hostelid)}
-                  >
-                    <i className="fa-solid fa-user-tie"></i> View Owner
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))
+          renderedCards
         )}
       </div>
 

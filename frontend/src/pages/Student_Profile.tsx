@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import styles from "../styles/StudentProfile.module.css";
@@ -23,19 +23,102 @@ interface StudentDetails {
   p_WashroomType?: string;
 }
 
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+const getCached = <T,>(key: string): T | null => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > CACHE_TTL) {
+      sessionStorage.removeItem(key);
+      return null;
+    }
+    return data as T;
+  } catch {
+    return null;
+  }
+};
+
+const setCache = (key: string, data: any) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  } catch { /* storage full, ignore */ }
+};
+
+const SkeletonLoader: React.FC = () => (
+  <div className={styles.pageWrapper}>
+    <nav className={styles.navbar}>
+      <div className={styles.logo}>
+        <i className="fa-solid fa-building-user"></i> FastStay
+      </div>
+      <div className={styles.navLinks}>
+        <span className={styles.navLinkItem}>Home</span>
+        <span className={`${styles.navLinkItem} ${styles.active}`}>My Profile</span>
+        <span className={styles.navLinkItem}>Suggestions</span>
+        <span className={styles.navLinkItem}>Logout</span>
+      </div>
+    </nav>
+    <div className={styles.container}>
+      <div className={styles.pageHeader}>
+        <div>
+          <div className={styles.skeletonTitle} />
+          <div className={styles.skeletonSubtitle} />
+        </div>
+        <div className={styles.skeletonButton} />
+      </div>
+      <div className={styles.profileGrid}>
+        <div className={styles.profileCard}>
+          <div className={styles.skeletonAvatar} />
+          <div className={styles.skeletonName} />
+          <div className={styles.skeletonEmail} />
+          <div className={styles.skeletonLocation} />
+          <div className={styles.skeletonBadge} />
+        </div>
+        <div className={styles.infoSections}>
+          {[1, 2, 3].map((i) => (
+            <div key={i} className={styles.section}>
+              <div className={styles.skeletonSectionTitle} />
+              <div className={styles.infoGrid}>
+                {[1, 2, 3, 4].map((j) => (
+                  <div key={j} className={styles.infoItem}>
+                    <div className={styles.skeletonLabel} />
+                    <div className={styles.skeletonValue} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+);
+
 const StudentProfile: React.FC = () => {
   const [student, setStudent] = useState<StudentDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const queryParams = new URLSearchParams(window.location.search);
+  const queryParams = useMemo(() => new URLSearchParams(window.location.search), []);
   const userId = queryParams.get("user_id");
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
+
     const fetchStudent = async () => {
       if (!userId) {
         setError("No student ID provided.");
+        setLoading(false);
+        return;
+      }
+
+      const cacheKey = `student_profile_${userId}`;
+      const cached = getCached<StudentDetails>(cacheKey);
+      if (cached) {
+        setStudent(cached);
         setLoading(false);
         return;
       }
@@ -44,54 +127,55 @@ const StudentProfile: React.FC = () => {
         const [profileResponse, usersResponse] = await Promise.all([
           axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
             p_StudentId: parseInt(userId)
-          }),
-          axios.get("http://127.0.0.1:8000/faststay_app/users/all/")
+          }, { signal }),
+          axios.get("http://127.0.0.1:8000/faststay_app/users/all/", { signal })
         ]);
 
         const users: StudentDetails[] = usersResponse.data.users;
         const foundUser = users.find((u) => u.userid === parseInt(userId));
 
         if (profileResponse.data.success && foundUser) {
-          setStudent({ ...profileResponse.data.result, ...foundUser });
+          const mergedStudent = { ...profileResponse.data.result, ...foundUser };
+          setStudent(mergedStudent);
+          setCache(cacheKey, mergedStudent);
         } else {
           setError("Student not found.");
         }
-      } catch (err) {
-        console.error(err);
-        setError("Failed to fetch student details.");
+      } catch (err: any) {
+        if (!signal.aborted) {
+          console.error(err);
+          setError("Failed to fetch student details.");
+        }
       } finally {
-        setLoading(false);
+        if (!signal.aborted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchStudent();
+    return () => controller.abort();
   }, [userId]);
 
-  const getInitials = () => {
+  const getInitials = useCallback(() => {
     if (!student) return "U";
     return `${student.fname?.[0] || ''}${student.lname?.[0] || ''}`.toUpperCase();
-  };
+  }, [student]);
+
+  const fullName = useMemo(() => {
+    return student ? `${student.fname || ''} ${student.lname || ''}`.trim() : `Student #${userId}`;
+  }, [student, userId]);
+
+  const handleEditProfile = useCallback(() => {
+    navigate(`/student/profile/edit?user_id=${userId}`);
+  }, [navigate, userId]);
+
+  const handleRetry = useCallback(() => {
+    window.location.reload();
+  }, []);
 
   if (loading) {
-    return (
-      <div className={styles.pageWrapper}>
-        <nav className={styles.navbar}>
-          <div className={styles.logo}>
-            <i className="fa-solid fa-building-user"></i> FastStay
-          </div>
-          <div className={styles.navLinks}>
-            <span className={styles.navLinkItem}>Home</span>
-            <span className={`${styles.navLinkItem} ${styles.active}`}>My Profile</span>
-            <span className={styles.navLinkItem}>Suggestions</span>
-            <span className={styles.navLinkItem}>Logout</span>
-          </div>
-        </nav>
-        <div className={styles.loadingContainer}>
-          <div className={styles.spinner}></div>
-          <p>Loading your profile...</p>
-        </div>
-      </div>
-    );
+    return <SkeletonLoader />;
   }
 
   if (error) {
@@ -123,7 +207,7 @@ const StudentProfile: React.FC = () => {
           <i className="fa-solid fa-circle-exclamation"></i>
           <h3>Unable to load profile</h3>
           <p>{error}</p>
-          <button onClick={() => window.location.reload()} className={styles.retryButton}>
+          <button onClick={handleRetry} className={styles.retryButton}>
             <i className="fa-solid fa-rotate-right"></i> Try Again
           </button>
         </div>
@@ -170,7 +254,7 @@ const StudentProfile: React.FC = () => {
           </div>
           <button
             className={styles.editBtn}
-            onClick={() => navigate(`/student/profile/edit?user_id=${userId}`)}
+            onClick={handleEditProfile}
           >
             <i className="fa-solid fa-pen"></i> Edit Profile
           </button>
@@ -184,7 +268,7 @@ const StudentProfile: React.FC = () => {
               {getInitials()}
             </div>
             <h3 className={styles.name}>
-              {student ? `${student.fname} ${student.lname}` : `Student #${userId}`}
+              {fullName}
             </h3>
             {student?.email && (
               <p className={styles.email}>
