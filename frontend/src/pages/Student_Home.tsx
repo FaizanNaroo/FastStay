@@ -41,7 +41,7 @@ interface FilterState {
   hasGeyser: boolean | null;
 }
 
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 const getCached = <T,>(key: string): T | null => {
   try {

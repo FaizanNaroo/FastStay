@@ -55,10 +55,12 @@ interface HostelDetails {
   security_deposit?: number;
   maintenance_charges?: number;
   wifi_included: boolean;
+  p_latitude?: number;
+  p_longitude?: number;
 }
 
 const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
-const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
 
 const getCached = <T,>(key: string): T | null => {
   try {
@@ -176,6 +178,32 @@ const getHostelExpenses = async (hostelId: number, signal: AbortSignal): Promise
   }
 };
 
+const getHostelCoordinates = async (hostelId: number, signal: AbortSignal): Promise<{ lat: number; lng: number } | null> => {
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/hostel/display/`,
+      { p_HostelId: hostelId },
+      { signal }
+    );
+    const data = response.data;
+
+    if (data?.success && data?.result) {
+      const result = data.result;
+      const lat = parseFloat(result.p_Latitude ?? result.p_latitude ?? "");
+      const lng = parseFloat(result.p_Longitude ?? result.p_longitude ?? "");
+
+      if (!isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+        return { lat, lng };
+      }
+    }
+    return null;
+  } catch (error: any) {
+    if (axios.isCancel(error)) throw error;
+    console.error("Failed to fetch hostel coordinates:", error);
+    return null;
+  }
+};
+
 const getRoomTypesFromExpenses = (expenses: Expense | null): RoomType[] => {
   if (!expenses || !expenses.p_RoomCharges || expenses.p_RoomCharges.length === 0) {
     return [];
@@ -258,11 +286,17 @@ const HostelDetails: React.FC = () => {
         );
       }
 
+      // DEBUG: Remove after confirming field names
+      console.log("basicInfo for hostel:", JSON.stringify(basicInfo, null, 2));
+
       const [images, ratings, expenses] = await Promise.all([
         getHostelImages(id, signal),
         getHostelRatings(id, signal),
         getHostelExpenses(id, signal)
       ]);
+
+      // Fetch coordinates from hostel/display/ endpoint (all_hostels doesn't return lat/lng)
+      const coordinates = await getHostelCoordinates(id, signal);
 
       const averageRating = calculateAverageRating(ratings);
       const roomsFromExpenses = getRoomTypesFromExpenses(expenses);
@@ -291,13 +325,16 @@ const HostelDetails: React.FC = () => {
         electricity_charges: expenses?.p_ElectricitybillType || "",
         security_deposit: expenses?.p_SecurityCharges,
         maintenance_charges: expenses?.p_AcServiceCharges,
-        wifi_included: expenses?.p_InternetCharges === 0
+        wifi_included: expenses?.p_InternetCharges === 0,
+        p_latitude: coordinates?.lat,
+        p_longitude: coordinates?.lng,
       };
 
       setHostel(hostelDetails);
       setCache(cacheKey, hostelDetails);
     } catch (error: any) {
       if (axios.isCancel(error)) return;
+      console.error("Failed to fetch hostel details:", error);
       console.error("Failed to fetch hostel details:", error);
     } finally {
       setLoading(false);
@@ -323,7 +360,23 @@ const HostelDetails: React.FC = () => {
   };
 
   const handleGetDirections = () => {
-    alert("Getting directions...");
+    if (!hostel) return;
+    const lat = hostel.p_latitude;
+    const lng = hostel.p_longitude;
+    if (lat == null || lng == null || isNaN(lat) || isNaN(lng)) {
+      alert("Hostel location is not available.");
+      return;
+    }
+    const params = new URLSearchParams({
+      hostel_id: String(hostel.hostel_id),
+      user_id: userId,
+      lat: String(lat),
+      lng: String(lng),
+      name: hostel.p_name,
+      block: hostel.p_blockno,
+      house: hostel.p_houseno,
+    });
+    navigate(`/student/directions?${params.toString()}`);
   };
 
   const handleBack = () => {
@@ -413,6 +466,23 @@ const HostelDetails: React.FC = () => {
             </span>
           )}
         </p>
+      </div>
+
+      <div className={styles.buttons}>
+        <button className={styles.btn} onClick={handleContactManager}>
+          <i className="fa-solid fa-phone"></i> Contact Manager
+        </button>
+        <button className={styles.btn} onClick={handleWhatsApp}>
+          <i className="fa-brands fa-whatsapp"></i> WhatsApp
+        </button>
+        <button
+          className={styles.btn}
+          onClick={() => navigate(`/student/rooms?hostel_id=${hostelId}&user_id=${userId}`)}>
+          <i className="fa-solid fa-door-open"></i> View Rooms
+        </button>
+        <button className={styles.btn} onClick={handleGetDirections}>
+          <i className="fa-solid fa-map-location-dot"></i> Get Directions
+        </button>
       </div>
 
       <div className={styles.container}>
@@ -593,22 +663,6 @@ const HostelDetails: React.FC = () => {
           </section>
         )}
 
-        <div className={styles.buttons}>
-          <button className={styles.btn} onClick={handleContactManager}>
-            <i className="fa-solid fa-phone"></i> Contact Manager
-          </button>
-          <button className={styles.btn} onClick={handleWhatsApp}>
-            <i className="fa-brands fa-whatsapp"></i> WhatsApp
-          </button>
-          <button
-            className={styles.btn}
-            onClick={() => navigate(`/student/rooms?hostel_id=${hostelId}&user_id=${userId}`)}>
-            <i className="fa-solid fa-door-open"></i> View Rooms
-          </button>
-          <button className={styles.btn} onClick={handleGetDirections}>
-            <i className="fa-solid fa-map-location-dot"></i> Get Directions
-          </button>
-        </div>
       </div>
     </div>
   );

@@ -23,7 +23,7 @@ import AddHostel from "./pages/AddHostel";
 import AddRoom from "./pages/AddRoom";
 import Profile from "./pages/Profile";
 import ManagerAnalytics from "./pages/ManagerAnalytics";
-
+import DirectionsMap from "./pages/DirectionsMap";
 
 localStorage.clear();
 
@@ -38,6 +38,7 @@ function App() {
         <Route path="/student/hostelDetails" element={<HostelDetails/>}/>
         <Route path="/student/ownerDetails" element={<OwnerDetails/>}/>
         <Route path="/student/rooms" element={<Rooms/>}/>
+        <Route path="/student/directions" element={<DirectionsMap />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="admin/logout" element={<LogoutConfirm />} />
         <Route path="/admin/hostels" element={<ViewHostels />} />
