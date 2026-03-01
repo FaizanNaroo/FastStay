@@ -160,14 +160,18 @@
 .box {
   background: #f8f3e7;
   color: #3b2c24;
-  padding: 18px 25px;
+  padding: 22px 28px;
   border-radius: 14px;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
   box-shadow: 0px 6px 22px rgba(0, 0, 0, 0.3);
+  border: 2px solid #8d5f3a;
+  border-top: 4px solid #8d5f3a;
 }
 
 .box h2 {
-  margin-bottom: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #d4b498;
   color: #5c3d2e;
   font-size: 20px;
   display: flex;
@@ -176,6 +180,7 @@
 
 .box h2 i {
   margin-right: 10px;
+  color: #8d5f3a;
 }
 
 /* === ROOM GRID === */
@@ -189,11 +194,13 @@
 .roomCard {
   background: #fff5e8;
   color: #3b2c24;
-  padding: 15px;
+  padding: 18px;
   border-radius: 10px;
   flex: 1;
   min-width: 200px;
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.18);
+  border: 1px solid #d4b498;
+  border-left: 4px solid #8d5f3a;
 }
 
 .roomCard h3 {
@@ -233,6 +240,7 @@
   gap: 15px;
   justify-content: center;
   margin-top: 20px;
+  padding: 0 20px;
 }
 
 .btn {
@@ -292,6 +300,350 @@
   100% { background-position: -200% 0; }
 }
 
+/* === INFO GRID === */
+.infoGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.infoRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff5e8;
+  border-radius: 8px;
+  border: 1px solid #e0d6c9;
+  border-left: 3px solid #8d5f3a;
+}
+
+.infoLabel {
+  font-size: 14px;
+  color: #6c574b;
+}
+
+.infoLabel i {
+  margin-right: 8px;
+  color: #8d5f3a;
+}
+
+.infoValue {
+  font-weight: 600;
+  color: #3b2c24;
+  font-size: 14px;
+}
+
+/* === FEATURE TAGS / BOOLEAN BADGES === */
+.featureTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.badgeYes {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: #fff5e8;
+  color: #5c3d2e;
+  border: 1.5px solid #8d5f3a;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badgeYes i {
+  color: #8d5f3a;
+}
+
+.badgeNo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  background: #f0e8e0;
+  color: #8a7568;
+  border: 1.5px solid #c4a68a;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.badgeNo i {
+  color: #a08474;
+}
+
+/* === DISH TAGS === */
+.dishTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dishTag {
+  padding: 6px 16px;
+  background: #fff5e8;
+  border: 1.5px solid #d4b498;
+  border-radius: 20px;
+  font-size: 13px;
+  color: #5c3d2e;
+  font-weight: 500;
+}
+
+/* === EXPENSE GRID === */
+.expenseGrid {
+  display: grid;
+  gap: 0;
+  margin-top: 10px;
+  border: 1px solid #e0d6c9;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.expenseItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  border-bottom: 1px solid #e0d6c9;
+  background: #fff5e8;
+}
+
+.expenseItem:nth-child(even) {
+  background: #f8f3e7;
+}
+
+.expenseItem:last-child {
+  border-bottom: none;
+}
+
+.expenseLabel {
+  font-size: 14px;
+  color: #6c574b;
+}
+
+.expenseLabel i {
+  margin-right: 8px;
+  color: #8d5f3a;
+  width: 16px;
+  text-align: center;
+}
+
+.expenseValue {
+  font-weight: 600;
+  color: #3b2c24;
+  font-size: 14px;
+}
+
+.expenseNote {
+  background: #fff5e8;
+  color: #5c3d2e;
+  padding: 16px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  margin-top: 10px;
+  border: 1.5px solid #d4b498;
+  border-left: 4px solid #8d5f3a;
+}
+
+.expenseNote i {
+  margin-right: 8px;
+  color: #8d5f3a;
+}
+
+/* === INCLUDED IN ROOM CHARGES TAG === */
+.includedTag {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #fff5e8;
+  color: #5c3d2e;
+  border: 1.5px solid #8d5f3a;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.includedTag i {
+  color: #8d5f3a;
+}
+
+/* === TOTAL ESTIMATE === */
+.totalEstimate {
+  margin-top: 20px;
+  padding: 18px 20px;
+  border-top: 3px solid #8d5f3a;
+  background: #fff5e8;
+  border-radius: 0 0 10px 10px;
+}
+
+.totalEstimate h4 {
+  color: #5c3d2e;
+  margin-bottom: 8px;
+  font-size: 16px;
+}
+
+.totalAmount {
+  font-size: 28px;
+  font-weight: bold;
+  color: #8d5f3a;
+}
+
+.totalSuffix {
+  font-size: 14px;
+  font-weight: normal;
+  color: #6c574b;
+  margin-left: 4px;
+}
+
+.totalNote {
+  font-size: 12px;
+  color: #8a7568;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* === RATINGS === */
+.ratingHeader {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  background: #fff5e8;
+  border-radius: 10px;
+  border: 1px solid #e0d6c9;
+}
+
+.ratingBig {
+  font-size: 40px;
+  font-weight: bold;
+  color: #8d5f3a;
+  line-height: 1;
+}
+
+.ratingBreakdown {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.ratingCategory {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  background: #fff5e8;
+  border-radius: 8px;
+  border: 1px solid #e0d6c9;
+  border-bottom: 3px solid #d4b498;
+}
+
+.ratingCategory span:first-child {
+  font-size: 12px;
+  color: #6c574b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.reviewCard {
+  margin-top: 12px;
+  padding: 14px 16px;
+  background: #fff5e8;
+  border-radius: 8px;
+  border: 1px solid #e0d6c9;
+  border-left: 4px solid #8d5f3a;
+}
+
+/* === RATING STARS === */
+.ratingStars {
+  color: #ffd700;
+  font-size: 18px;
+}
+
+.ratingCount {
+  font-size: 14px;
+  color: #6c574b;
+}
+
+/* === REVIEW CARD INNER === */
+.reviewHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.reviewStudent {
+  font-size: 12px;
+  color: #6c574b;
+}
+
+.reviewText {
+  font-size: 14px;
+  color: #5c3d2e;
+  font-style: italic;
+}
+
+/* === AVERAGE RATING IN HEADER === */
+.averageRating {
+  margin-left: 15px;
+}
+
+.averageRating i {
+  color: #ffd700;
+  margin-right: 5px;
+}
+
+/* === IMAGE EXTRAS === */
+.imageCounter {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(59, 44, 36, 0.8);
+  color: #f8f3e7;
+  padding: 5px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.noImagePlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #4a3830;
+}
+
+.noImagePlaceholder p {
+  position: static;
+  background: none;
+  transform: none;
+  color: #999;
+  font-size: 14px;
+  margin-top: 10px;
+}
+
+/* === SECTION SUBHEADING (used for inline h4 inside boxes) === */
+.box h4 {
+  color: #5c3d2e;
+  font-size: 15px;
+  margin-top: 16px;
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed #d4b498;
+}
+
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
   .navbar {
@@ -347,6 +699,18 @@
   .skeletonHeader {
     height: 280px;
   }
+
+  .infoGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .ratingBreakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .featureTags {
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
@@ -365,7 +729,7 @@
   }
   
   .box {
-    padding: 15px 20px;
+    padding: 15px 18px;
   }
   
   .box h2 {
@@ -374,5 +738,13 @@
 
   .skeletonHeader {
     height: 220px;
+  }
+
+  .ratingBig {
+    font-size: 28px;
+  }
+
+  .totalAmount {
+    font-size: 22px;
   }
 }

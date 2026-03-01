@@ -391,7 +391,7 @@ const StudentHome: React.FC = () => {
             Block {hostel.p_blockno}, House {hostel.p_houseno}
             {hostel.distance_from_university !== -1 && (
               <span className={styles.distance}>
-                • {formatValue(hostel.distance_from_university, { isDistance: true })} from university
+                • {formatValue(hostel.distance_from_university, { isDistance: true })} from FAST
               </span>
             )}
           </p>
