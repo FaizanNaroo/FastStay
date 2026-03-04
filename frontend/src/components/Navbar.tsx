@@ -10,6 +10,7 @@ const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
   const location = useLocation();
   const currentPath = location.pathname;
   const navigate = useNavigate();
+  const isGuest = userId === "guest";
 
   const handleLogout = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -35,18 +36,35 @@ const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
         >
           Home
         </Link>
-        <Link
-          to={`/student/profile?user_id=${userId}`}
-          className={isActive("/student/profile")}
-        >
-          My Profile
-        </Link>
-        <Link
-          to={`/student/suggestions?user_id=${userId}`}
-          className={isActive("/student/suggestions")}
-        >
-          Recommendations
-        </Link>
+
+        {isGuest ? (
+          <span className={`${styles.navLinkItem} ${styles.disabledLink}`}>
+            My Profile
+            <span className={styles.tooltip}>Create an account first</span>
+          </span>
+        ) : (
+          <Link
+            to={`/student/profile?user_id=${userId}`}
+            className={isActive("/student/profile")}
+          >
+            My Profile
+          </Link>
+        )}
+
+        {isGuest ? (
+          <span className={`${styles.navLinkItem} ${styles.disabledLink}`}>
+            Recommendations
+            <span className={styles.tooltip}>Create an account first</span>
+          </span>
+        ) : (
+          <Link
+            to={`/student/suggestions?user_id=${userId}`}
+            className={isActive("/student/suggestions")}
+          >
+            Recommendations
+          </Link>
+        )}
+
         <a href="" onClick={handleLogout} className={styles.navLinkItem}>
           Sign out
         </a>

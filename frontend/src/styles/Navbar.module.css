@@ -67,6 +67,62 @@
   color: #d4b498;
 }
 
+.disabledLink {
+  opacity: 0.5;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.disabledLink::before {
+  display: none;
+}
+
+.tooltip {
+  visibility: hidden;
+  opacity: 0;
+  background-color: #3e2f27;
+  color: #f8f3e7;
+  text-align: center;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  white-space: nowrap;
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 1px solid rgba(212, 180, 152, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 100;
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: rgba(212, 180, 152, 0.3);
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: calc(100% - 1px);
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom-color: #3e2f27;
+}
+
+.disabledLink:hover .tooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .navbar {

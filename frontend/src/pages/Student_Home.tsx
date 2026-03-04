@@ -180,7 +180,7 @@ const SkeletonCards: React.FC = () => (
 );
 
 const StudentHome: React.FC = () => {
-  const userId = useAuthGuard();
+  const userId = useAuthGuard({ allowGuest: true });
 
   const [hostels, setHostels] = useState<Hostel[]>([]);
   const [loading, setLoading] = useState(true);

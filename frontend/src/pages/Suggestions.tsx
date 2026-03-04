@@ -410,7 +410,7 @@ const Suggestions: React.FC = () => {
   return (
     <div className={styles.pageWrapper}>
       {/* NAVBAR */}
-      <Navbar userId={userId} styles={styles} />
+      <Navbar userId={userId}/>
 
       {/* MAIN CONTENT */}
       <div className={styles.mainContainer}>

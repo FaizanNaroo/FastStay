@@ -172,7 +172,7 @@ const StudentProfile: React.FC = () => {
   if (error) {
     return (
       <div className={styles.pageWrapper}>
-        <Navbar userId={userId} styles={styles} />
+        <Navbar userId={userId} />
         <div className={styles.errorContainer}>
           <i className="fa-solid fa-circle-exclamation"></i>
           <h3>Unable to load profile</h3>
@@ -187,7 +187,7 @@ const StudentProfile: React.FC = () => {
 
   return (
     <div className={styles.pageWrapper}>
-      <Navbar userId={userId} styles={styles} />
+      <Navbar userId={userId} />
 
       <div className={styles.container}>
         {/* Page Header */}

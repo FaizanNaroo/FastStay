@@ -3,7 +3,7 @@
  * Call this from your login page upon successful authentication.
  */
 export const setAuthenticatedUser = (userId: string) => {
-  sessionStorage.setItem("authenticated_user_id", userId);
+  sessionStorage.setItem("authenticated_user", userId);
 };
 
 /**
@@ -29,4 +29,18 @@ export const validateUserAccess = (urlUserId: string | null): string | null => {
   if (!authenticatedId || !urlUserId) return null;
   if (urlUserId !== authenticatedId) return null;
   return authenticatedId;
+};
+
+/**
+ * Login as a guest user.
+ */
+export const loginAsGuest = () => {
+  sessionStorage.setItem("authenticated_user", "guest");
+};
+
+/**
+ * Check if the current user is a guest.
+ */
+export const isGuestUser = (userId: string | null): boolean => {
+  return userId === "guest";
 };

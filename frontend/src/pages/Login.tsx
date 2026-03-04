@@ -2,7 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import styles from "../styles/Login.module.css";
 import { useGoogleLogin } from "@react-oauth/google";
-import { setAuthenticatedUser } from "../utils/auth";
+import { setAuthenticatedUser, loginAsGuest } from "../utils/auth";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -67,6 +67,11 @@ const Login: React.FC = () => {
     setLoading(false);
   };
 
+  const handleGuestLogin = () => {
+    loginAsGuest();
+    window.location.href = `/student/home?user_id=guest`;
+  };
+
   return (
     <div className={styles.screen}>
       <div className={styles.container}>
@@ -114,10 +119,19 @@ const Login: React.FC = () => {
               <i className="fa-brands fa-google"></i> Login with Google
             </button>
 
+            <button
+              className={styles.guestBtn}
+              type="button"
+              onClick={handleGuestLogin}
+            >
+              <i className="fa-solid fa-user-secret"></i> Continue as Guest
+            </button>
+
             <p className={styles.bottomText}>
-              Don’t have an account?
+              Don't have an account?
               <a href="/signup"> Create Account</a>
             </p>
+
           </form>
 
           <div className={styles.errorSpace}>
