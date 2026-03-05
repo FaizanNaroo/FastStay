@@ -48,9 +48,9 @@ const setCache = (key: string, data: any) => {
   } catch { /* storage full, ignore */ }
 };
 
-const SkeletonLoader: React.FC = () => (
+const SkeletonLoader: React.FC<{ userId: string | null }> = ({ userId }) => (
   <div className={styles.pageWrapper}>
-    <div className={styles.skeletonNavbar} />
+    <Navbar userId={userId ?? ""} />
     <div className={styles.container}>
       <div className={styles.pageHeader}>
         <div>
@@ -90,7 +90,7 @@ const SkeletonLoader: React.FC = () => (
 const StudentProfile: React.FC = () => {
   const userId = useAuthGuard();
   const [student, setStudent] = useState<StudentDetails | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -98,12 +98,11 @@ const StudentProfile: React.FC = () => {
     const controller = new AbortController();
     const signal = controller.signal;
 
+    window.scrollTo(0, 0);
+
     const fetchStudent = async () => {
-      if (!userId) {
-        setError("No student ID provided.");
-        setLoading(false);
-        return;
-      }
+      if (!userId) return;
+      setLoading(true);
 
       const cacheKey = `student_profile_${userId}`;
       const cached = getCached<StudentDetails>(cacheKey);
@@ -165,8 +164,8 @@ const StudentProfile: React.FC = () => {
     window.location.reload();
   }, [userId]);
 
-  if (loading) {
-    return <SkeletonLoader />;
+  if (loading || !userId) {
+    return <SkeletonLoader userId={userId} />;
   }
 
   if (error) {

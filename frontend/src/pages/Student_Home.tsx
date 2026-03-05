@@ -420,7 +420,7 @@ const StudentHome: React.FC = () => {
             <div className={styles.statItem}>
               <i className="fa-solid fa-door-closed"></i>
               <div>
-                <span className={styles.statLabel}>Available Rooms</span>
+                <span className={styles.statLabel}>Total Rooms</span>
                 <span className={styles.statValue}>
                   {formatRooms(hostel.available_rooms)}
                 </span>

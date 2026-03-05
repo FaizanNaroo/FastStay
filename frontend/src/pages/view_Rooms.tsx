@@ -104,6 +104,7 @@ const ViewRooms: React.FC = () => {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     const initialIndices: { [key: number]: number } = {};
     rooms.forEach(room => {
       initialIndices[room.p_RoomNo] = 0;

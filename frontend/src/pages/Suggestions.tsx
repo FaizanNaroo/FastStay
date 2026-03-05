@@ -36,6 +36,7 @@ interface StudentProfile {
   p_isMess: boolean;
   p_BedType: string;
   p_WashroomType: string;
+  gender?: string;
 }
 
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
@@ -143,17 +144,29 @@ const Suggestions: React.FC = () => {
       }
 
       try {
-        const [profileResponse, hostelsResponse, ratingsResponse] = await Promise.all([
+        const [profileResponse, hostelsResponse, ratingsResponse, usersResponse] = await Promise.all([
           axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
             p_StudentId: parseInt(userId)
           }, { signal }),
           axios.get("http://127.0.0.1:8000/faststay_app/display/all_hostels", { signal }),
-          axios.get("http://127.0.0.1:8000/faststay_app/display/hostel_rating", { signal }).catch(() => ({ data: null }))
+          axios.get("http://127.0.0.1:8000/faststay_app/display/hostel_rating", { signal }).catch(() => ({ data: null })),
+          axios.get("http://127.0.0.1:8000/faststay_app/users/all/", { signal }).catch(() => ({ data: null }))
         ]);
 
         let fetchedProfile: StudentProfile | null = null;
         if (profileResponse.data.success) {
           fetchedProfile = profileResponse.data.result;
+
+          // Merge gender from the users list into the profile
+          if (usersResponse?.data?.users) {
+            const foundUser = usersResponse.data.users.find(
+              (u: any) => u.userid === parseInt(userId)
+            );
+            if (foundUser?.gender) {
+              fetchedProfile = { ...fetchedProfile, gender: foundUser.gender } as StudentProfile;
+            }
+          }
+
           setProfile(fetchedProfile);
         }
 
@@ -173,7 +186,18 @@ const Suggestions: React.FC = () => {
         }
 
         if (hostelsResponse.data.hostels && Array.isArray(hostelsResponse.data.hostels)) {
-          const topHostels = hostelsResponse.data.hostels.slice(0, 3);
+          // Filter hostels by gender to avoid suggesting girls' hostels to male students and vice versa
+          const FEMALE_HOSTEL_PATTERN = /\b(girl|girls|woman|women|womens)\b/i;
+          const userGender = fetchedProfile?.gender?.toLowerCase();
+
+          const genderFilteredHostels = hostelsResponse.data.hostels.filter((hostel: any) => {
+            const isFemaleHostel = FEMALE_HOSTEL_PATTERN.test(hostel.p_name || "");
+            if (userGender === "male" && isFemaleHostel) return false;
+            if (userGender === "female" && !isFemaleHostel) return false;
+            return true;
+          });
+
+          const topHostels = genderFilteredHostels.slice(0, 3);
 
           const enhancedHostels = await Promise.all(
             topHostels.map(async (hostel: any) => {

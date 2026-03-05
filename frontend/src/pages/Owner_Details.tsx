@@ -61,9 +61,9 @@ const setCache = (key: string, data: any) => {
   }
 };
 
-const SkeletonLoader: React.FC = () => (
+const SkeletonLoader: React.FC<{ userId: string | null }> = ({ userId }) => (
   <div className={styles.pageWrapper}>
-    <div className={styles.skeletonNavbar} />
+    <Navbar userId={userId ?? ""} />
     <div className={styles.header}>
       <div className={styles.headerContent}>
         <div className={styles.skeletonBackButton} />
@@ -239,6 +239,7 @@ const OwnerDetails: React.FC = () => {
   }, [hostelId, API_BASE_URL]);
   
   useEffect(() => {
+    window.scrollTo(0, 0)
     fetchOwnerDetails();
     
     return () => {
@@ -299,14 +300,14 @@ const OwnerDetails: React.FC = () => {
   
   // Render loading state
   if (loading) {
-    return <SkeletonLoader />;
+    return <SkeletonLoader userId={userId} />;
   }
   
   // Render error state
   if (error || !owner) {
     return (
       <div className={styles.pageWrapper}>
-        <Navbar userId={userId} />
+        <Navbar userId={userId ?? ""} />
         <div className={styles.errorContainer}>
           <i className="fa-solid fa-exclamation-circle"></i>
           <h3>Error Loading Owner Details</h3>
@@ -326,7 +327,7 @@ const OwnerDetails: React.FC = () => {
   
   return (
     <div className={styles.pageWrapper}>
-      <Navbar userId={userId} />
+      <Navbar userId={userId ?? ""} />
       
       {/* HEADER */}
       <div className={styles.header}>
