@@ -30,6 +30,9 @@ interface BasicInfoSectionProps {
     hostelId: number | null;
     hostelPics: string[];
     onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    pendingFiles: File[];
+    setPendingFiles: React.Dispatch<React.SetStateAction<File[]>>;
+    onRemoveUploadedPic: (index: number) => void;
 }
 
 export default function BasicInfoSection({
@@ -38,10 +41,55 @@ export default function BasicInfoSection({
     handleSubmit,
     message,
     editingMode,
-    hostelId,
     hostelPics,
-    onFileChange
+    pendingFiles,
+    setPendingFiles,
+    onRemoveUploadedPic,
 }: BasicInfoSectionProps) {
+
+    const totalImages = hostelPics.length + pendingFiles.length;
+
+    function handleLocalFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+
+        const remaining = 5 - totalImages;
+        if (remaining <= 0) {
+            alert("Maximum 5 images allowed.");
+            return;
+        }
+
+        const newFiles = Array.from(files).slice(0, remaining);
+        setPendingFiles(prev => [...prev, ...newFiles]);
+
+        // Reset input so same file can be selected again
+        e.target.value = "";
+    }
+
+    function removePendingFile(index: number) {
+        setPendingFiles(prev => prev.filter((_, i) => i !== index));
+    }
+
+    const crossBtnStyle: React.CSSProperties = {
+        position: "absolute",
+        top: "-6px",
+        right: "-6px",
+        background: "#e74c3c",
+        color: "#fff",
+        border: "none",
+        borderRadius: "50%",
+        width: "22px",
+        height: "22px",
+        fontSize: "14px",
+        lineHeight: "20px",
+        textAlign: "center",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.3)",
+        padding: 0,
+    };
 
     return (
         <div className={styles.card} id="basic">
@@ -72,7 +120,7 @@ export default function BasicInfoSection({
                             name="p_BlockNo"
                             value={form.p_BlockNo}
                             onChange={handleChange}
-                            placeholder="Block number"
+                            placeholder="A Faisal Town"
                             required
                         />
                     </div>
@@ -207,7 +255,7 @@ export default function BasicInfoSection({
                     </div>
                 </div>
 
-                {/* ---------------- Hoste l Pics Upload ---------------- */}
+                {/* ---------------- Hostel Pics Upload ---------------- */}
                 <div className={styles.row}>
                     <div className={styles.inputGroup}>
                         <label>Upload Hostel Pictures (max 5)</label>
@@ -215,31 +263,77 @@ export default function BasicInfoSection({
                             type="file"
                             accept="image/*"
                             multiple
-                            onChange={onFileChange}
-                            disabled={!hostelId}
+                            onChange={handleLocalFileSelect}
+                            disabled={totalImages >= 5}
                         />
-                        <p style={{ fontSize: "12px", marginTop: "5px" }}>
-                            Save basic info first. You can upload up to 5 images per hostel.
+                        <p style={{ fontSize: "12px", marginTop: "5px", color: "#777" }}>
+                            {`${totalImages}/5 images selected. Images will be uploaded on ${editingMode ? "update" : "save"}.`}
                         </p>
                     </div>
                 </div>
 
-                {/* Preview existing pics */}
-                {hostelPics && hostelPics.length > 0 && (
-                    <div style={{ marginTop: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                {/* Preview uploaded pics */}
+                {(hostelPics.length > 0 || pendingFiles.length > 0) && (
+                    <div style={{ marginTop: "10px", display: "flex", gap: "12px", flexWrap: "wrap" }}>
                         {hostelPics.map((pic, idx) => (
-                            <img
-                                key={idx}
-                                src={pic}
-                                alt={`Hostel pic ${idx + 1}`}
-                                style={{
-                                    width: "140px",
-                                    height: "100px",
-                                    borderRadius: "8px",
-                                    objectFit: "cover",
-                                    border: "1px solid #ddd"
-                                }}
-                            />
+                            <div key={`uploaded-${idx}`} style={{ position: "relative", display: "inline-block" }}>
+                                <img
+                                    src={pic}
+                                    alt={`Hostel pic ${idx + 1}`}
+                                    style={{
+                                        width: "140px",
+                                        height: "100px",
+                                        borderRadius: "8px",
+                                        objectFit: "cover",
+                                        border: "1px solid #ddd"
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => onRemoveUploadedPic(idx)}
+                                    style={crossBtnStyle}
+                                    title="Remove image"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        ))}
+                        {pendingFiles.map((file, idx) => (
+                            <div key={`pending-${idx}`} style={{ position: "relative", display: "inline-block" }}>
+                                <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Pending pic ${idx + 1}`}
+                                    style={{
+                                        width: "140px",
+                                        height: "100px",
+                                        borderRadius: "8px",
+                                        objectFit: "cover",
+                                        border: "2px dashed #4a90e2"
+                                    }}
+                                />
+                                <button
+                                    type="button"
+                                    onClick={() => removePendingFile(idx)}
+                                    style={crossBtnStyle}
+                                    title="Remove image"
+                                >
+                                    ×
+                                </button>
+                                <div style={{
+                                    position: "absolute",
+                                    bottom: "4px",
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    background: "rgba(74,144,226,0.85)",
+                                    color: "#fff",
+                                    fontSize: "9px",
+                                    padding: "1px 6px",
+                                    borderRadius: "4px",
+                                    whiteSpace: "nowrap",
+                                }}>
+                                    Pending upload
+                                </div>
+                            </div>
                         ))}
                     </div>
                 )}
@@ -266,11 +360,10 @@ export default function BasicInfoSection({
                                     }
                                 } as any);
                             }}
-
                         />
 
-                        <p style={{ fontSize: "12px" }}>
-                            Click on map to select hostel location
+                        <p style={{ fontSize: "12px", color: "#777" }}>
+                            Click on map or search to select hostel location
                         </p>
                     </div>
                 </div>
@@ -295,7 +388,6 @@ export default function BasicInfoSection({
                         {message}
                     </div>
                 )}
-
             </form>
         </div>
     );
