@@ -1,6 +1,9 @@
 import axios, { AxiosError } from 'axios';
+import { cacheGet, cacheSet } from '../utils/cache';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
+
+export const CACHE_HOSTEL_DETAIL = (id: number) => `cache:admin:hostel:detail:${id}`;
 
 // ---- RAW Response Interfaces ----
 
@@ -116,7 +119,7 @@ export const approveHostel = async (hostelId: number): Promise<boolean> => {
 export const deleteHostel = async (hostelId: number): Promise<boolean> => {
     try {
         console.log(`Attempting to delete hostel with ID: ${hostelId}`);
-        
+
         // Use POST method as your Django view expects POST
         // Send p_HostelId (with capital H) as per your Django view
         const response = await axios.post(
@@ -128,9 +131,9 @@ export const deleteHostel = async (hostelId: number): Promise<boolean> => {
                 }
             }
         );
-        
+
         console.log("Delete API Response:", response.data);
-        
+
         // Your backend returns different response formats based on success/failure
         // Check for success messages
         if (response.status === 200 && response.data.message) {
@@ -145,12 +148,12 @@ export const deleteHostel = async (hostelId: number): Promise<boolean> => {
             console.error("Server error:", response.data.error);
             return false;
         }
-        
+
         return false;
-        
+
     } catch (error: unknown) {
         console.error(`Error deleting hostel ${hostelId}:`, error);
-        
+
         if (axios.isAxiosError(error)) {
             const axiosError = error as AxiosError;
             console.error("Axios Error Details:", {
@@ -158,7 +161,7 @@ export const deleteHostel = async (hostelId: number): Promise<boolean> => {
                 data: axiosError.response?.data,
                 message: axiosError.message
             });
-            
+
             // Check for specific error responses from your backend
             if (axiosError.response?.status === 404) {
                 console.log("Hostel not found - 404 error");
@@ -201,10 +204,10 @@ export const getHostelPictures = async (hostelId: number): Promise<string[]> => 
 
         console.log("Extracted images:", images); // Debug log
         return images;
-        
+
     } catch (error: unknown) {
         console.error(`Error fetching pictures for hostel ${hostelId}:`, error);
-        
+
         if (axios.isAxiosError(error)) {
             const err = error as AxiosError;
             console.error("Axios Response:", err.response?.data);
@@ -273,12 +276,16 @@ export const getAllHostelsTableData = async (): Promise<HostelTableRow[]> => {
 };
 
 // ---- CORRECTED: Function to get single hostel details with pictures ----
-export const getHostelDetails = async (hostelId: number): Promise<HostelTableRow | null> => {
+export const getHostelDetails = async (hostelId: number, bypassCache = false): Promise<HostelTableRow | null> => {
+    if (!bypassCache) {
+        const cached = cacheGet<HostelTableRow>(CACHE_HOSTEL_DETAIL(hostelId));
+        if (cached) return cached;
+    }
     try {
         // Fetch hostel details
         const hostelRes = await axios.get<HostelsApiResponse>(`${API_BASE_URL}/faststay_app/display/all_hostels`);
         const hostel = hostelRes.data.hostels.find(h => h.p_hostelid === hostelId);
-        
+
         if (!hostel) {
             console.error(`Hostel with ID ${hostelId} not found`);
             return null;
@@ -319,6 +326,8 @@ export const getHostelDetails = async (hostelId: number): Promise<HostelTableRow
             managerType: manager?.p_ManagerType || 'N/A',
             managerEducation: manager?.p_Education || 'N/A'
         };
+        cacheSet(CACHE_HOSTEL_DETAIL(hostelId), result);
+        return result;
 
     } catch (error: unknown) {
         console.error(`Error fetching hostel ${hostelId} details:`, error);

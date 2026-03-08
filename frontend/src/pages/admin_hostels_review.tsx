@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getHostelDetails, deleteHostel, type HostelTableRow } from "../api/admin_hostels_review";
+import { getHostelDetails, deleteHostel, CACHE_HOSTEL_DETAIL, type HostelTableRow } from "../api/admin_hostels_review";
+import { cacheGet } from "../utils/cache";
+import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 import "../AdminViewHostels.css";
 
@@ -19,40 +21,46 @@ const AdminViewHostels: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchHostel = async () => {
-      try {
-        setLoading(true);
-        setActionError(null);
-        const hostelId = parseInt(id || "0");
-        const hostelDetails = await getHostelDetails(hostelId);
-        
+    const hostelId = parseInt(id || "0");
+    setActionError(null);
+
+    // Phase 1: instant render from cache
+    const cached = cacheGet<HostelTableRow>(CACHE_HOSTEL_DETAIL(hostelId));
+    if (cached) {
+      setHostel(cached);
+      if (cached.photos && cached.photos.length > 0) setSelectedImage(cached.photos[0]);
+      setLoading(false);
+    }
+
+    // Phase 2: background refresh
+    getHostelDetails(hostelId, true)
+      .then(hostelDetails => {
         if (hostelDetails) {
           setHostel(hostelDetails);
           if (hostelDetails.photos && hostelDetails.photos.length > 0) {
             setSelectedImage(hostelDetails.photos[0]);
+            setCurrentImageIndex(0);
           }
-        } else {
+        } else if (!cached) {
           setError("Hostel not found");
         }
-      } catch (err) {
-        setError("Failed to load hostel details");
-        console.error(err);
-      } finally {
         setLoading(false);
-      }
-    };
-    
-    fetchHostel();
+      })
+      .catch((err: unknown) => {
+        console.error(err);
+        if (!cached) setError("Failed to load hostel details");
+        setLoading(false);
+      });
   }, [id]);
 
   const handleApprove = () => {
     if (!hostel) return;
-    
+
     // Fake approval - no API call
     console.log(`Fake approving hostel ${hostel.id}`);
     setIsApproved(true);
     setShowApproveSuccess(true);
-    
+
     // Hide success message after 3 seconds
     setTimeout(() => {
       setShowApproveSuccess(false);
@@ -64,20 +72,20 @@ const AdminViewHostels: React.FC = () => {
 
 const handleDelete = async () => {
     if (!hostel) return;
-    
+
     try {
         setDeleteLoading(true);
         setActionError(null);
-        
+
         console.log(`Deleting hostel ID: ${hostel.id}`);
-        
+
         // Call the updated API function
         const success = await deleteHostel(hostel.id);
-        
+
         if (success) {
             // Show success message
             setActionError("Hostel deleted successfully! Redirecting...");
-            
+
             // Redirect to hostels list after 1.5 seconds
             setTimeout(() => {
                 navigate("/admin/hostels");
@@ -150,7 +158,7 @@ const handleDelete = async () => {
         <div className={styles.container}>
           {/* Back button */}
           <div style={{ marginBottom: "20px" }}>
-            <Link 
+            <Link
               to="/admin/hostels"
               style={{
                 display: "inline-flex",
@@ -184,43 +192,57 @@ const handleDelete = async () => {
           )}
 
           {/* Loading state within the page */}
-          {loading ? (
+          {loading && !hostel ? (
             <div className="custom-card">
-              <div style={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
-                justifyContent: "center",
-                padding: "60px 20px",
-                textAlign: "center"
-              }}>
-                <i className="fa-solid fa-spinner fa-spin" style={{ 
-                  fontSize: "24px", 
-                  marginBottom: "15px",
-                  color: "#5c3d2e"
-                }}></i>
-                <h3 style={{ marginBottom: "10px", color: "#5c3d2e" }}>Loading hostel details...</h3>
-                <p style={{ color: "#666" }}>Please wait while we fetch the hostel information</p>
+              <h2 className="custom-title">
+                <i className="fa-solid fa-building-circle-check"></i>{" "}
+                <SkeletonBlock width="260px" height="24px" />
+              </h2>
+              <SkeletonBlock width="200px" height="14px" />
+
+              <div className="custom-card" style={{ marginTop: "20px" }}>
+                <h3 className="custom-section-title">Hostel Information</h3>
+                <div className="custom-info-grid">
+                  {[...Array(12)].map((_, i) => (
+                    <div key={i} className="custom-info-box">
+                      <SkeletonBlock width="120px" height="13px" />
+                      <SkeletonBlock width="90%" height="20px" />
+                    </div>
+                  ))}
+                </div>
+
+                <h3 className="custom-section-title" style={{ marginTop: "20px" }}>Hostel Pictures</h3>
+                <SkeletonBlock width="100%" height="300px" />
+
+                <h3 className="custom-section-title" style={{ marginTop: "20px" }}>Hostel Manager Information</h3>
+                <div className="custom-info-grid">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="custom-info-box">
+                      <SkeletonBlock width="120px" height="13px" />
+                      <SkeletonBlock width="90%" height="20px" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           ) : !hostel ? (
             <div className="custom-card">
-              <div style={{ 
-                display: "flex", 
-                flexDirection: "column", 
-                alignItems: "center", 
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
                 justifyContent: "center",
                 padding: "60px 20px",
                 textAlign: "center"
               }}>
-                <i className="fa-solid fa-building" style={{ 
-                  fontSize: "32px", 
+                <i className="fa-solid fa-building" style={{
+                  fontSize: "32px",
                   marginBottom: "15px",
                   color: "#999"
                 }}></i>
                 <h3 style={{ marginBottom: "10px", color: "#666" }}>No hostel data available</h3>
                 <p style={{ color: "#666", marginBottom: "20px" }}>The requested hostel could not be found</p>
-                <Link 
+                <Link
                   to="/admin/hostels"
                   style={{
                     display: "inline-flex",
@@ -258,9 +280,9 @@ const handleDelete = async () => {
                   <div className="custom-info-box">
                     <div className="custom-info-label">Google Map Location</div>
                     <div className="custom-info-value">
-                      <a 
-                        href={`https://maps.google.com/?q=${encodeURIComponent(`${hostel.houseNo} ${hostel.blockNo}`)}`} 
-                        target="_blank" 
+                      <a
+                        href={`https://maps.google.com/?q=${encodeURIComponent(`${hostel.houseNo} ${hostel.blockNo}`)}`}
+                        target="_blank"
                         rel="noopener noreferrer"
                       >
                         Open in Maps
@@ -333,25 +355,25 @@ const handleDelete = async () => {
                       <div className="custom-image-counter">
                         {currentImageIndex + 1} / {hostel.photos.length}
                       </div>
-                      <img 
-                        src={selectedImage || hostel.photos[0]} 
+                      <img
+                        src={selectedImage || hostel.photos[0]}
                         alt={`${hostel.name} - Main view`}
                         className="custom-main-image"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = "https://via.placeholder.com/800x500?text=Image+Not+Available";
                         }}
                       />
-                      
+
                       {/* Navigation Arrows (only show if more than 1 image) */}
                       {hostel.photos.length > 1 && (
                         <>
-                          <button 
+                          <button
                             className="custom-nav-btn custom-prev-btn"
                             onClick={handlePrevImage}
                           >
                             <i className="fa-solid fa-chevron-left"></i>
                           </button>
-                          <button 
+                          <button
                             className="custom-nav-btn custom-next-btn"
                             onClick={handleNextImage}
                           >
@@ -364,14 +386,14 @@ const handleDelete = async () => {
                     {/* Thumbnail Grid */}
                     <div className="custom-thumbnail-grid">
                       {hostel.photos.map((photo, idx) => (
-                        <div 
-                          key={idx} 
+                        <div
+                          key={idx}
                           className={`custom-thumbnail-container ${currentImageIndex === idx ? 'custom-thumbnail-active' : ''}`}
                           onClick={() => handleThumbnailClick(photo, idx)}
                         >
-                          <img 
-                            src={photo} 
-                            alt={`${hostel.name} - Thumbnail ${idx + 1}`} 
+                          <img
+                            src={photo}
+                            alt={`${hostel.name} - Thumbnail ${idx + 1}`}
                             className="custom-thumbnail"
                             onError={(e) => {
                               (e.target as HTMLImageElement).src = "https://via.placeholder.com/100x80?text=Thumb";
@@ -383,8 +405,8 @@ const handleDelete = async () => {
                   </div>
                 ) : (
                   <div className="custom-no-images">
-                    <img 
-                      src="https://via.placeholder.com/600x400?text=No+Images+Available" 
+                    <img
+                      src="https://via.placeholder.com/600x400?text=No+Images+Available"
                       alt="No images available"
                       className="custom-placeholder-image"
                     />
@@ -420,14 +442,14 @@ const handleDelete = async () => {
                 <div className="custom-btn-row">
                   {!isApproved ? (
                     <>
-                      <button 
+                      <button
                         className="custom-btn custom-btn-approve"
                         onClick={handleApprove}
                       >
                         <i className="fa-solid fa-check"></i> Approve
                       </button>
-                      
-                      <button 
+
+                      <button
                         className="custom-btn custom-btn-delete"
                         onClick={() => setShowDeleteConfirm(true)}
                         disabled={deleteLoading}
@@ -469,14 +491,14 @@ const handleDelete = async () => {
                   </p>
                 </div>
                 <div className="custom-modal-footer">
-                  <button 
+                  <button
                     className="custom-btn custom-btn-cancel"
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={deleteLoading}
                   >
                     Cancel
                   </button>
-                  <button 
+                  <button
                     className="custom-btn custom-btn-confirm-delete"
                     onClick={handleDelete}
                     disabled={deleteLoading}
