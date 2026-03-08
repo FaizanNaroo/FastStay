@@ -18,12 +18,57 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
   const mapRef = useRef<any>(null);
   const geocoderRef = useRef<HTMLDivElement>(null);
   const geocoderInstanceRef = useRef<MapboxGeocoder | null>(null);
+  const [locating, setLocating] = useState(false);
 
   const [viewState, setViewState] = useState({
     latitude: lat ?? FAST.lat,
     longitude: lng ?? FAST.lng,
     zoom: 14
   });
+
+  function handleCurrentLocation() {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setViewState((prev) => ({
+          ...prev,
+          latitude,
+          longitude,
+          zoom: 16
+        }));
+        onSelect(latitude, longitude);
+        setLocating(false);
+      },
+      (error) => {
+        setLocating(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            alert("Location permission denied. Please enable location access in your browser settings.");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            alert("Location information is unavailable.");
+            break;
+          case error.TIMEOUT:
+            alert("The request to get your location timed out.");
+            break;
+          default:
+            alert("An unknown error occurred while fetching location.");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  }
 
   useEffect(() => {
     // Initialize geocoder only once
@@ -164,17 +209,65 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
 
   return (
     <div>
-      <div 
-        ref={geocoderRef} 
-        style={{ 
-          marginBottom: "10px", 
-          height: "40px",
-          position: "relative",
-          zIndex: 2,
-          width: "100%",
-          borderRadius: '-1px'
-        }}
-      />
+      <div style={{
+        display: "flex",
+        alignItems: "center",
+        gap: "8px",
+        marginBottom: "10px",
+        position: "relative",
+        zIndex: 2,
+        width: "100%",
+      }}>
+        <div 
+          ref={geocoderRef} 
+          style={{ 
+            flex: 1,
+            height: "40px",
+            position: "relative",
+          }}
+        />
+        <button
+          type="button"
+          onClick={handleCurrentLocation}
+          disabled={locating}
+          style={{
+            height: "40px",
+            padding: "0 14px",
+            border: "1px solid #ccc",
+            borderRadius: "4px",
+            background: locating ? "#e0e0e0" : "#fff",
+            cursor: locating ? "not-allowed" : "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "13px",
+            fontWeight: 500,
+            color: "#333",
+            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+            whiteSpace: "nowrap",
+            transition: "background 0.2s",
+          }}
+          title="Use current location"
+        >
+          {locating ? (
+            <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" style={{ animation: "spin 1s linear infinite" }}>
+                <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
+                <circle cx="12" cy="12" r="10" stroke="#999" strokeWidth="3" fill="none" strokeDasharray="31.4 31.4" />
+              </svg>
+              Locating…
+            </span>
+          ) : (
+            <>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4a90e2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v4M12 18v4M2 12h4M18 12h4" />
+              </svg>
+              Current Location
+            </>
+          )}
+        </button>
+      </div>
 
       <div style={{ 
         width: "100%", 
