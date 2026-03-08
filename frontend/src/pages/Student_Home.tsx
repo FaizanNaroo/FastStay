@@ -219,6 +219,7 @@ const StudentHome: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchContainerRef = useRef<HTMLFormElement>(null);
 
   const navigate = useNavigate();
   const hostelGridRef = useRef<HTMLDivElement>(null);
@@ -279,6 +280,16 @@ const StudentHome: React.FC = () => {
     fetchAllHostels();
     return () => controller.abort();
   }, [userId]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filteredHostels = useMemo(() => {
     let filtered = hostels;
@@ -503,17 +514,10 @@ const StudentHome: React.FC = () => {
     <div className={styles.pageWrapper}>
       <Navbar userId={userId} />
 
-      {showSuggestions && (
-        <div
-          className={styles.overlay}
-          onClick={() => setShowSuggestions(false)}
-        />
-      )}
-
       <div className={styles.searchSection}>
         <h2>Find the Perfect Hostel</h2>
 
-        <form onSubmit={handleSearch} className={styles.searchContainer}>
+        <form onSubmit={handleSearch} className={styles.searchContainer} ref={searchContainerRef}>
           <div className={styles.searchBar}>
             <i className="fa-solid fa-magnifying-glass"></i>
             <input
