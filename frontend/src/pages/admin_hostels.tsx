@@ -44,7 +44,7 @@
 //     return hostels.filter(h => {
 //       // Search filter
 //       const searchTerm = search.toLowerCase();
-//       const matchesSearch = searchTerm === "" || 
+//       const matchesSearch = searchTerm === "" ||
 //         h.name.toLowerCase().includes(searchTerm) ||
 //         h.blockHouse.toLowerCase().includes(searchTerm) ||
 //         h.managerName.toLowerCase().includes(searchTerm);
@@ -94,9 +94,9 @@
 
 //         {/* RESULTS SUMMARY */}
 //         {!loading && (
-//           <div style={{ 
-//             marginBottom: "15px", 
-//             color: "#666", 
+//           <div style={{
+//             marginBottom: "15px",
+//             color: "#666",
 //             fontSize: "14px",
 //             display: "flex",
 //             alignItems: "center",
@@ -113,16 +113,16 @@
 //         {/* TOP BAR */}
 //         <div className={styles.topBar} style={{ marginBottom: "20px" }}>
 //           <div className={styles.searchBox}>
-//             <input 
-//               type="text" 
-//               placeholder="Search by name, block, or manager..." 
+//             <input
+//               type="text"
+//               placeholder="Search by name, block, or manager..."
 //               className={styles.searchInput}
 //               value={search}
 //               onChange={(e) => setSearch(e.target.value)}
 //               disabled={loading}
-//               style={{ 
+//               style={{
 //                 backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-//                 color: loading ? "#7a6648" : "#4c3f30",  
+//                 color: loading ? "#7a6648" : "#4c3f30",
 //               }}
 //             />
 //           </div>
@@ -132,14 +132,14 @@
 //               <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>
 //                 Filter by Block / House
 //               </label>
-//               <select 
+//               <select
 //                 className={styles.filterSelect}
 //                 value={blockFilter}
 //                 onChange={(e) => setBlockFilter(e.target.value)}
 //                 disabled={loading}
-//                 style={{ 
+//                 style={{
 //                   backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-//                   color: loading ? "#7a6648" : "#4c3f30",  
+//                   color: loading ? "#7a6648" : "#4c3f30",
 //                 }}
 //               >
 //                 <option value="All">All Blocks ({hostels.length})</option>
@@ -155,14 +155,14 @@
 //               <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>
 //                 Filter by Type
 //               </label>
-//               <select 
+//               <select
 //                 className={styles.filterSelect}
 //                 value={typeFilter}
 //                 onChange={(e) => setTypeFilter(e.target.value)}
 //                 disabled={loading}
-//                 style={{ 
+//                 style={{
 //                   backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-//                   color: loading ? "#7a6648" : "#4c3f30",  
+//                   color: loading ? "#7a6648" : "#4c3f30",
 //                 }}
 //               >
 //                 <option value="All">All Types ({hostels.length})</option>
@@ -175,7 +175,7 @@
 //             </div>
 
 //             {(search || blockFilter !== "All" || typeFilter !== "All") && (
-//               <button 
+//               <button
 //                 onClick={() => {
 //                   setSearch("");
 //                   setBlockFilter("All");
@@ -222,9 +222,9 @@
 //                 <tr>
 //                   <td colSpan={7} className={styles.loadingCell}>
 //                     <div className={styles.loadingContainer}>
-//                       <i className="fa-solid fa-spinner fa-spin" style={{ 
-//                         marginRight: "10px", 
-//                         fontSize: "18px" 
+//                       <i className="fa-solid fa-spinner fa-spin" style={{
+//                         marginRight: "10px",
+//                         fontSize: "18px"
 //                       }}></i>
 //                       Loading hostels...
 //                     </div>
@@ -238,8 +238,8 @@
 //                         {h.name}
 //                       </div>
 //                       {h.messProvide && (
-//                         <div style={{ 
-//                           fontSize: "12px", 
+//                         <div style={{
+//                           fontSize: "12px",
 //                           color: "#27ae60",
 //                           display: "flex",
 //                           alignItems: "center",
@@ -271,18 +271,18 @@
 //                         borderRadius: "4px",
 //                         fontSize: "12px",
 //                         fontWeight: "bold",
-//                         backgroundColor: 
-//                           h.type === "Portion" ? "#e8f5e8" : 
+//                         backgroundColor:
+//                           h.type === "Portion" ? "#e8f5e8" :
 //                           h.type === "Building" ? "#f0e8ff" : "#f5f5f5",
-//                         color: 
-//                           h.type === "Portion" ? "#27ae60" : 
+//                         color:
+//                           h.type === "Portion" ? "#27ae60" :
 //                           h.type === "Building" ? "#8e44ad" : "#666"
 //                       }}>
 //                         {h.type}
 //                       </span>
 //                     </td>
 //                     <td className={styles.tableCell}>
-//                       <div style={{ 
+//                       <div style={{
 //                         fontWeight: "bold",
 //                         color: "#2c3e50",
 //                         display: "flex",
@@ -294,7 +294,7 @@
 //                       </div>
 //                     </td>
 //                     <td className={styles.tableCell}>
-//                       <div style={{ 
+//                       <div style={{
 //                         fontWeight: "bold",
 //                         color: "#2c3e50",
 //                         display: "flex",
@@ -314,13 +314,13 @@
 //                       </div>
 //                     </td>
 //                     <td className={styles.actionCell}>
-//                       <button 
+//                       <button
 //                         className={styles.viewBtn}
 //                         style={{ marginBottom: "5px" }}
 //                       >
 //                         <i className="fa-solid fa-eye"></i> View
 //                       </button>
-//                       <button 
+//                       <button
 //                         className={styles.editBtn}
 //                         style={{ marginBottom: "5px" }}
 //                       >
@@ -335,27 +335,27 @@
 //               ) : (
 //                 <tr>
 //                   <td colSpan={7} className={styles.noDataCell}>
-//                     <div style={{ 
-//                       display: "flex", 
+//                     <div style={{
+//                       display: "flex",
 //                       flexDirection: "column",
-//                       alignItems: "center", 
+//                       alignItems: "center",
 //                       justifyContent: "center",
 //                       padding: "40px 20px",
 //                       gap: "15px"
 //                     }}>
-//                       <i className="fa-solid fa-building" style={{ 
+//                       <i className="fa-solid fa-building" style={{
 //                         fontSize: "48px",
 //                         color: "#ddd"
 //                       }}></i>
 //                       <div style={{ textAlign: "center" }}>
 //                         <h4 style={{ marginBottom: "5px", color: "#666" }}>No hostels found</h4>
 //                         <p style={{ margin: 0, fontSize: "14px", color: "#999", maxWidth: "400px" }}>
-//                           {search || blockFilter !== "All" || typeFilter !== "All" 
+//                           {search || blockFilter !== "All" || typeFilter !== "All"
 //                             ? "No hostels match your current filters. Try adjusting your search criteria."
 //                             : "There are no hostels in the system yet."}
 //                         </p>
 //                         {(search || blockFilter !== "All" || typeFilter !== "All") && (
-//                           <button 
+//                           <button
 //                             onClick={() => {
 //                               setSearch("");
 //                               setBlockFilter("All");
@@ -385,7 +385,7 @@
 
 //         {/* EXTRA INFO BAR */}
 //         {!loading && filteredHostels.length > 0 && (
-//           <div style={{ 
+//           <div style={{
 //             marginTop: "20px",
 //             padding: "15px",
 //             backgroundColor: "#f8f9fa",
@@ -400,7 +400,7 @@
 //             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
 //               <i className="fa-solid fa-chart-bar"></i>
 //               <span>
-//                 Total Rooms: <strong>{filteredHostels.reduce((sum, h) => sum + h.rooms, 0)}</strong> | 
+//                 Total Rooms: <strong>{filteredHostels.reduce((sum, h) => sum + h.rooms, 0)}</strong> |
 //                 Average Rooms: <strong>{(filteredHostels.reduce((sum, h) => sum + h.rooms, 0) / filteredHostels.length).toFixed(1)}</strong>
 //               </span>
 //             </div>
@@ -426,7 +426,9 @@
 
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { getAllHostelsTableData, type HostelTableRow } from "../api/admin_hostels";
+import { getAllHostelsTableData, CACHE_HOSTELS, type HostelTableRow } from "../api/admin_hostels";
+import { cacheGet } from "../utils/cache";
+import SkeletonRow from "../components/SkeletonRow";
 import styles from "../styles/admin_hostel.module.css";
 
 const ViewHostels: React.FC = () => {
@@ -438,19 +440,24 @@ const ViewHostels: React.FC = () => {
   const [typeFilter, setTypeFilter] = useState<string>("All");
 
   useEffect(() => {
-    const fetchHostels = async () => {
-      try {
-        const data = await getAllHostelsTableData();
+    // Phase 1: instant render from cache
+    const cached = cacheGet<HostelTableRow[]>(CACHE_HOSTELS);
+    if (cached) {
+      setHostels(cached);
+      setLoading(false);
+    }
+
+    // Phase 2: background refresh
+    getAllHostelsTableData(true)
+      .then(data => {
         setHostels(data);
         setLoading(false);
-      } catch (err: unknown) {
+      })
+      .catch((err: unknown) => {
         console.error(err);
-        setError("Failed to load hostels.");
+        if (!cached) setError("Failed to load hostels.");
         setLoading(false);
-      }
-    };
-
-    fetchHostels();
+      });
   }, []);
 
   // Get unique blocks and types from data
@@ -469,7 +476,7 @@ const ViewHostels: React.FC = () => {
     return hostels.filter(h => {
       // Search filter
       const searchTerm = search.toLowerCase();
-      const matchesSearch = searchTerm === "" || 
+      const matchesSearch = searchTerm === "" ||
         h.name.toLowerCase().includes(searchTerm) ||
         h.blockHouse.toLowerCase().includes(searchTerm) ||
         h.managerName.toLowerCase().includes(searchTerm);
@@ -519,9 +526,9 @@ const ViewHostels: React.FC = () => {
 
         {/* RESULTS SUMMARY */}
         {!loading && (
-          <div style={{ 
-            marginBottom: "15px", 
-            color: "#666", 
+          <div style={{
+            marginBottom: "15px",
+            color: "#666",
             fontSize: "14px",
             display: "flex",
             alignItems: "center",
@@ -538,16 +545,16 @@ const ViewHostels: React.FC = () => {
         {/* TOP BAR */}
         <div className={styles.topBar} style={{ marginBottom: "20px" }}>
           <div className={styles.searchBox}>
-            <input 
-              type="text" 
-              placeholder="Search by name, block, or manager..." 
+            <input
+              type="text"
+              placeholder="Search by name, block, or manager..."
               className={styles.searchInput}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               disabled={loading}
-              style={{ 
+              style={{
                 backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-                color: loading ? "#7a6648" : "#4c3f30",  
+                color: loading ? "#7a6648" : "#4c3f30",
               }}
             />
           </div>
@@ -557,14 +564,14 @@ const ViewHostels: React.FC = () => {
               <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>
                 Filter by Block / House
               </label>
-              <select 
+              <select
                 className={styles.filterSelect}
                 value={blockFilter}
                 onChange={(e) => setBlockFilter(e.target.value)}
                 disabled={loading}
-                style={{ 
+                style={{
                   backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-                  color: loading ? "#7a6648" : "#4c3f30",  
+                  color: loading ? "#7a6648" : "#4c3f30",
                 }}
               >
                 <option value="All">All Blocks ({hostels.length})</option>
@@ -580,14 +587,14 @@ const ViewHostels: React.FC = () => {
               <label style={{ fontSize: "12px", color: "#666", fontWeight: "500" }}>
                 Filter by Type
               </label>
-              <select 
+              <select
                 className={styles.filterSelect}
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
                 disabled={loading}
-                style={{ 
+                style={{
                   backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",  // light muted brown tones
-                  color: loading ? "#7a6648" : "#4c3f30",  
+                  color: loading ? "#7a6648" : "#4c3f30",
                 }}
               >
                 <option value="All">All Types ({hostels.length})</option>
@@ -600,7 +607,7 @@ const ViewHostels: React.FC = () => {
             </div>
 
             {(search || blockFilter !== "All" || typeFilter !== "All") && (
-              <button 
+              <button
                 onClick={() => {
                   setSearch("");
                   setBlockFilter("All");
@@ -644,17 +651,7 @@ const ViewHostels: React.FC = () => {
 
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={7} className={styles.loadingCell}>
-                    <div className={styles.loadingContainer}>
-                      <i className="fa-solid fa-spinner fa-spin" style={{ 
-                        marginRight: "10px", 
-                        fontSize: "18px" 
-                      }}></i>
-                      Loading hostels...
-                    </div>
-                  </td>
-                </tr>
+                <SkeletonRow cols={7} rows={7} />
               ) : filteredHostels.length > 0 ? (
                 filteredHostels.map(h => (
                   <tr key={h.id} className={styles.tableRow}>
@@ -663,8 +660,8 @@ const ViewHostels: React.FC = () => {
                         {h.name}
                       </div>
                       {h.messProvide && (
-                        <div style={{ 
-                          fontSize: "12px", 
+                        <div style={{
+                          fontSize: "12px",
                           color: "#27ae60",
                           display: "flex",
                           alignItems: "center",
@@ -696,18 +693,18 @@ const ViewHostels: React.FC = () => {
                         borderRadius: "4px",
                         fontSize: "12px",
                         fontWeight: "bold",
-                        backgroundColor: 
-                          h.type === "Portion" ? "#e8f5e8" : 
+                        backgroundColor:
+                          h.type === "Portion" ? "#e8f5e8" :
                           h.type === "Building" ? "#f0e8ff" : "#f5f5f5",
-                        color: 
-                          h.type === "Portion" ? "#27ae60" : 
+                        color:
+                          h.type === "Portion" ? "#27ae60" :
                           h.type === "Building" ? "#8e44ad" : "#666"
                       }}>
                         {h.type}
                       </span>
                     </td>
                     <td className={styles.tableCell}>
-                      <div style={{ 
+                      <div style={{
                         fontWeight: "bold",
                         color: "#2c3e50",
                         display: "flex",
@@ -719,7 +716,7 @@ const ViewHostels: React.FC = () => {
                       </div>
                     </td>
                     <td className={styles.tableCell}>
-                      <div style={{ 
+                      <div style={{
                         fontWeight: "bold",
                         color: "#2c3e50",
                         display: "flex",
@@ -739,10 +736,10 @@ const ViewHostels: React.FC = () => {
                       </div>
                     </td>
                     <td className={styles.actionCell}>
-                      <Link 
+                      <Link
                         to={`/admin/hostels/${h.id}`}
                         className={styles.viewBtn}
-                        style={{ 
+                        style={{
                           marginBottom: "5px",
                           display: "inline-block",
                           padding: "8px 16px",
@@ -764,27 +761,27 @@ const ViewHostels: React.FC = () => {
               ) : (
                 <tr>
                   <td colSpan={7} className={styles.noDataCell}>
-                    <div style={{ 
-                      display: "flex", 
+                    <div style={{
+                      display: "flex",
                       flexDirection: "column",
-                      alignItems: "center", 
+                      alignItems: "center",
                       justifyContent: "center",
                       padding: "40px 20px",
                       gap: "15px"
                     }}>
-                      <i className="fa-solid fa-building" style={{ 
+                      <i className="fa-solid fa-building" style={{
                         fontSize: "48px",
                         color: "#ddd"
                       }}></i>
                       <div style={{ textAlign: "center" }}>
                         <h4 style={{ marginBottom: "5px", color: "#666" }}>No hostels found</h4>
                         <p style={{ margin: 0, fontSize: "14px", color: "#999", maxWidth: "400px" }}>
-                          {search || blockFilter !== "All" || typeFilter !== "All" 
+                          {search || blockFilter !== "All" || typeFilter !== "All"
                             ? "No hostels match your current filters. Try adjusting your search criteria."
                             : "There are no hostels in the system yet."}
                         </p>
                         {(search || blockFilter !== "All" || typeFilter !== "All") && (
-                          <button 
+                          <button
                             onClick={() => {
                               setSearch("");
                               setBlockFilter("All");
@@ -814,7 +811,7 @@ const ViewHostels: React.FC = () => {
 
         {/* EXTRA INFO BAR */}
         {!loading && filteredHostels.length > 0 && (
-          <div style={{ 
+          <div style={{
             marginTop: "20px",
             padding: "15px",
             backgroundColor: "#f8f9fa",
@@ -829,7 +826,7 @@ const ViewHostels: React.FC = () => {
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <i className="fa-solid fa-chart-bar"></i>
               <span>
-                Total Rooms: <strong>{filteredHostels.reduce((sum, h) => sum + h.rooms, 0)}</strong> | 
+                Total Rooms: <strong>{filteredHostels.reduce((sum, h) => sum + h.rooms, 0)}</strong> |
                 Average Rooms: <strong>{(filteredHostels.reduce((sum, h) => sum + h.rooms, 0) / filteredHostels.length).toFixed(1)}</strong>
               </span>
             </div>
