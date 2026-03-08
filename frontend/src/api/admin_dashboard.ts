@@ -206,3 +206,75 @@ export const getRecentHostelsTableData = async (limit: number = 10, bypassCache 
     return [];
   }
 };
+
+// Shared raw-users cache key — written here, reused by review APIs to avoid duplicate /users/all calls
+export const CACHE_ALL_USERS_RAW     = 'cache:admin:users:all:raw';
+export const CACHE_ALL_MANAGERS_RAW  = 'cache:admin:managers:all:raw';
+export const CACHE_ALL_HOSTELS_RAW   = 'cache:admin:hostels:all:raw';
+
+/**
+ * Single unified fetch: 3 parallel calls → derives summary + recentUsers + recentHostels.
+ * Also seeds CACHE_ALL_USERS_RAW so subsequent profile prefetches cost 0 extra network calls.
+ */
+export const loadDashboardData = async (bypassCache = false): Promise<{
+  summary: { total_students: number; total_managers: number; total_hostels: number; total_rooms: number };
+  recentUsers: RecentUserAccount[];
+  recentHostels: RecentHostel[];
+}> => {
+  if (!bypassCache) {
+    const s = cacheGet<{ total_students: number; total_managers: number; total_hostels: number; total_rooms: number }>(CACHE_DASHBOARD);
+    const u = cacheGet<RecentUserAccount[]>(`${CACHE_RECENT_USERS}:5`);
+    const h = cacheGet<RecentHostel[]>(`${CACHE_RECENT_HOSTELS}:5`);
+    if (s && u && h) return { summary: s, recentUsers: u, recentHostels: h };
+  }
+
+  const [usersRes, hostelsRes, roomsRes] = await Promise.all([
+    axios.get<{ users: RawUser[] }>(`${API_BASE_URL}/faststay_app/users/all/`),
+    axios.get<HostelsApiResponse>(`${API_BASE_URL}/faststay_app/display/all_hostels`),
+    axios.get(`${API_BASE_URL}/faststay_app/display/all_rooms`),
+  ]);
+
+  const users = usersRes.data?.users || [];
+  const allHostels = hostelsRes.data?.hostels || [];
+
+  // Seed raw caches so profile prefetches reuse this data immediately
+  cacheSet(CACHE_ALL_USERS_RAW, users);
+  cacheSet(CACHE_ALL_HOSTELS_RAW, allHostels);
+
+  // Summary
+  const summary = {
+    total_students: users.filter(u => u.usertype === 'Student').length,
+    total_managers: users.filter(u => u.usertype === 'Hostel Manager').length,
+    total_hostels: hostelsRes.data?.count || 0,
+    total_rooms: roomsRes.data?.count || 0,
+  };
+
+  // Recent users (top 5 by highest userid)
+  const recentUsers: RecentUserAccount[] = [...users]
+    .sort((a, b) => b.userid - a.userid)
+    .slice(0, 5)
+    .map(u => ({ userid: u.userid, Name: `${u.fname} ${u.lname}`, City: u.city, UserType: u.usertype }));
+
+  // Manager name lookup map
+  const managerMap = new Map<number, string>(users.map(u => [u.userid, `${u.fname} ${u.lname}`]));
+
+  // Recent hostels (top 5 by highest hostelid)
+  const recentHostels: RecentHostel[] = [...allHostels]
+    .sort((a, b) => b.p_hostelid - a.p_hostelid)
+    .slice(0, 5)
+    .map(h => ({
+      hostelId: h.p_hostelid,
+      hostelName: h.p_name || 'Unnamed Hostel',
+      houseNo: h.p_houseno,
+      hostelType: h.p_hosteltype,
+      managerName: managerMap.get(h.p_managerid) || 'Unknown Manager',
+      totalRooms: h.p_numrooms,
+      action: 'View Details',
+    }));
+
+  cacheSet(CACHE_DASHBOARD, summary);
+  cacheSet(`${CACHE_RECENT_USERS}:5`, recentUsers);
+  cacheSet(`${CACHE_RECENT_HOSTELS}:5`, recentHostels);
+
+  return { summary, recentUsers, recentHostels };
+};

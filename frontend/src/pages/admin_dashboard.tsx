@@ -3,9 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import {
-  getDashboardSummary,
-  getRecentUsersTableData,
-  getRecentHostelsTableData,
+  loadDashboardData,
   type RecentUserAccount,
   type RecentHostel,
   CACHE_DASHBOARD,
@@ -14,6 +12,9 @@ import {
 } from "../api/admin_dashboard";
 
 import { cacheGet } from "../utils/cache";
+import { getStudentProfile } from "../api/admin_students_review";
+import { getManagerProfile } from "../api/admin_manager_review";
+import { getHostelDetails } from "../api/admin_hostels_review";
 import SkeletonRow, { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 
@@ -48,17 +49,32 @@ const AdminDashboard: React.FC = () => {
       if (cachedUsers)   { setRecentUsers(cachedUsers);     setUsersLoading(false); }
       if (cachedHostels) { setRecentHostels(cachedHostels); setHostelsLoading(false); }
 
-      // ── Phase 2: Always refresh from network in background ──
+      // Phase 1 prefetch: warm up caches for recent profiles in background
+      if (cachedUsers) {
+        cachedUsers.forEach(u => {
+          if (u.UserType === 'Student') getStudentProfile(u.userid);
+          else if (u.UserType === 'Hostel Manager') getManagerProfile(u.userid);
+        });
+      }
+      if (cachedHostels) {
+        cachedHostels.forEach(h => getHostelDetails(h.hostelId));
+      }
+
+      // ── Phase 2: Always refresh from network in background (3 calls, not 6) ──
       try {
-        const [freshSummary, freshUsers, freshHostels] = await Promise.all([
-          getDashboardSummary(true),
-          getRecentUsersTableData(5, true),
-          getRecentHostelsTableData(5, true),
-        ]);
+        const { summary: freshSummary, recentUsers: freshUsers, recentHostels: freshHostels } =
+          await loadDashboardData(true);
 
         setSummary(freshSummary);       setSummaryLoading(false);
         setRecentUsers(freshUsers);     setUsersLoading(false);
         setRecentHostels(freshHostels); setHostelsLoading(false);
+
+        // Phase 2 prefetch: warm up caches for fresh recent profiles
+        freshUsers.forEach(u => {
+          if (u.UserType === 'Student') getStudentProfile(u.userid);
+          else if (u.UserType === 'Hostel Manager') getManagerProfile(u.userid);
+        });
+        freshHostels.forEach(h => getHostelDetails(h.hostelId));
 
       } catch (err) {
         // Only show hard error when there is nothing cached to display

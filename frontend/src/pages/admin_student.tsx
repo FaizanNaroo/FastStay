@@ -340,7 +340,7 @@ const AdminViewStudents: React.FC = () => {
                                         </td>
                                         <td>
                                             <span style={{
-                                                display: "inline-block",
+                                                display: "flex",
                                                 padding: "4px 12px",
                                                 borderRadius: "12px",
                                                 fontSize: "12px",
@@ -351,7 +351,6 @@ const AdminViewStudents: React.FC = () => {
                                                 color:
                                                     student.gender === "Male" ? "#2980b9" :
                                                     student.gender === "Female" ? "#9b59b6" : "#666",
-                                                display: "flex",
                                                 alignItems: "center",
                                                 gap: "5px"
                                             }}>

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
+import { CACHE_ALL_USERS_RAW, CACHE_ALL_MANAGERS_RAW, CACHE_ALL_HOSTELS_RAW } from './admin_dashboard';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -282,31 +283,50 @@ export const getHostelDetails = async (hostelId: number, bypassCache = false): P
         if (cached) return cached;
     }
     try {
-        // Fetch hostel details
-        const hostelRes = await axios.get<HostelsApiResponse>(`${API_BASE_URL}/faststay_app/display/all_hostels`);
-        const hostel = hostelRes.data.hostels.find(h => h.p_hostelid === hostelId);
+        // Run all 4 fetches in parallel — use shared raw caches when available
+        const getCachedHostels = async (): Promise<RawHostel[]> => {
+            const c = cacheGet<RawHostel[]>(CACHE_ALL_HOSTELS_RAW);
+            if (c) return c;
+            const res = await axios.get<HostelsApiResponse>(`${API_BASE_URL}/faststay_app/display/all_hostels`);
+            const list = res.data.hostels || [];
+            cacheSet(CACHE_ALL_HOSTELS_RAW, list);
+            return list;
+        };
+        const getCachedManagers = async (): Promise<RawManager[]> => {
+            const c = cacheGet<RawManager[]>(CACHE_ALL_MANAGERS_RAW);
+            if (c) return c;
+            const res = await axios.get<ManagerApiResponse>(`${API_BASE_URL}/faststay_app/ManagerDetails/display/all`);
+            const list = res.data.result || [];
+            cacheSet(CACHE_ALL_MANAGERS_RAW, list);
+            return list;
+        };
+        const getCachedUsers = async (): Promise<RawUser[]> => {
+            const c = cacheGet<RawUser[]>(CACHE_ALL_USERS_RAW);
+            if (c) return c;
+            const res = await axios.get<UsersApiResponse>(`${API_BASE_URL}/faststay_app/users/all`);
+            const list = res.data.users || [];
+            cacheSet(CACHE_ALL_USERS_RAW, list);
+            return list;
+        };
+
+        const [hostelsList, photos, managers, users] = await Promise.all([
+            getCachedHostels(),
+            getHostelPictures(hostelId),
+            getCachedManagers(),
+            getCachedUsers(),
+        ]);
+
+        const hostel = hostelsList.find(h => h.p_hostelid === hostelId);
 
         if (!hostel) {
             console.error(`Hostel with ID ${hostelId} not found`);
             return null;
         }
 
-        // Fetch photos for this specific hostel
-        const photos: string[] = await getHostelPictures(hostelId);
-
-        // Fetch manager and user data
-        const [managersRes, usersRes] = await Promise.all([
-            axios.get<ManagerApiResponse>(`${API_BASE_URL}/faststay_app/ManagerDetails/display/all`),
-            axios.get<UsersApiResponse>(`${API_BASE_URL}/faststay_app/users/all`)
-        ]);
-
-        const managers = managersRes.data.result || [];
-        const users = usersRes.data.users || [];
-
         const manager = managers.find(m => m.p_ManagerId === hostel.p_managerid);
         const user = users.find(u => u.userid === hostel.p_managerid);
 
-        return {
+        const result: HostelTableRow = {
             id: hostel.p_hostelid,
             name: hostel.p_name,
             blockNo: hostel.p_blockno,

@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
+import { CACHE_ALL_USERS_RAW } from './admin_dashboard';
 
 const API_BASE_URL = 'http://127.0.0.1:8000';
 
@@ -131,14 +132,17 @@ export const getStudentDetailsById = async (studentId: number): Promise<RawStude
  * @returns Promise with array of all users
  */
 export const getAllUsers = async (): Promise<RawUser[]> => {
+    const cached = cacheGet<RawUser[]>(CACHE_ALL_USERS_RAW);
+    if (cached) return cached;
     try {
         const response = await axios.get<UsersApiResponse>(
             `${API_BASE_URL}/faststay_app/users/all/`
         );
-        return response.data.users || [];
+        const users = response.data.users || [];
+        cacheSet(CACHE_ALL_USERS_RAW, users);
+        return users;
     } catch (error: unknown) {
         console.error("Error fetching users:", error);
-
         if (axios.isAxiosError(error)) {
             console.error("Axios error:", error.response?.data);
         }
@@ -231,6 +235,23 @@ export const getStudentProfile = async (studentId: number, bypassCache = false):
     } catch (error) {
         console.error(`Error fetching complete student profile for ID ${studentId}:`, error);
         return null;
+    }
+};
+
+/**
+ * Prefetches all student profiles in parallel batches.
+ * Skips profiles already in cache. Safe to call fire-and-forget.
+ * @param studentIds - Array of student IDs to prefetch
+ * @param concurrency - Max simultaneous requests (default: 3)
+ */
+export const prefetchAllStudentProfiles = async (
+    studentIds: number[],
+    concurrency = 3
+): Promise<void> => {
+    const uncached = studentIds.filter(id => !cacheGet<StudentProfile>(CACHE_STUDENT_PROFILE(id)));
+    for (let i = 0; i < uncached.length; i += concurrency) {
+        const batch = uncached.slice(i, i + concurrency);
+        await Promise.allSettled(batch.map(id => getStudentProfile(id)));
     }
 };
 
