@@ -2,14 +2,19 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
-import { 
-  getDashboardSummary, 
-  getRecentUsersTableData, 
-  type RecentUserAccount 
+import {
+  getDashboardSummary,
+  getRecentUsersTableData,
+  getRecentHostelsTableData,
+  type RecentUserAccount,
+  type RecentHostel,
+  CACHE_DASHBOARD,
+  CACHE_RECENT_USERS,
+  CACHE_RECENT_HOSTELS,
 } from "../api/admin_dashboard";
 
-import { getRecentHostelsTableData, type RecentHostel } from "../api/admin_dashboard";
-
+import { cacheGet } from "../utils/cache";
+import SkeletonRow, { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 
 // Dashboard Summary
@@ -24,9 +29,9 @@ const AdminDashboard: React.FC = () => {
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
   const [recentUsers, setRecentUsers] = useState<RecentUserAccount[]>([]);
   const [recentHostels, setRecentHostels] = useState<RecentHostel[]>([]);
-  
+
   const [error, setError] = useState<string | null>(null);
-  
+
   // Individual loading states
   const [summaryLoading, setSummaryLoading] = useState(true);
   const [usersLoading, setUsersLoading] = useState(true);
@@ -34,35 +39,35 @@ const AdminDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      // ── Phase 1: Paint cached data instantly (zero network wait on revisits) ──
+      const cachedSummary = cacheGet<DashboardSummary>(CACHE_DASHBOARD);
+      const cachedUsers   = cacheGet<RecentUserAccount[]>(`${CACHE_RECENT_USERS}:5`);
+      const cachedHostels = cacheGet<RecentHostel[]>(`${CACHE_RECENT_HOSTELS}:5`);
+
+      if (cachedSummary) { setSummary(cachedSummary);       setSummaryLoading(false); }
+      if (cachedUsers)   { setRecentUsers(cachedUsers);     setUsersLoading(false); }
+      if (cachedHostels) { setRecentHostels(cachedHostels); setHostelsLoading(false); }
+
+      // ── Phase 2: Always refresh from network in background ──
       try {
-        // Set individual loading states
-        setSummaryLoading(true);
-        setUsersLoading(true);
-        setHostelsLoading(true);
-        
-        // Fetch all data in parallel
-        const [summaryData, usersData, hostelData] = await Promise.all([
-          getDashboardSummary(),
-          getRecentUsersTableData(5),
-          getRecentHostelsTableData(5)
+        const [freshSummary, freshUsers, freshHostels] = await Promise.all([
+          getDashboardSummary(true),
+          getRecentUsersTableData(5, true),
+          getRecentHostelsTableData(5, true),
         ]);
-        
-        setSummary(summaryData);
-        setSummaryLoading(false);
-        
-        setRecentUsers(usersData);
-        setUsersLoading(false);
-        
-        setRecentHostels(hostelData);
-        setHostelsLoading(false);
-        
+
+        setSummary(freshSummary);       setSummaryLoading(false);
+        setRecentUsers(freshUsers);     setUsersLoading(false);
+        setRecentHostels(freshHostels); setHostelsLoading(false);
+
       } catch (err) {
-        const errorMessage = err instanceof Error 
-          ? `Failed to load dashboard data: ${err.message}`
-          : "Failed to load dashboard data. Check backend connection.";
-        setError(errorMessage);
-        
-        // Set all loading states to false on error
+        // Only show hard error when there is nothing cached to display
+        if (!cachedSummary && !cachedUsers && !cachedHostels) {
+          const errorMessage = err instanceof Error
+            ? `Failed to load dashboard data: ${err.message}`
+            : "Failed to load dashboard data. Check backend connection.";
+          setError(errorMessage);
+        }
         setSummaryLoading(false);
         setUsersLoading(false);
         setHostelsLoading(false);
@@ -111,15 +116,15 @@ const AdminDashboard: React.FC = () => {
             <i className="fa-solid fa-users"></i>
             <p className={styles.cardTitle}>Total Students</p>
             <p className={styles.cardValue}>
-              {summaryLoading ? "Loading..." : (summary?.total_students || "0")}
+              {summaryLoading ? <SkeletonBlock width="55%" height="30px" /> : (summary?.total_students ?? 0)}
             </p>
           </div>
-          
+
           <div className={styles.card}>
             <i className="fa-solid fa-user-tie"></i>
             <p className={styles.cardTitle}>Hostel Managers</p>
             <p className={styles.cardValue}>
-              {summaryLoading ? "Loading..." : (summary?.total_managers || "0")}
+              {summaryLoading ? <SkeletonBlock width="55%" height="30px" /> : (summary?.total_managers ?? 0)}
             </p>
           </div>
 
@@ -127,7 +132,7 @@ const AdminDashboard: React.FC = () => {
             <i className="fa-solid fa-hotel"></i>
             <p className={styles.cardTitle}>Hostels Listed</p>
             <p className={styles.cardValue}>
-              {summaryLoading ? "Loading..." : (summary?.total_hostels || "0")}
+              {summaryLoading ? <SkeletonBlock width="55%" height="30px" /> : (summary?.total_hostels ?? 0)}
             </p>
           </div>
 
@@ -135,7 +140,7 @@ const AdminDashboard: React.FC = () => {
             <i className="fa-solid fa-bed"></i>
             <p className={styles.cardTitle}>Rooms</p>
             <p className={styles.cardValue}>
-              {summaryLoading ? "Loading..." : (summary?.total_rooms || "0")}
+              {summaryLoading ? <SkeletonBlock width="55%" height="30px" /> : (summary?.total_rooms ?? 0)}
             </p>
           </div>
         </div>
@@ -143,7 +148,7 @@ const AdminDashboard: React.FC = () => {
         {/* RECENT STUDENTS */}
         <div className={styles.tableCard}>
           <p className={styles.tableTitle}><i className="fa-solid fa-user-plus"></i> Recent User Accounts</p>
-          
+
           <table>
             <thead>
               <tr>
@@ -156,12 +161,7 @@ const AdminDashboard: React.FC = () => {
 
             <tbody>
               {usersLoading ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
-                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: "8px" }}></i>
-                    Loading users...
-                  </td>
-                </tr>
+                <SkeletonRow cols={4} rows={5} />
               ) : recentUsers.length > 0 ? (
                 recentUsers.map(u => (
                   <tr key={u.userid}>
@@ -184,7 +184,7 @@ const AdminDashboard: React.FC = () => {
                       </td>
                     <td>
                       {u.UserType === "Student" || u.UserType === "Hostel Manager" ? (
-                        <Link 
+                        <Link
                           to={getUserProfileRoute(u)}
                           className={styles.actionBtn}
                           style={{
@@ -197,7 +197,7 @@ const AdminDashboard: React.FC = () => {
                           View
                         </Link>
                       ) : (
-                        <button 
+                        <button
                           className={styles.actionBtn}
                           disabled
                           title="Profile not available for this user type"
@@ -235,12 +235,7 @@ const AdminDashboard: React.FC = () => {
 
             <tbody>
               {hostelsLoading ? (
-                <tr>
-                  <td colSpan={4} style={{ textAlign:"center", padding: "20px" }}>
-                    <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: "8px" }}></i>
-                    Loading hostels...
-                  </td>
-                </tr>
+                <SkeletonRow cols={4} rows={5} />
               ) : recentHostels.length > 0 ? (
                 recentHostels.map(h => (
                   <tr key={h.hostelId}>
@@ -248,7 +243,7 @@ const AdminDashboard: React.FC = () => {
                     <td>{h.houseNo}</td>
                     <td>{h.managerName}</td>
                     <td>
-                      <Link 
+                      <Link
                         to={`/admin/hostels/${h.hostelId}`}
                         className={styles.actionBtn}
                         style={{

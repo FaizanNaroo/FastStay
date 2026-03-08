@@ -1,53 +1,48 @@
 import axios from 'axios';
+import { cacheGet, cacheSet } from '../utils/cache';
 
 const API_BASE_URL = 'http://localhost:8000';
+
+// Cache keys exported so the component can read them directly for SWR
+export const CACHE_DASHBOARD   = 'cache:admin:dashboard:summary';
+export const CACHE_RECENT_USERS   = 'cache:admin:users:recent';
+export const CACHE_RECENT_HOSTELS = 'cache:admin:hostels:recent';
 
 interface User {
   usertype: string;
 }
 
-export const getDashboardSummary = async () => {
+export const getDashboardSummary = async (bypassCache = false) => {
+  const cached = cacheGet<{ total_students: number; total_managers: number; total_hostels: number; total_rooms: number }>(CACHE_DASHBOARD);
+  if (cached && !bypassCache) return cached;
+
   try {
-    // TypeScript will infer the types automatically
     const [usersResponse, hostelsResponse, roomsResponse] = await Promise.all([
       axios.get(`${API_BASE_URL}/faststay_app/users/all/`),
       axios.get(`${API_BASE_URL}/faststay_app/display/all_hostels`),
       axios.get(`${API_BASE_URL}/faststay_app/display/all_rooms`)
     ]);
-    
+
     const users = usersResponse.data?.users || [];
     const total_hostels = hostelsResponse.data?.count || 0;
     const total_rooms = roomsResponse.data?.count || 0;
-    
-    const total_students = users.filter((user: User) => 
+
+    const total_students = users.filter((user: User) =>
       user.usertype === 'Student'
     ).length;
-    
-    const total_managers = users.filter((user: User) => 
+
+    const total_managers = users.filter((user: User) =>
       user.usertype === 'Hostel Manager'
     ).length;
-    
-    return {
-      total_students,
-      total_managers,
-      total_hostels,
-      total_rooms,
-    };
-    
+
+    const summary = { total_students, total_managers, total_hostels, total_rooms };
+    cacheSet(CACHE_DASHBOARD, summary);
+    return summary;
+
   } catch (error: unknown) {
-  console.error("Error fetching dashboard summary:", error);
-  
-  // Type-safe error handling
-  if (error instanceof Error) {
-    console.error("Error message:", error.message);
-  }
-  
-  return {
-    total_students: 0,
-    total_managers: 0,
-    total_hostels: 0,
-    total_rooms: 0,
-  };
+    console.error("Error fetching dashboard summary:", error);
+    if (error instanceof Error) console.error("Error message:", error.message);
+    return { total_students: 0, total_managers: 0, total_hostels: 0, total_rooms: 0 };
   }
 };
 
@@ -56,7 +51,7 @@ export const getDashboardSummary = async () => {
 
 
 interface RawUser {
-    userid: number; 
+    userid: number;
     usertype: string;
     fname: string;
     lname: string;
@@ -79,35 +74,34 @@ export interface RecentUserAccount {
 }
 
 
-export const getRecentUsersTableData = async (limit: number = 10): Promise<RecentUserAccount[]> => {
-    try {
+export const getRecentUsersTableData = async (limit: number = 10, bypassCache = false): Promise<RecentUserAccount[]> => {
+    const cacheKey = `${CACHE_RECENT_USERS}:${limit}`;
+    const cached = cacheGet<RecentUserAccount[]>(cacheKey);
+    if (cached && !bypassCache) return cached;
 
+    try {
         const response = await axios.get<UsersApiResponse>(
             `${API_BASE_URL}/faststay_app/users/all/`
         );
 
         const allUsers = response.data?.users || [];
-        
         const sortedUsers = [...allUsers].sort((a, b) => b.userid - a.userid);
-
         const recentUsers = sortedUsers.slice(0, limit);
 
         const recentUserAccounts: RecentUserAccount[] = recentUsers.map(user => ({
-            userid: user.userid, // Used for 'View' button action
-            Name: `${user.fname} ${user.lname}`, // Combine first and last name
+            userid: user.userid,
+            Name: `${user.fname} ${user.lname}`,
             City: user.city,
-            UserType: user.usertype, // Include the user type
+            UserType: user.usertype,
         }));
 
+        cacheSet(cacheKey, recentUserAccounts);
         return recentUserAccounts;
 
     } catch (error: unknown) {
         console.error("Error fetching and processing recent users:", error);
-        // ... (Standard error handling)
-        if (error instanceof Error) {
-            console.error("Error message:", error.message);
-        }
-        return []; // Return an empty array on failure
+        if (error instanceof Error) console.error("Error message:", error.message);
+        return [];
     }
 }
 
@@ -155,40 +149,43 @@ export interface RecentHostel {
   action: string; // For view button
 }
 
-export const getRecentHostelsTableData = async (limit: number = 10): Promise<RecentHostel[]> => {
+export const getRecentHostelsTableData = async (limit: number = 10, bypassCache = false): Promise<RecentHostel[]> => {
+  const cacheKey = `${CACHE_RECENT_HOSTELS}:${limit}`;
+  const cached = cacheGet<RecentHostel[]>(cacheKey);
+  if (cached && !bypassCache) return cached;
+
   try {
-    // Fetch hostels data
     const hostelsResponse = await axios.get<HostelsApiResponse>(
       `${API_BASE_URL}/faststay_app/display/all_hostels`
     );
 
     const allHostels = hostelsResponse.data?.hostels || [];
-    
+
     // Sort hostels by ID (assuming higher ID = more recent)
     const sortedHostels = [...allHostels].sort((a, b) => b.p_hostelid - a.p_hostelid);
-    
+
     // Get only recent hostels
     const recentHostels = sortedHostels.slice(0, limit);
-    
+
     // Fetch all users to get manager names
     const usersResponse = await axios.get<{ users: ManagerData[] }>(
       `${API_BASE_URL}/faststay_app/users/all/`
     );
-    
+
     const allUsers = usersResponse.data?.users || [];
-    
+
     // Create a map of manager IDs to manager names for quick lookup
     const managerMap = new Map<number, string>();
-    
+
     allUsers.forEach(user => {
       managerMap.set(user.userid, `${user.fname} ${user.lname}`);
     });
-    
+
     // Format the recent hostels data
     const recentHostelList: RecentHostel[] = recentHostels.map(hostel => {
       // Get manager name from the map, fallback to "Unknown" if not found
       const managerName = managerMap.get(hostel.p_managerid) || "Unknown Manager";
-      
+
       return {
         hostelId: hostel.p_hostelid,
         hostelName: hostel.p_name || "Unnamed Hostel",
@@ -200,15 +197,12 @@ export const getRecentHostelsTableData = async (limit: number = 10): Promise<Rec
       };
     });
 
+    cacheSet(cacheKey, recentHostelList);
     return recentHostelList;
 
   } catch (error: unknown) {
     console.error("Error fetching and processing recent hostels:", error);
-    
-    if (error instanceof Error) {
-      console.error("Error message:", error.message);
-    }
-    
-    return []; // Return an empty array on failure
+    if (error instanceof Error) console.error("Error message:", error.message);
+    return [];
   }
 };
