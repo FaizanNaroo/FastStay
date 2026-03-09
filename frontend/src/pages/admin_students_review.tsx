@@ -884,8 +884,6 @@ const AdminStudentProfile: React.FC = () => {
   const [student, setStudent] = useState<StudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
-  const [showApproveSuccess, setShowApproveSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -922,20 +920,6 @@ const AdminStudentProfile: React.FC = () => {
         setLoading(false);
       });
   }, [id]);
-
-  const handleApprove = () => {
-    if (!student) return;
-
-    // Dummy approve functionality
-    console.log(`Dummy approving student ${student.userId}`);
-    setIsApproved(true);
-    setShowApproveSuccess(true);
-
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setShowApproveSuccess(false);
-    }, 3000);
-  };
 
   const handleDelete = () => {
     if (!student) return;
@@ -1102,19 +1086,6 @@ const AdminStudentProfile: React.FC = () => {
               <div>
                 <h2 className={styles.pageTitle}>
                   <i className="fa-solid fa-user-graduate"></i> Student Profile
-                  {isApproved && (
-                    <span style={{
-                      marginLeft: "15px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      padding: "5px 15px",
-                      borderRadius: "20px",
-                      fontSize: "14px",
-                      fontWeight: "normal"
-                    }}>
-                      <i className="fa-solid fa-check" style={{ marginRight: "5px" }}></i> Approved
-                    </span>
-                  )}
                 </h2>
                 <p className={styles.subtitle}>Complete demographic details of {student.fullName}</p>
               </div>
@@ -1127,22 +1098,6 @@ const AdminStudentProfile: React.FC = () => {
             </div>
 
             {/* Action Messages */}
-            {showApproveSuccess && (
-              <div style={{
-                backgroundColor: "#d4edda",
-                color: "#155724",
-                padding: "15px",
-                borderRadius: "8px",
-                marginBottom: "20px",
-                display: "flex",
-                alignItems: "center",
-                gap: "10px"
-              }}>
-                <i className="fa-solid fa-check-circle" style={{ fontSize: "18px" }}></i>
-                <span>Student approved successfully!</span>
-              </div>
-            )}
-
             {actionError && (
               <div style={{
                 backgroundColor: "#f8d7da",
@@ -1352,96 +1307,47 @@ const AdminStudentProfile: React.FC = () => {
             {/* Action Buttons */}
             <div style={{
               display: "flex",
-              gap: "15px",
+              justifyContent: "flex-start",
               marginTop: "30px",
               padding: "20px",
               borderTop: "1px solid #eaeaea"
             }}>
-              {!isApproved ? (
-                <>
-                  <button
-                    style={{
-                      padding: "12px 25px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      transition: "all 0.3s"
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#218838";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#28a745";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                    onClick={handleApprove}
-                  >
-                    <i className="fa-solid fa-check"></i> Approve Student
-                  </button>
-
-                  <button
-                    style={{
-                      padding: "12px 25px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      transition: "all 0.3s",
-                      marginLeft: "auto"
-
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#c82333";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#dc3545";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                    onClick={() => setShowDeleteConfirm(true)}
-                    disabled={deleteLoading}
-                  >
-                    {deleteLoading ? (
-                      <>
-                        <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa-solid fa-trash"></i> Delete Student
-                      </>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <div style={{
-                  backgroundColor: "#d4edda",
-                  color: "#155724",
-                  padding: "15px",
+              <button
+                style={{
+                  padding: "12px 28px",
+                  background: "linear-gradient(135deg, #dc3545, #c82333)",
+                  color: "white",
+                  border: "none",
                   borderRadius: "8px",
+                  cursor: deleteLoading ? "not-allowed" : "pointer",
+                  fontSize: "16px",
+                  fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  width: "100%",
-                  justifyContent: "center"
-                }}>
-                  <i className="fa-solid fa-check-circle"></i>
-                  <span>This student has been approved</span>
-                </div>
-              )}
+                  transition: "all 0.3s",
+                  boxShadow: "0 4px 12px rgba(220, 53, 69, 0.3)",
+                  opacity: deleteLoading ? 0.7 : 1
+                }}
+                onMouseOver={(e) => {
+                  if (!deleteLoading) {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(220, 53, 69, 0.45)";
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(220, 53, 69, 0.3)";
+                }}
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <><i className="fa-solid fa-spinner fa-spin"></i> Deleting...</>
+                ) : (
+                  <><i className="fa-solid fa-trash"></i> Delete Student</>
+                )}
+              </button>
             </div>
           </div>
         )}
