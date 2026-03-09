@@ -464,29 +464,7 @@ const handleDelete = async () => {
 
                 {/* APPROVAL BUTTONS */}
                 <div className="custom-btn-row">
-                  {!isApproved ? (
-                    <button
-                      className="custom-btn custom-btn-approve"
-                      onClick={handleApprove}
-                      disabled={approveLoading}
-                    >
-                      {approveLoading ? (
-                        <>
-                          <i className="fa-solid fa-spinner fa-spin"></i> Approving...
-                        </>
-                      ) : (
-                        <>
-                          <i className="fa-solid fa-check"></i> Approve
-                        </>
-                      )}
-                    </button>
-                  ) : showApproveSuccess ? (
-                    <div className="custom-approved-message">
-                      <i className="fa-solid fa-check-circle"></i>
-                      <span>This hostel has been approved</span>
-                    </div>
-                  ) : null}
-
+                  {/* LEFT — Delete */}
                   <button
                     className="custom-btn custom-btn-delete"
                     onClick={() => setShowDeleteConfirm(true)}
@@ -502,6 +480,30 @@ const handleDelete = async () => {
                       </>
                     )}
                   </button>
+
+                  {/* RIGHT — Approve / approved badge */}
+                  {!isApproved ? (
+                    <button
+                      className="custom-btn custom-btn-approve"
+                      onClick={handleApprove}
+                      disabled={approveLoading}
+                    >
+                      {approveLoading ? (
+                        <>
+                          <i className="fa-solid fa-spinner fa-spin"></i> Approving...
+                        </>
+                      ) : (
+                        <>
+                          <i className="fa-solid fa-check"></i> Approve Hostel
+                        </>
+                      )}
+                    </button>
+                  ) : showApproveSuccess ? (
+                    <div className="custom-approved-message">
+                      <i className="fa-solid fa-check-circle"></i>
+                      <span>This hostel has been approved</span>
+                    </div>
+                  ) : null}
                 </div>
               </div>
             </>
