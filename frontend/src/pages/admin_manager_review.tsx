@@ -1230,8 +1230,6 @@ const AdminManagerProfile: React.FC = () => {
   const [userDetails, setUserDetails] = useState<RawUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isApproved, setIsApproved] = useState(false);
-  const [showApproveSuccess, setShowApproveSuccess] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteSuccess, setDeleteSuccess] = useState(false);
@@ -1275,20 +1273,6 @@ const AdminManagerProfile: React.FC = () => {
         setLoading(false);
       });
   }, [id]);
-
-  const handleApprove = () => {
-    if (!manager) return;
-
-    // Dummy approve functionality
-    console.log(`Dummy approving manager ${manager.id}`);
-    setIsApproved(true);
-    setShowApproveSuccess(true);
-
-    // Hide success message after 3 seconds
-    setTimeout(() => {
-      setShowApproveSuccess(false);
-    }, 3000);
-  };
 
   const handleDelete = async () => {
     if (!manager) return;
@@ -1449,23 +1433,6 @@ const AdminManagerProfile: React.FC = () => {
 
       {/* PAGE CONTENT */}
       <div className={styles.container}>
-        {/* Action Messages */}
-        {showApproveSuccess && (
-          <div style={{
-            backgroundColor: "#d4edda",
-            color: "#155724",
-            padding: "15px",
-            borderRadius: "8px",
-            marginBottom: "20px",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px"
-          }}>
-            <i className="fa-solid fa-check-circle" style={{ fontSize: "18px" }}></i>
-            <span>Manager approved successfully!</span>
-          </div>
-        )}
-
         {actionMessage && (
           <div style={{
             backgroundColor: actionMessage.includes("successfully") ? "#d4edda" : "#f8d7da",
@@ -1556,19 +1523,6 @@ const AdminManagerProfile: React.FC = () => {
               <div>
                 <h2 className={styles.pageTitle}>
                   <i className="fa-solid fa-user-tie"></i> Manager Profile
-                  {isApproved && (
-                    <span style={{
-                      marginLeft: "15px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      padding: "5px 15px",
-                      borderRadius: "20px",
-                      fontSize: "14px",
-                      fontWeight: "normal"
-                    }}>
-                      <i className="fa-solid fa-check" style={{ marginRight: "5px" }}></i> Approved
-                    </span>
-                  )}
                 </h2>
                 <p className={styles.subtitle}>Complete details of {manager.name}</p>
               </div>
@@ -1681,98 +1635,50 @@ const AdminManagerProfile: React.FC = () => {
               </div>
             </div>
 
-            {/* Action Buttons - Simplified like other pages */}
+            {/* Action Buttons */}
             <div style={{
               display: "flex",
-              gap: "15px",
+              justifyContent: "flex-start",
               marginTop: "30px",
               padding: "20px",
               borderTop: "1px solid #eaeaea"
             }}>
-              {!isApproved ? (
-                <>
-                  <button
-                    style={{
-                      padding: "12px 25px",
-                      backgroundColor: "#28a745",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      transition: "all 0.3s"
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#218838";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#28a745";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                    onClick={handleApprove}
-                  >
-                    <i className="fa-solid fa-check"></i> Approve Manager
-                  </button>
-
-                  <button
-                    style={{
-                      marginLeft: "auto",
-                      padding: "12px 25px",
-                      backgroundColor: "#dc3545",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "8px",
-                      cursor: "pointer",
-                      fontSize: "16px",
-                      fontWeight: "600",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "10px",
-                      transition: "all 0.3s"
-                    }}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.backgroundColor = "#c82333";
-                      e.currentTarget.style.transform = "translateY(-2px)";
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.backgroundColor = "#dc3545";
-                      e.currentTarget.style.transform = "translateY(0)";
-                    }}
-                    onClick={handleDelete}
-                    disabled={deleteLoading}
-                  >
-                    {deleteLoading ? (
-                      <>
-                        <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
-                      </>
-                    ) : (
-                      <>
-                        <i className="fa-solid fa-trash"></i> Delete Manager
-                      </>
-                    )}
-                  </button>
-                </>
-              ) : (
-                <div style={{
-                  backgroundColor: "#d4edda",
-                  color: "#155724",
-                  padding: "15px",
+              <button
+                style={{
+                  padding: "12px 28px",
+                  background: "linear-gradient(135deg, #dc3545, #c82333)",
+                  color: "white",
+                  border: "none",
                   borderRadius: "8px",
+                  cursor: deleteLoading ? "not-allowed" : "pointer",
+                  fontSize: "16px",
+                  fontWeight: "600",
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
-                  width: "100%",
-                  justifyContent: "center"
-                }}>
-                  <i className="fa-solid fa-check-circle"></i>
-                  <span>This manager has been approved</span>
-                </div>
-              )}
+                  transition: "all 0.3s",
+                  boxShadow: "0 4px 12px rgba(220, 53, 69, 0.3)",
+                  opacity: deleteLoading ? 0.7 : 1
+                }}
+                onMouseOver={(e) => {
+                  if (!deleteLoading) {
+                    e.currentTarget.style.transform = "translateY(-2px)";
+                    e.currentTarget.style.boxShadow = "0 6px 16px rgba(220, 53, 69, 0.45)";
+                  }
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(220, 53, 69, 0.3)";
+                }}
+                onClick={handleDelete}
+                disabled={deleteLoading}
+              >
+                {deleteLoading ? (
+                  <><i className="fa-solid fa-spinner fa-spin"></i> Deleting...</>
+                ) : (
+                  <><i className="fa-solid fa-trash"></i> Delete Manager</>
+                )}
+              </button>
             </div>
           </div>
         )}
