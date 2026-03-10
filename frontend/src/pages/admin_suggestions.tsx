@@ -14,6 +14,13 @@ const AdminSuggestions: React.FC = () => {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("All");
   const [activeTab, setActiveTab] = useState<"improvements" | "defects" | "all">("all");
+  const [statusFilter, setStatusFilter] = useState<'all' | 'resolved' | 'unresolved'>('all');
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(() => {
+    try {
+      const raw = localStorage.getItem('faststay_admin:resolved_suggestions');
+      return new Set(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,12 +61,26 @@ const AdminSuggestions: React.FC = () => {
         activeTab === "all" ||
         (activeTab === "improvements" && s.improvements.trim() !== "") ||
         (activeTab === "defects" && s.defects.trim() !== "");
-      return matchesSearch && matchesType && matchesTab;
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'resolved' && resolvedIds.has(s.rowKey)) ||
+        (statusFilter === 'unresolved' && !resolvedIds.has(s.rowKey));
+      return matchesSearch && matchesType && matchesTab && matchesStatus;
     });
-  }, [suggestions, search, typeFilter, activeTab]);
+  }, [suggestions, search, typeFilter, activeTab, statusFilter, resolvedIds]);
 
   const withImprovements = suggestions.filter((s) => s.improvements.trim() !== "").length;
   const withDefects = suggestions.filter((s) => s.defects.trim() !== "").length;
+  const resolvedCount = suggestions.filter((s) => resolvedIds.has(s.rowKey)).length;
+
+  const toggleResolved = (rowKey: string) => {
+    setResolvedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(rowKey)) next.delete(rowKey); else next.add(rowKey);
+      try { localStorage.setItem('faststay_admin:resolved_suggestions', JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  };
 
   if (error) {
     return (
@@ -115,6 +136,14 @@ const AdminSuggestions: React.FC = () => {
           </div>
 
           <div className={styles.card}>
+            <i className="fa-solid fa-circle-check" style={{ color: "#2e7d32" }}></i>
+            <p className={styles.cardTitle}>Resolved</p>
+            <p className={styles.cardValue}>
+              {loading ? <SkeletonBlock width="55%" height="30px" /> : resolvedCount}
+            </p>
+          </div>
+
+          <div className={styles.card}>
             <i className="fa-solid fa-triangle-exclamation" style={{ color: "#c62828" }}></i>
             <p className={styles.cardTitle}>With Defects Reported</p>
             <p className={styles.cardValue}>
@@ -124,7 +153,7 @@ const AdminSuggestions: React.FC = () => {
         </div>
 
         {/* TABS */}
-        <div style={{ display: "flex", gap: "10px", marginBottom: "20px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "10px", marginBottom: "12px", flexWrap: "wrap" }}>
           {(["all", "improvements", "defects"] as const).map((tab) => (
             <button
               key={tab}
@@ -144,6 +173,38 @@ const AdminSuggestions: React.FC = () => {
               {tab === "all" && <><i className="fa-solid fa-list" style={{ marginRight: "6px" }}></i>All</>}
               {tab === "improvements" && <><i className="fa-solid fa-arrow-trend-up" style={{ marginRight: "6px" }}></i>Improvements</>}
               {tab === "defects" && <><i className="fa-solid fa-bug" style={{ marginRight: "6px" }}></i>Defects</>}
+            </button>
+          ))}
+        </div>
+
+        {/* STATUS FILTER */}
+        <div style={{ display: "flex", gap: "8px", marginBottom: "20px", flexWrap: "wrap" }}>
+          {(["all", "unresolved", "resolved"] as const).map((sf) => (
+            <button
+              key={sf}
+              onClick={() => setStatusFilter(sf)}
+              style={{
+                padding: "6px 16px",
+                borderRadius: "20px",
+                border: sf === 'unresolved'
+                  ? `2px solid ${statusFilter === sf ? '#d97706' : '#f5cfa3'}`
+                  : sf === 'resolved'
+                  ? `2px solid ${statusFilter === sf ? '#2e7d32' : '#a5d6a7'}`
+                  : `2px solid ${statusFilter === sf ? '#5c3d2e' : '#ddd'}`,
+                cursor: "pointer",
+                fontWeight: "600",
+                fontSize: "13px",
+                backgroundColor: sf === 'unresolved' && statusFilter === sf ? '#fff3e0'
+                  : sf === 'resolved' && statusFilter === sf ? '#e8f5e9'
+                  : statusFilter === sf ? '#f5ede5' : '#fff',
+                color: sf === 'unresolved' ? '#e65100'
+                  : sf === 'resolved' ? '#2e7d32' : '#4b3a32',
+                transition: "all 0.2s",
+              }}
+            >
+              {sf === 'all' && <><i className="fa-solid fa-layer-group" style={{ marginRight: "5px" }}></i>All Status</>}
+              {sf === 'resolved' && <><i className="fa-solid fa-circle-check" style={{ marginRight: "5px" }}></i>Resolved ({resolvedCount})</>}
+              {sf === 'unresolved' && <><i className="fa-solid fa-circle-xmark" style={{ marginRight: "5px" }}></i>Unresolved ({suggestions.length - resolvedCount})</>}
             </button>
           ))}
         </div>
@@ -260,7 +321,7 @@ const AdminSuggestions: React.FC = () => {
                   <SkeletonRow cols={6} rows={5} />
                 ) : (
                   filtered.map((s, idx) => (
-                    <tr key={`${s.userId}-${idx}`}>
+                    <tr key={s.rowKey}>
                       <td style={{ color: "#6d5d52", fontSize: "13px" }}>{idx + 1}</td>
                       <td>
                         <strong>{s.userName}</strong>
@@ -315,34 +376,33 @@ const AdminSuggestions: React.FC = () => {
                         )}
                       </td>
                       <td>
-                        {s.improvements.trim() && s.defects.trim() ? (
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: "5px",
-                            padding: "4px 10px", borderRadius: "20px", fontSize: "12px",
-                            fontWeight: "600", backgroundColor: "#fff3e0", color: "#e65100",
-                            border: "1px solid #ffcc80",
+                        <div
+                          onClick={() => toggleResolved(s.rowKey)}
+                          title={resolvedIds.has(s.rowKey) ? 'Click to mark as unresolved' : 'Click to mark as resolved'}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}
+                        >
+                          {/* Track */}
+                          <div style={{
+                            width: '42px', height: '24px', borderRadius: '12px', flexShrink: 0,
+                            backgroundColor: resolvedIds.has(s.rowKey) ? '#2e7d32' : '#c9b8a8',
+                            position: 'relative', transition: 'background-color 0.25s',
                           }}>
-                            <i className="fa-solid fa-circle-half-stroke"></i> Mixed
-                          </span>
-                        ) : s.improvements.trim() ? (
+                            {/* Thumb */}
+                            <div style={{
+                              width: '18px', height: '18px', borderRadius: '50%',
+                              backgroundColor: '#fff', position: 'absolute', top: '3px',
+                              left: resolvedIds.has(s.rowKey) ? '21px' : '3px',
+                              transition: 'left 0.25s',
+                              boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                            }} />
+                          </div>
                           <span style={{
-                            display: "inline-flex", alignItems: "center", gap: "5px",
-                            padding: "4px 10px", borderRadius: "20px", fontSize: "12px",
-                            fontWeight: "600", backgroundColor: "#e8f5e9", color: "#2e7d32",
-                            border: "1px solid #a5d6a7",
+                            fontSize: '12px', fontWeight: '700', minWidth: '68px',
+                            color: resolvedIds.has(s.rowKey) ? '#2e7d32' : '#b45309',
                           }}>
-                            <i className="fa-solid fa-arrow-trend-up"></i> Improvement
+                            {resolvedIds.has(s.rowKey) ? 'Resolved' : 'Unresolved'}
                           </span>
-                        ) : (
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", gap: "5px",
-                            padding: "4px 10px", borderRadius: "20px", fontSize: "12px",
-                            fontWeight: "600", backgroundColor: "#ffebee", color: "#c62828",
-                            border: "1px solid #ef9a9a",
-                          }}>
-                            <i className="fa-solid fa-bug"></i> Defect
-                          </span>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))

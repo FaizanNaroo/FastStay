@@ -14,6 +14,7 @@ export interface RawSuggestion {
 
 export interface SuggestionRow {
     userId: number;
+    rowKey: string;
     userName: string;
     userType: string;
     improvements: string;
@@ -38,10 +39,11 @@ export const getAllSuggestions = async (bypassCache = false): Promise<Suggestion
 
         const userMap = new Map(users.map(u => [u.userid, u]));
 
-        const rows: SuggestionRow[] = suggestionsRes.data.result.map(s => {
+        const rows: SuggestionRow[] = suggestionsRes.data.result.map((s, i) => {
             const user = userMap.get(s.p_userid);
             return {
                 userId: s.p_userid,
+                rowKey: `${s.p_userid}-${i}`,
                 userName: user ? `${user.fname} ${user.lname}` : `User #${s.p_userid}`,
                 userType: user?.usertype ?? 'Unknown',
                 improvements: s.p_improvements ?? '',
