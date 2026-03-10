@@ -923,10 +923,29 @@ const AdminStudentProfile: React.FC = () => {
 
   const handleDelete = () => {
     if (!student) return;
+    setShowDeleteConfirm(true);
+  };
 
-    // Dummy delete functionality
-    console.log(`Dummy deleting student ${student.userId}`);
-    setActionError("This is a dummy delete. Student not actually deleted.");
+  const confirmDelete = async () => {
+    if (!student) return;
+    setDeleteLoading(true);
+    setActionError(null);
+    try {
+      const { deleteStudent } = await import('../api/admin_students_review');
+      const success = await deleteStudent(student.userId);
+      if (success) {
+        setShowDeleteConfirm(false);
+        navigate('/admin/students');
+      } else {
+        setActionError('Student not found or already deleted.');
+        setShowDeleteConfirm(false);
+      }
+    } catch {
+      setActionError('Failed to delete student. Please try again.');
+      setShowDeleteConfirm(false);
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const formatSemester = (semester: number): string => {
@@ -1462,7 +1481,7 @@ const AdminStudentProfile: React.FC = () => {
                 onMouseOut={(e) => {
                   e.currentTarget.style.backgroundColor = "#dc3545";
                 }}
-                onClick={handleDelete}
+                onClick={confirmDelete}
                 disabled={deleteLoading}
               >
                 {deleteLoading ? (

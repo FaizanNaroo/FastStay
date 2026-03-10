@@ -239,6 +239,26 @@ export const getStudentProfile = async (studentId: number, bypassCache = false):
 };
 
 /**
+ * Deletes a student by student ID
+ * @param studentId - The ID of the student to delete
+ * @returns Promise<boolean> - true on success, false on not found, throws on server error
+ */
+export const deleteStudent = async (studentId: number): Promise<boolean> => {
+    try {
+        const response = await axios.post(
+            `${API_BASE_URL}/faststay_app/UserDetail/delete/`,
+            { p_StudentId: studentId }
+        );
+        return response.status === 200;
+    } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+            if (error.response?.status === 404) return false;
+        }
+        throw error;
+    }
+};
+
+/**
  * Prefetches all student profiles in parallel batches.
  * Skips profiles already in cache. Safe to call fire-and-forget.
  * @param studentIds - Array of student IDs to prefetch

@@ -4,7 +4,7 @@ from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
 from faststay_app.views import SignupView
 from faststay_app.views import Add_App_Suggestion_view, Display_Ratings_View, Display_User_Suggestions_View
-from faststay_app.views import Student_Detail_Entry_view, Update_Student_Detail_view, Display_Student_View, Display_All_Students_View
+from faststay_app.views import Student_Detail_Entry_view, Update_Student_Detail_view, Display_Student_View, Display_All_Students_View, Delete_Student_View
 from faststay_app.views import Add_Manager_Details_view, Update_Manager_Details_view, delete_Hostel_Manager_view, Display_Manager_View, Display_All_Managers_View
 from faststay_app.views import Add_Hostel_Details_view, Update_Hostel_Details_view, Display_Hostel_View
 from faststay_app.views import Add_Kitchen_Details_view, Update_Kitchen_Details_view
@@ -53,6 +53,7 @@ urlpatterns=[
     path('UserDetail/update/', Update_Student_Detail_view.as_view(), name='UpdateStudentDetail'),
     path('UserDetail/display/', Display_Student_View.as_view(), name='Display_Student_Details'),
     path('UserDetail/display/all/', Display_All_Students_View.as_view(), name='Display_All_Students_Details'),
+    path('UserDetail/delete/', Delete_Student_View.as_view(), name='Delete_Student'),
     path('AppSuggestion/add/', Add_App_Suggestion_view.as_view(), name='Add_App_Suggestion'),
     path('AppSuggestion/display/', Display_User_Suggestions_View.as_view(), name='Display_User_Suggestions'),
     path('HostelRating/display/', Display_Ratings_View.as_view(), name='Display_hostel_Ratings'),
