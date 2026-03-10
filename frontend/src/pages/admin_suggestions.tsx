@@ -81,6 +81,7 @@ const AdminSuggestions: React.FC = () => {
           <Link to="/admin/hostels">Hostels</Link>
           <Link to="/admin/students">Students</Link>
           <Link to="/admin/managers">Managers</Link>
+          <Link to="/admin/suggestions" className={styles.active}>Suggestions</Link>
           <Link to="/admin/logout">Logout</Link>
         </div>
       </nav>

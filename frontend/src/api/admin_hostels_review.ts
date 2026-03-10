@@ -418,3 +418,55 @@ export const getPendingHostels = async (bypassCache = false): Promise<PendingHos
         return [];
     }
 };
+
+// ---- Hostel Expenses ----
+export interface HostelExpenses {
+    expense_id: number;
+    isIncludedInRoomCharges: boolean;
+    RoomCharges: number[];
+    SecurityCharges: number;
+    MessCharges: number;
+    KitchenCharges: number;
+    InternetCharges: number;
+    AcServiceCharges: number;
+    ElectricitybillType: string;
+    ElectricityCharges: number;
+}
+
+export const getHostelExpenses = async (hostelId: number): Promise<HostelExpenses | null> => {
+    try {
+        const response = await axios.post(`${API_BASE_URL}/faststay_app/Expenses/display/`, {
+            p_HostelId: hostelId,
+        });
+        if (response.data?.success && response.data?.result) {
+            return response.data.result as HostelExpenses;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+};
+
+export const getHostelSecurityInfo = async (hostelId: number): Promise<Record<string, any> | null> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/faststay_app/display/security_info`, {
+            params: { p_HostelId: hostelId },
+        });
+        if (response.data && !response.data.error) return response.data;
+        return null;
+    } catch {
+        return null;
+    }
+};
+
+export const getHostelMessInfo = async (hostelId: number): Promise<Record<string, any> | null> => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/faststay_app/display/hostel_mess`, {
+            params: { p_HostelId: hostelId },
+        });
+        if (response.data && !response.data.error) return response.data;
+        return null;
+    } catch {
+        return null;
+    }
+};

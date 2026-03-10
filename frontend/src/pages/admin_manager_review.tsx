@@ -1335,6 +1335,7 @@ const AdminManagerProfile: React.FC = () => {
             <Link to="/admin/hostels">Hostels</Link>
             <Link to="/admin/students">Students</Link>
             <Link to="/admin/managers" className={styles.active}>Managers</Link>
+            <Link to="/admin/suggestions">Suggestions</Link>
             <Link to="/admin/logout">Logout</Link>
           </div>
         </nav>

@@ -976,6 +976,7 @@ const AdminStudentProfile: React.FC = () => {
             <Link to="/admin/hostels">Hostels</Link>
             <Link to="/admin/students" className={styles.active}>Students</Link>
             <Link to="/admin/managers">Managers</Link>
+            <Link to="/admin/suggestions">Suggestions</Link>
             <Link to="/admin/logout">Logout</Link>
           </div>
         </nav>

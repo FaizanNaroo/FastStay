@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { getHostelDetails, deleteHostel, approveHostel, CACHE_HOSTEL_DETAIL, type HostelTableRow } from "../api/admin_hostels_review";
+import { getHostelDetails, deleteHostel, approveHostel, CACHE_HOSTEL_DETAIL, type HostelTableRow, getHostelExpenses, getHostelSecurityInfo, getHostelMessInfo, type HostelExpenses } from "../api/admin_hostels_review";
 import { cacheGet, cacheSet } from "../utils/cache";
 import { getAdminAccessCode } from "../utils/auth";
 import { SkeletonBlock } from "../components/SkeletonRow";
@@ -21,6 +21,12 @@ const AdminViewHostels: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'expenses' | 'facilities'>('overview');
+  const [expenses, setExpenses] = useState<HostelExpenses | null>(null);
+  const [securityInfo, setSecurityInfo] = useState<Record<string, any> | null>(null);
+  const [messInfo, setMessInfo] = useState<Record<string, any> | null>(null);
+  const [tabLoading, setTabLoading] = useState(false);
+  const tabsLoadedRef = useRef<Record<string, boolean>>({});
 
   useEffect(() => {
     const hostelId = parseInt(id || "0");
@@ -56,6 +62,32 @@ const AdminViewHostels: React.FC = () => {
         setLoading(false);
       });
   }, [id]);
+
+  useEffect(() => {
+    tabsLoadedRef.current = {};
+    setActiveTab('overview');
+    setExpenses(null);
+    setSecurityInfo(null);
+    setMessInfo(null);
+  }, [id]);
+
+  useEffect(() => {
+    const hostelId = parseInt(id || '0');
+    if (!hostelId) return;
+    if (activeTab === 'expenses' && !tabsLoadedRef.current['expenses']) {
+      tabsLoadedRef.current = { ...tabsLoadedRef.current, expenses: true };
+      setTabLoading(true);
+      getHostelExpenses(hostelId)
+        .then(data => { setExpenses(data); setTabLoading(false); })
+        .catch(() => setTabLoading(false));
+    } else if (activeTab === 'facilities' && !tabsLoadedRef.current['facilities']) {
+      tabsLoadedRef.current = { ...tabsLoadedRef.current, facilities: true };
+      setTabLoading(true);
+      Promise.all([getHostelSecurityInfo(hostelId), getHostelMessInfo(hostelId)])
+        .then(([sec, mess]) => { setSecurityInfo(sec); setMessInfo(mess); setTabLoading(false); })
+        .catch(() => setTabLoading(false));
+    }
+  }, [activeTab, id]);
 
   const handleApprove = async () => {
     if (!hostel) return;
@@ -150,6 +182,11 @@ const handleDelete = async () => {
     setCurrentImageIndex(index);
   };
 
+  const formatKey = (key: string) => key
+    .replace(/^p_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase());
+
   // Show only error on full page if there's a critical error
   if (error) {
     return (
@@ -175,6 +212,7 @@ const handleDelete = async () => {
             <Link to="/admin/hostels">Hostels</Link>
             <Link to="/admin/students">Students</Link>
             <Link to="/admin/managers">Managers</Link>
+            <Link to="/admin/suggestions">Suggestions</Link>
             <Link to="/admin/logout">Logout</Link>
           </div>
         </nav>
@@ -297,6 +335,27 @@ const handleDelete = async () => {
                 Hostel ID: {hostel.id} | Verify details before approval.
               </p>
 
+              {/* TAB NAVIGATION */}
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '22px', background: '#f0e7dc', borderRadius: '10px', padding: '5px' }}>
+                {([
+                  { key: 'overview' as const, label: 'Overview', icon: 'fa-building' },
+                  { key: 'expenses' as const, label: 'Expenses', icon: 'fa-money-bill-wave' },
+                  { key: 'facilities' as const, label: 'Security & Mess', icon: 'fa-shield-halved' },
+                ]).map(tab => (
+                  <button key={tab.key} onClick={() => setActiveTab(tab.key)} style={{
+                    flex: 1, padding: '10px 14px', border: 'none', borderRadius: '7px', cursor: 'pointer',
+                    fontSize: '13px', fontWeight: activeTab === tab.key ? '600' : '400',
+                    background: activeTab === tab.key ? '#5c3d2e' : 'transparent',
+                    color: activeTab === tab.key ? '#f8f3e7' : '#6b4e38',
+                    transition: 'all 0.18s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '7px',
+                  }}>
+                    <i className={`fa-solid ${tab.icon}`}></i> {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* OVERVIEW TAB */}
+              {activeTab === 'overview' && (
               <div className="custom-card" key={hostel.id}>
                 {/* HOSTEL BASIC INFO */}
                 <h3 className="custom-section-title">Hostel Information</h3>
@@ -506,6 +565,137 @@ const handleDelete = async () => {
                   ) : null}
                 </div>
               </div>
+              )}
+
+              {/* EXPENSES TAB */}
+              {activeTab === 'expenses' && (
+                <div className="custom-card">
+                  <h3 className="custom-section-title">
+                    <i className="fa-solid fa-money-bill-wave" style={{ marginRight: '8px', color: '#8d5f3a' }}></i>
+                    Financial Breakdown
+                  </h3>
+                  {tabLoading ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+                      <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '26px' }}></i>
+                      <p style={{ marginTop: '12px' }}>Loading expenses...</p>
+                    </div>
+                  ) : !expenses ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+                      <i className="fa-solid fa-file-invoice-dollar" style={{ fontSize: '36px', marginBottom: '12px', display: 'block' }}></i>
+                      <p>No expense data found for this hostel.</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div style={{ marginBottom: '20px' }}>
+                        <span style={{
+                          display: 'inline-flex', alignItems: 'center', gap: '8px',
+                          padding: '8px 18px', borderRadius: '20px', fontSize: '13px', fontWeight: '600',
+                          background: expenses.isIncludedInRoomCharges ? '#e8f5e9' : '#fff3e0',
+                          color: expenses.isIncludedInRoomCharges ? '#2e7d32' : '#e65100',
+                          border: `1px solid ${expenses.isIncludedInRoomCharges ? '#a5d6a7' : '#ffcc80'}`,
+                        }}>
+                          <i className={`fa-solid ${expenses.isIncludedInRoomCharges ? 'fa-check-circle' : 'fa-circle-xmark'}`}></i>
+                          {expenses.isIncludedInRoomCharges ? 'Expenses Included in Room Rent' : 'Expenses Billed Separately'}
+                        </span>
+                      </div>
+                      {expenses.RoomCharges && expenses.RoomCharges.length > 0 && (
+                        <div style={{ marginBottom: '22px' }}>
+                          <div className="custom-info-label" style={{ marginBottom: '8px' }}>Room Charges (per seater / month)</div>
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            {expenses.RoomCharges.map((charge, idx) => (
+                              <span key={idx} style={{ padding: '6px 16px', background: '#f0e7dc', borderRadius: '8px', fontSize: '14px', fontWeight: '600', color: '#3b2c24' }}>
+                                {Number(charge).toLocaleString()} PKR
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      <div className="custom-info-grid">
+                        {([
+                          { label: 'Security Charges', value: expenses.SecurityCharges, icon: 'fa-shield-halved' },
+                          { label: 'Mess Charges', value: expenses.MessCharges, icon: 'fa-utensils' },
+                          { label: 'Kitchen Charges', value: expenses.KitchenCharges, icon: 'fa-fire-burner' },
+                          { label: 'Internet Charges', value: expenses.InternetCharges, icon: 'fa-wifi' },
+                          { label: 'AC Service Charges', value: expenses.AcServiceCharges, icon: 'fa-snowflake' },
+                          { label: 'Electricity Charges', value: expenses.ElectricityCharges, icon: 'fa-bolt' },
+                        ] as { label: string; value: number; icon: string }[]).map(item => (
+                          <div key={item.label} className="custom-info-box">
+                            <div className="custom-info-label">
+                              <i className={`fa-solid ${item.icon}`} style={{ marginRight: '6px', color: '#8d5f3a' }}></i>{item.label}
+                            </div>
+                            <div className="custom-info-value">
+                              {item.value != null && item.value > 0 ? `${Number(item.value).toLocaleString()} PKR / month` : 'N/A'}
+                            </div>
+                          </div>
+                        ))}
+                        <div className="custom-info-box">
+                          <div className="custom-info-label">
+                            <i className="fa-solid fa-receipt" style={{ marginRight: '6px', color: '#8d5f3a' }}></i>Electricity Bill Type
+                          </div>
+                          <div className="custom-info-value">{expenses.ElectricitybillType || 'N/A'}</div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
+
+              {/* FACILITIES TAB */}
+              {activeTab === 'facilities' && (
+                <div className="custom-card">
+                  {tabLoading ? (
+                    <div style={{ padding: '40px', textAlign: 'center', color: '#888' }}>
+                      <i className="fa-solid fa-spinner fa-spin" style={{ fontSize: '26px' }}></i>
+                      <p style={{ marginTop: '12px' }}>Loading facilities data...</p>
+                    </div>
+                  ) : (
+                    <>
+                      <h3 className="custom-section-title">
+                        <i className="fa-solid fa-shield-halved" style={{ marginRight: '8px', color: '#8d5f3a' }}></i>Security Information
+                      </h3>
+                      {!securityInfo || Object.keys(securityInfo).filter(k => k !== 'error').length === 0 ? (
+                        <div style={{ padding: '16px 0 28px', color: '#888', fontSize: '14px' }}>
+                          <i className="fa-solid fa-circle-info" style={{ marginRight: '6px' }}></i>No security data registered for this hostel.
+                        </div>
+                      ) : (
+                        <div className="custom-info-grid" style={{ marginBottom: '28px' }}>
+                          {Object.entries(securityInfo)
+                            .filter(([k]) => k !== 'error')
+                            .map(([k, v]) => (
+                              <div key={k} className="custom-info-box">
+                                <div className="custom-info-label">{formatKey(k)}</div>
+                                <div className="custom-info-value">
+                                  {v != null ? (typeof v === 'boolean' ? (v ? 'Yes' : 'No') : Array.isArray(v) ? (v as any[]).join(', ') : String(v)) : 'N/A'}
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                      )}
+                      <h3 className="custom-section-title" style={{ marginTop: '8px' }}>
+                        <i className="fa-solid fa-utensils" style={{ marginRight: '8px', color: '#8d5f3a' }}></i>Mess Information
+                      </h3>
+                      {!messInfo || Object.keys(messInfo).filter(k => k !== 'error').length === 0 ? (
+                        <div style={{ padding: '16px 0', color: '#888', fontSize: '14px' }}>
+                          <i className="fa-solid fa-circle-info" style={{ marginRight: '6px' }}></i>No mess data registered for this hostel.
+                        </div>
+                      ) : (
+                        <div className="custom-info-grid">
+                          {Object.entries(messInfo)
+                            .filter(([k]) => k !== 'error')
+                            .map(([k, v]) => (
+                              <div key={k} className="custom-info-box">
+                                <div className="custom-info-label">{formatKey(k)}</div>
+                                <div className="custom-info-value">
+                                  {v != null ? (typeof v === 'boolean' ? (v ? 'Yes' : 'No') : Array.isArray(v) ? (v as any[]).join(', ') : String(v)) : 'N/A'}
+                                </div>
+                              </div>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
             </>
           )}
 

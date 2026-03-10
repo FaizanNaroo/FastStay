@@ -100,6 +100,7 @@ const AdminViewStudents: React.FC = () => {
                     <Link to="/admin/hostels" className={styles.navLink}>Hostels</Link>
                     <Link to="/admin/students" className={`${styles.navLink} ${styles.activeNavLink}`}>Students</Link>
                     <Link to="/admin/managers" className={styles.navLink}>Managers</Link>
+                    <Link to="/admin/suggestions" className={styles.navLink}>Suggestions</Link>
                     <Link to="/admin/logout" className={styles.navLink}>Logout</Link>
                 </div>
             </nav>
