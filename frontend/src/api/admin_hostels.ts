@@ -68,6 +68,7 @@ export interface HostelTableRow {
     issueResolvingTenure: number;
     messProvide: boolean;
     geezerFlag: boolean;
+    avgRating?: number | null;
 }
 
 // Interface for recent hostel (for Dashboard widget)
@@ -85,49 +86,70 @@ export interface RecentHostel {
  * Fetches all hostels and combines with manager names for the main table.
  * @returns A promise that resolves to an array of HostelTableRow.
  */
+interface RawRating {
+    p_hostelid: number;
+    p_ratingstar: number;
+}
+
+interface RatingsApiResponse {
+    ratings: RawRating[];
+}
+
 export const getAllHostelsTableData = async (bypassCache = false): Promise<HostelTableRow[]> => {
     if (!bypassCache) {
         const cached = cacheGet<HostelTableRow[]>(CACHE_HOSTELS);
         if (cached) return cached;
     }
     try {
-        // Use a consistent trailing slash (e.g., /all/ and /all_hostels/)
-        const [hostelsResponse, usersResponse] = await Promise.all([
+        const [hostelsResponse, usersResponse, ratingsResponse] = await Promise.all([
             axios.get<HostelsApiResponse>(`${API_BASE_URL}/faststay_app/display/all_hostels`),
-            axios.get<UsersApiResponse>(`${API_BASE_URL}/faststay_app/users/all`)
+            axios.get<UsersApiResponse>(`${API_BASE_URL}/faststay_app/users/all`),
+            axios.get<RatingsApiResponse>(`${API_BASE_URL}/faststay_app/display/hostel_rating`).catch(() => ({ data: { ratings: [] } })),
         ]);
 
         const hostels = hostelsResponse.data?.hostels || [];
         const users = usersResponse.data?.users || [];
+        const ratingsRaw: RawRating[] = ratingsResponse.data?.ratings || [];
+
+        // Build avg star map per hostel
+        const ratingsMap = new Map<number, number[]>();
+        ratingsRaw.forEach(r => {
+            if (!ratingsMap.has(r.p_hostelid)) ratingsMap.set(r.p_hostelid, []);
+            ratingsMap.get(r.p_hostelid)!.push(r.p_ratingstar);
+        });
 
         // Create a map for quick manager lookup
         const managerMap = new Map<number, string>();
         users.forEach(user => {
-            // Only map users identified as 'Hostel Manager'
             if (user.usertype === 'Hostel Manager') {
                 managerMap.set(user.userid, `${user.fname} ${user.lname}`);
             }
         });
 
         // Transform and combine data
-        const hostelTableRows: HostelTableRow[] = hostels.map(hostel => ({
-            id: hostel.p_hostelid,
-            name: hostel.p_name,
-            // Combining Block No and House No as requested
-            blockHouse: `${hostel.p_blockno} - ${hostel.p_houseno}`,
-            type: hostel.p_hosteltype,
-            rooms: hostel.p_numrooms,
-            floors: hostel.p_numfloors,
-            managerID: hostel.p_managerid,
-            // Use 'Unknown' if manager is not found
-            managerName: managerMap.get(hostel.p_managerid) || 'Unknown',
-            isParking: hostel.p_isparking,
-            waterTimings: hostel.p_watertimings,
-            cleanlinessTenure: hostel.p_cleanlinesstenure,
-            issueResolvingTenure: hostel.p_issueresolvingtenure,
-            messProvide: hostel.p_messprovide,
-            geezerFlag: hostel.p_geezerflag,
-        }));
+        const hostelTableRows: HostelTableRow[] = hostels.map(hostel => {
+            const stars = ratingsMap.get(hostel.p_hostelid);
+            const avgRating = stars && stars.length > 0
+                ? stars.reduce((a, b) => a + b, 0) / stars.length
+                : null;
+            return {
+                id: hostel.p_hostelid,
+                name: hostel.p_name,
+                blockHouse: `${hostel.p_blockno} - ${hostel.p_houseno}`,
+                type: hostel.p_hosteltype,
+                rooms: hostel.p_numrooms,
+                floors: hostel.p_numfloors,
+                managerID: hostel.p_managerid,
+                managerName: managerMap.get(hostel.p_managerid) || 'Unknown',
+                isParking: hostel.p_isparking,
+                waterTimings: hostel.p_watertimings,
+                cleanlinessTenure: hostel.p_cleanlinesstenure,
+                issueResolvingTenure: hostel.p_issueresolvingtenure,
+                messProvide: hostel.p_messprovide,
+                geezerFlag: hostel.p_geezerflag,
+                avgRating,
+            };
+        });
 
         cacheSet(CACHE_HOSTELS, hostelTableRows);
         return hostelTableRows;

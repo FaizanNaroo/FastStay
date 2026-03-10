@@ -705,16 +705,19 @@ const ViewHostels: React.FC = () => {
                       </span>
                     </td>
                     <td className={styles.tableCell}>
-                      <div style={{
-                        fontWeight: "bold",
-                        color: "#2c3e50",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "5px"
-                      }}>
-                        <i className="fa-solid fa-door-closed"></i>
-                        {h.rooms}
+                      <div style={{ fontWeight: "bold", color: "#2c3e50", display: "flex", alignItems: "center", gap: "5px" }}>
+                        <i className="fa-solid fa-door-closed"></i> {h.rooms}
                       </div>
+                      {h.avgRating != null ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "2px", marginTop: "5px" }}>
+                          {[1,2,3,4,5].map(i => (
+                            <i key={i} className="fa-solid fa-star" style={{ color: i <= Math.round(h.avgRating!) ? '#f4a62a' : '#ddd', fontSize: '11px' }}></i>
+                          ))}
+                          <span style={{ fontSize: "11px", color: "#888", marginLeft: "3px" }}>{h.avgRating.toFixed(1)}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "11px", color: "#bbb", marginTop: "4px" }}>No ratings yet</div>
+                      )}
                     </td>
                     <td className={styles.tableCell}>
                       <div style={{
