@@ -145,6 +145,66 @@ tr:hover {
   }
 }
 
+/* ----------- SUGGESTIONS PAGE (admin_suggestions.tsx) ----------- */
+.suggestFilterBar {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.suggestSearchInput {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.suggestFilterGroup {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .suggestFilterBar   { flex-direction: column; }
+  .suggestSearchInput { width: 100%; }
+  .suggestFilterGroup { width: 100%; }
+  .suggestFilterGroup select { width: 100%; }
+
+  /* TABLE → CARD on mobile */
+  .suggestTable thead { display: none; }
+
+  .suggestTable tbody tr {
+    display: block;
+    border-radius: 10px;
+    border: 1px solid #dfd6cb;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .suggestTable td {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 14px;
+    border-bottom: 1px solid #ede4d8;
+    max-width: 100%;
+  }
+
+  .suggestTable td::before {
+    content: attr(data-label);
+    font-size: 11px;
+    font-weight: 700;
+    color: #8d7060;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+
+  /* Hide # counter column */
+  .suggestTable td:first-child { display: none; }
+
+  .suggestTable td:last-child { border-bottom: none; }
+}
+
 /* ----------- MANAGER LIST GRID (admin_manager.tsx) ----------- */
 .mgrColHeader {
   display: grid;

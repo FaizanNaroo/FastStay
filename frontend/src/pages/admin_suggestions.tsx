@@ -199,32 +199,24 @@ const AdminSuggestions: React.FC = () => {
         </div>
 
         {/* SEARCH + FILTER BAR */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            marginBottom: "15px",
-            flexWrap: "wrap",
-            gap: "10px",
-          }}
-        >
+        <div className={styles.suggestFilterBar} style={{ marginBottom: "15px" }}>
           <input
             type="text"
             placeholder="Search by user name or content..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             disabled={loading}
+            className={styles.suggestSearchInput}
             style={{
               padding: "10px",
               borderRadius: "8px",
-              width: "320px",
               border: "1px solid #ddd",
               backgroundColor: loading ? "#d6c4a1" : "#f5e9d2",
               color: loading ? "#7a6648" : "#4c3f30",
               fontSize: "14px",
             }}
           />
-          <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+          <div className={styles.suggestFilterGroup}>
             <span style={{ color: "#d6c7ba", fontSize: "14px" }}>Filter by type:</span>
             <select
               value={typeFilter}
@@ -294,7 +286,7 @@ const AdminSuggestions: React.FC = () => {
               <p style={{ color: "#4b3a32" }}>No suggestions match your search or filter.</p>
             </div>
           ) : (
-            <table>
+            <table className={styles.suggestTable}>
               <thead>
                 <tr>
                   <th>#</th>
@@ -311,12 +303,12 @@ const AdminSuggestions: React.FC = () => {
                 ) : (
                   filtered.map((s, idx) => (
                     <tr key={s.rowKey}>
-                      <td style={{ color: "#6d5d52", fontSize: "13px" }}>{idx + 1}</td>
-                      <td>
+                      <td data-label="#" style={{ color: "#6d5d52", fontSize: "13px" }}>{idx + 1}</td>
+                      <td data-label="User">
                         <strong>{s.userName}</strong>
                         <div style={{ fontSize: "12px", color: "#6d5d52" }}>ID #{s.userId}</div>
                       </td>
-                      <td>
+                      <td data-label="Type">
                         <span style={{
                           display: "inline-block",
                           padding: "4px 12px",
@@ -330,7 +322,7 @@ const AdminSuggestions: React.FC = () => {
                           {s.userType}
                         </span>
                       </td>
-                      <td style={{ maxWidth: "280px" }}>
+                      <td data-label="Improvements" style={{ maxWidth: "280px" }}>
                         {s.improvements.trim() ? (
                           <div style={{
                             backgroundColor: "#e8f5e9",
@@ -347,7 +339,7 @@ const AdminSuggestions: React.FC = () => {
                           <span style={{ color: "#aaa", fontSize: "13px", fontStyle: "italic" }}>—</span>
                         )}
                       </td>
-                      <td style={{ maxWidth: "280px" }}>
+                      <td data-label="Defects" style={{ maxWidth: "280px" }}>
                         {s.defects.trim() ? (
                           <div style={{
                             backgroundColor: "#ffebee",
@@ -364,7 +356,7 @@ const AdminSuggestions: React.FC = () => {
                           <span style={{ color: "#aaa", fontSize: "13px", fontStyle: "italic" }}>—</span>
                         )}
                       </td>
-                      <td>
+                      <td data-label="Status">
                         <div
                           onClick={() => toggleResolved(s.rowKey)}
                           title={resolvedIds.has(s.rowKey) ? 'Click to mark as unresolved' : 'Click to mark as resolved'}
