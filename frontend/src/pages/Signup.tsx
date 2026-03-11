@@ -44,7 +44,7 @@ const Signup: React.FC = () => {
 
     const userType = form.usertype.trim().toLowerCase();
 
-    if (userType === "hostel manager" && !form.email.endsWith(".faststay")) {
+    if (userType === "hostel manager" && !form.email.endsWith("faststay.com")) {
       setMessageType("error");
       setMessage("Invalid email domain.");
       setLoading(false);
