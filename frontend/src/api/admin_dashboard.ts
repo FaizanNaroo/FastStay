@@ -147,7 +147,8 @@ interface ManagerData {
 export interface RecentHostel {
   hostelId: number;
   hostelName: string;
-  houseNo: string;  // Changed from city to house number
+  houseNo: string;
+  blockNo: string;
   hostelType: string;
   managerName: string; // Manager name fetched from users endpoint
   totalRooms: number;
@@ -194,11 +195,12 @@ export const getRecentHostelsTableData = async (limit: number = 10, bypassCache 
       return {
         hostelId: hostel.p_hostelid,
         hostelName: hostel.p_name || "Unnamed Hostel",
-        houseNo: hostel.p_houseno, // Using house number instead of city
+        houseNo: hostel.p_houseno,
+        blockNo: hostel.p_blockno,
         hostelType: hostel.p_hosteltype,
         managerName: managerName,
         totalRooms: hostel.p_numrooms,
-        action: "View Details" // Default text for action button
+        action: "View Details"
       };
     });
 
@@ -273,6 +275,7 @@ export const loadDashboardData = async (bypassCache = false): Promise<{
       hostelId: h.p_hostelid,
       hostelName: h.p_name || 'Unnamed Hostel',
       houseNo: h.p_houseno,
+      blockNo: h.p_blockno,
       hostelType: h.p_hosteltype,
       managerName: managerMap.get(h.p_managerid) || 'Unknown Manager',
       totalRooms: h.p_numrooms,

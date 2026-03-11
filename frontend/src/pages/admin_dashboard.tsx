@@ -715,13 +715,13 @@ const AdminDashboard: React.FC = () => {
 
           {/* Column headers */}
           <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 120px 160px 90px',
+            display: 'grid', gridTemplateColumns: '1fr 160px 160px 90px',
             padding: '8px 20px', background: '#f3f8f3',
             borderBottom: '1px solid #deeade',
             fontSize: '11px', fontWeight: 700, color: '#5a7060',
             textTransform: 'uppercase', letterSpacing: '0.5px',
           }}>
-            <span>Hostel</span><span>House No</span><span>Manager</span><span style={{ textAlign: 'right' }}>Action</span>
+            <span>Hostel</span><span>Block / House No</span><span>Manager</span><span style={{ textAlign: 'right' }}>Action</span>
           </div>
 
           {/* Rows */}
@@ -742,7 +742,7 @@ const AdminDashboard: React.FC = () => {
           ) : (
             recentHostels.map((h, i) => (
               <div key={h.hostelId} style={{
-                display: 'grid', gridTemplateColumns: '1fr 120px 160px 90px',
+                display: 'grid', gridTemplateColumns: '1fr 160px 160px 90px',
                 alignItems: 'center', padding: '12px 20px',
                 borderBottom: i < recentHostels.length - 1 ? '1px solid #e8f0e8' : 'none',
                 transition: 'background 0.15s',
@@ -764,9 +764,16 @@ const AdminDashboard: React.FC = () => {
                     <div style={{ fontSize: '11px', color: '#a89080' }}>ID #{h.hostelId}</div>
                   </div>
                 </div>
-                {/* House No */}
-                <div style={{ fontSize: '13px', color: '#6d5d52' }}>
-                  <i className="fa-solid fa-hashtag" style={{ marginRight: '4px', color: '#b49a89' }}></i>{h.houseNo || '—'}
+                {/* Block / House No */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  {h.blockNo && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: '#1565c0', backgroundColor: '#e8f2fb', borderRadius: '5px', padding: '1px 6px', width: 'fit-content' }}>
+                      <i className="fa-solid fa-map-pin" style={{ fontSize: '9px' }}></i>{h.blockNo}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '12px', color: '#6d5d52', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <i className="fa-solid fa-hashtag" style={{ color: '#b49a89', fontSize: '10px' }}></i>{h.houseNo || '—'}
+                  </span>
                 </div>
                 {/* Manager */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
