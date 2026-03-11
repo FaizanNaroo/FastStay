@@ -599,8 +599,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Column headers */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 120px 140px 90px',
+          <div className={styles.dashUsersHeader} style={{
             padding: '8px 20px', background: '#fdf6ef',
             borderBottom: '1px solid #ede4d8',
             fontSize: '11px', fontWeight: 700, color: '#8d7060',
@@ -626,9 +625,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           ) : (
             recentUsers.map((u, i) => (
-              <div key={u.userid} style={{
-                display: 'grid', gridTemplateColumns: '1fr 120px 140px 90px',
-                alignItems: 'center', padding: '12px 20px',
+              <div key={u.userid} className={styles.dashUsersRow} style={{
+                padding: '12px 20px',
                 borderBottom: i < recentUsers.length - 1 ? '1px solid #f0e9e0' : 'none',
                 transition: 'background 0.15s',
               }}
@@ -636,7 +634,7 @@ const AdminDashboard: React.FC = () => {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 {/* Name + avatar */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <div className={styles.dashUsersCellName} style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                   <div style={{
                     width: '38px', height: '38px', borderRadius: '50%', flexShrink: 0,
                     background: u.UserType === 'Student'
@@ -651,11 +649,11 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 {/* City */}
-                <div style={{ fontSize: '13px', color: '#6d5d52' }}>
+                <div className={styles.dashUsersCellCity} style={{ fontSize: '13px', color: '#6d5d52' }}>
                   <i className="fa-solid fa-location-dot" style={{ marginRight: '4px', color: '#b49a89' }}></i>{u.City}
                 </div>
                 {/* Type badge */}
-                <div>
+                <div className={styles.dashUsersCellType}>
                   <span style={{
                     display: 'inline-block', padding: '3px 10px', borderRadius: '20px',
                     fontSize: '11px', fontWeight: 700,
@@ -664,7 +662,7 @@ const AdminDashboard: React.FC = () => {
                   }}>{u.UserType}</span>
                 </div>
                 {/* Action */}
-                <div style={{ textAlign: 'right' }}>
+                <div className={styles.dashUsersCellAction} style={{ textAlign: 'right' }}>
                   {u.UserType === 'Student' || u.UserType === 'Hostel Manager' ? (
                     <Link to={getUserProfileRoute(u)} style={{
                       display: 'inline-flex', alignItems: 'center', gap: '5px',
@@ -705,8 +703,7 @@ const AdminDashboard: React.FC = () => {
           </div>
 
           {/* Column headers */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '1fr 160px 160px 90px',
+          <div className={styles.dashHostelsHeader} style={{
             padding: '8px 20px', background: '#f3f8f3',
             borderBottom: '1px solid #deeade',
             fontSize: '11px', fontWeight: 700, color: '#5a7060',
@@ -732,9 +729,8 @@ const AdminDashboard: React.FC = () => {
             </div>
           ) : (
             recentHostels.map((h, i) => (
-              <div key={h.hostelId} style={{
-                display: 'grid', gridTemplateColumns: '1fr 160px 160px 90px',
-                alignItems: 'center', padding: '12px 20px',
+              <div key={h.hostelId} className={styles.dashHostelsRow} style={{
+                padding: '12px 20px',
                 borderBottom: i < recentHostels.length - 1 ? '1px solid #e8f0e8' : 'none',
                 transition: 'background 0.15s',
               }}
@@ -742,7 +738,7 @@ const AdminDashboard: React.FC = () => {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 {/* Hostel name + icon */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <div className={styles.dashHostelsCellName} style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                   <div style={{
                     width: '42px', height: '42px', borderRadius: '10px', flexShrink: 0,
                     background: 'linear-gradient(135deg, #6d8c6d, #3a5f3a)',
@@ -756,7 +752,7 @@ const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 {/* Block / House No */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                <div className={styles.dashHostelsCellBlock} style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                   {h.blockNo && (
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '11px', fontWeight: 700, color: '#1565c0', backgroundColor: '#e8f2fb', borderRadius: '5px', padding: '1px 6px', width: 'fit-content' }}>
                       <i className="fa-solid fa-map-pin" style={{ fontSize: '9px' }}></i>{h.blockNo}
@@ -767,7 +763,7 @@ const AdminDashboard: React.FC = () => {
                   </span>
                 </div>
                 {/* Manager */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
+                <div className={styles.dashHostelsCellMgr} style={{ display: 'flex', alignItems: 'center', gap: '7px', minWidth: 0 }}>
                   <div style={{
                     width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
                     background: 'linear-gradient(135deg, #8B7355, #5c3d2e)',
@@ -777,7 +773,7 @@ const AdminDashboard: React.FC = () => {
                   <span style={{ fontSize: '13px', color: '#6d5d52', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{h.managerName || 'Unknown'}</span>
                 </div>
                 {/* Action */}
-                <div style={{ textAlign: 'right' }}>
+                <div className={styles.dashHostelsCellAction} style={{ textAlign: 'right' }}>
                   <Link to={`/admin/hostels/${h.hostelId}`} style={{
                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                     padding: '6px 14px', background: '#3a5f3a', color: '#f8f3e7',

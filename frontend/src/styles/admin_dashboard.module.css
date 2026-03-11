@@ -293,3 +293,75 @@ tr:hover {
     width: 100%;
   }
 }
+
+/* ── RECENT USERS TABLE (admin_dashboard.tsx) ─────────────────── */
+
+.dashUsersHeader {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px 90px;
+}
+
+.dashUsersRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px 90px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .dashUsersHeader { display: none; }
+
+  /* 2-row card grid:  [name ··· action]  /  [city · type] */
+  .dashUsersRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name   action"
+      "city   type";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 5px;
+    padding: 11px 14px !important;
+  }
+
+  .dashUsersCellName   { grid-area: name;   min-width: 0; }
+  .dashUsersCellAction { grid-area: action; align-self: start; padding-top: 2px; }
+  .dashUsersCellCity   { grid-area: city;   font-size: 12px !important; }
+  .dashUsersCellType   { grid-area: type;   justify-self: end; }
+}
+
+/* ── RECENTLY ADDED HOSTELS TABLE (admin_dashboard.tsx) ──────── */
+
+.dashHostelsHeader {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 90px;
+}
+
+.dashHostelsRow {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 90px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .dashHostelsHeader { display: none; }
+
+  /* 2-row card grid:  [name ··· action]  /  [block · manager] */
+  .dashHostelsRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name   action"
+      "block  mgr";
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 5px;
+    padding: 11px 14px !important;
+  }
+
+  .dashHostelsCellName   { grid-area: name;   min-width: 0; }
+  .dashHostelsCellAction { grid-area: action; align-self: start; padding-top: 2px; }
+  .dashHostelsCellBlock  { grid-area: block;  font-size: 12px !important; }
+  .dashHostelsCellMgr    { grid-area: mgr;    justify-self: end; min-width: 0;
+                            overflow: hidden; font-size: 12px !important; }
+  .dashHostelsCellType   { display: none; }
+}
