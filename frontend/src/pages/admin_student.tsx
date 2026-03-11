@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 import { getAllStudentsTableData, CACHE_STUDENTS, type StudentTableRow } from "../api/admin_student";
 import { cacheGet } from "../utils/cache";
-import SkeletonRow, { SkeletonBlock } from "../components/SkeletonRow";
+import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 
 const AdminViewStudents: React.FC = () => {
@@ -64,19 +65,6 @@ const AdminViewStudents: React.FC = () => {
         });
     }, [students, search, cityFilter, genderFilter]);
 
-    // Calculate statistics
-    const stats = useMemo(() => {
-        if (filteredStudents.length === 0) return null;
-
-        const averageAge = filteredStudents.reduce((sum, s) => sum + s.age, 0) / filteredStudents.length;
-        const genderCount = filteredStudents.reduce((acc, s) => {
-            acc[s.gender] = (acc[s.gender] || 0) + 1;
-            return acc;
-        }, {} as Record<string, number>);
-
-        return { averageAge, genderCount };
-    }, [filteredStudents]);
-
     // Show only error on full page if there's a critical error
     if (error) {
         return (
@@ -88,19 +76,10 @@ const AdminViewStudents: React.FC = () => {
 
     return (
         <>
-            {/* NAVBAR */}
-            <nav className={styles.navbar}>
-                <div className={styles.logo}><i className="fa-solid fa-user-shield"></i> FastStay Admin</div>
-                <div className={styles.navLinks}>
-                    <Link to="/admin">Dashboard</Link>
-                    <Link to="/admin/hostels">Hostels</Link>
-                    <Link to="/admin/students" className={styles.active}>Students</Link>
-                    <Link to="/admin/managers">Managers</Link>
-                    <Link to="/admin/suggestions">Suggestions</Link>
-                    <Link to="/admin/logout">Logout</Link>
-                </div>
-            </nav>
+            {/* ADMIN SIDE NAVBAR */}
+            <AdminSideNavbar active="students" />
 
+            <div className={styles.mainContent}>
             <div className={styles.container}>
                 <h2 className={styles.pageTitle}>
                     <i className="fa-solid fa-user-graduate" style={{ color: '#2980b9', marginRight: '10px' }}></i>All Students
@@ -332,6 +311,7 @@ const AdminViewStudents: React.FC = () => {
                         ))
                     )}
                 </div>
+            </div>
             </div>
         </>
     );

@@ -5,6 +5,7 @@ import { getManagerById } from "../api/admin_manager_review";
 import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 import "../AdminViewHostels.css";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 const AdminManagerHostels: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -26,22 +27,11 @@ const AdminManagerHostels: React.FC = () => {
   }, [id]);
 
   return (
-    <div>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <i className="fa-solid fa-user-shield"></i> FastStay Admin
-        </div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers" className={styles.active}>Managers</Link>
-          <Link to="/admin/suggestions">Suggestions</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+    <>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="managers" />
 
+      <div className={styles.mainContent}>
       <div className={styles.container}>
         {/* Back button */}
         <div style={{ marginBottom: "20px" }}>
@@ -231,7 +221,8 @@ const AdminManagerHostels: React.FC = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

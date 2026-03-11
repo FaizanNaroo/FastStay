@@ -8,6 +8,7 @@ import {
 import { cacheGet } from "../utils/cache";
 import SkeletonRow from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 const AdminPendingHostels: React.FC = () => {
   const [hostels, setHostels] = useState<PendingHostel[]>([]);
@@ -65,22 +66,11 @@ const AdminPendingHostels: React.FC = () => {
   }
 
   return (
-    <div>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <i className="fa-solid fa-user-shield"></i> FastStay Admin
-        </div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers">Managers</Link>
-          <Link to="/admin/suggestions">Suggestions</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+    <>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="hostels" />
 
+      <div className={styles.mainContent}>
       <div className={styles.container}>
         <h2 className={styles.pageTitle}>
           <i className="fa-solid fa-hourglass-half" style={{ color: "#d97706", marginRight: "10px" }}></i>
@@ -291,7 +281,8 @@ const AdminPendingHostels: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 

@@ -428,8 +428,9 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { getAllHostelsTableData, CACHE_HOSTELS, type HostelTableRow } from "../api/admin_hostels";
 import { cacheGet } from "../utils/cache";
-import SkeletonRow, { SkeletonBlock } from "../components/SkeletonRow";
+import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 const ViewHostels: React.FC = () => {
   const [hostels, setHostels] = useState<HostelTableRow[]>([]);
@@ -502,19 +503,10 @@ const ViewHostels: React.FC = () => {
 
   return (
     <>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}><i className="fa-solid fa-user-shield"></i> FastStay Admin</div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels" className={styles.active}>Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers">Managers</Link>
-          <Link to="/admin/suggestions">Suggestions</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="hostels" />
 
+      <div className={styles.mainContent}>
       <div className={styles.container}>
         <h2 className={styles.pageTitle}>
           <i className="fa-solid fa-hotel" style={{ color: '#6d8c6d', marginRight: '10px' }}></i>All Hostels
@@ -787,6 +779,7 @@ const ViewHostels: React.FC = () => {
             ))
           )}
         </div>
+      </div>
       </div>
     </>
   );

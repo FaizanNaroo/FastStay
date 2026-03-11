@@ -229,7 +229,7 @@ export const loadDashboardData = async (bypassCache = false): Promise<{
   recentHostels: RecentHostel[];
 }> => {
   if (!bypassCache) {
-    const s = cacheGet<{ total_students: number; total_managers: number; total_hostels: number; total_rooms: number }>(CACHE_DASHBOARD);
+    const s = cacheGet<{ total_students: number; total_managers: number; total_hostels: number; total_rooms: number; total_pending: number }>(CACHE_DASHBOARD);
     const u = cacheGet<RecentUserAccount[]>(`${CACHE_RECENT_USERS}:5`);
     const h = cacheGet<RecentHostel[]>(`${CACHE_RECENT_HOSTELS}:5`);
     if (s && u && h) return { summary: s, recentUsers: u, recentHostels: h };

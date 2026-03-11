@@ -1221,6 +1221,7 @@ import { cacheGet, cacheSet } from "../utils/cache";
 import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 import managerStyles from "../styles/admin_manager_profile.module.css";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 const AdminManagerProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -1324,22 +1325,11 @@ const AdminManagerProfile: React.FC = () => {
   // If delete was successful and we're about to redirect
   if (deleteSuccess) {
     return (
-      <div>
-        {/* NAVBAR */}
-        <nav className={styles.navbar}>
-          <div className={styles.logo}>
-            <i className="fa-solid fa-user-shield"></i> FastStay Admin
-          </div>
-          <div className={styles.navLinks}>
-            <Link to="/admin">Dashboard</Link>
-            <Link to="/admin/hostels">Hostels</Link>
-            <Link to="/admin/students">Students</Link>
-            <Link to="/admin/managers" className={styles.active}>Managers</Link>
-            <Link to="/admin/suggestions">Suggestions</Link>
-            <Link to="/admin/logout">Logout</Link>
-          </div>
-        </nav>
+      <>
+        {/* ADMIN SIDE NAVBAR */}
+        <AdminSideNavbar active="managers" />
 
+        <div className={styles.mainContent}>
         <div className={styles.container}>
           <div className="custom-card" style={{
             maxWidth: "500px",
@@ -1376,28 +1366,19 @@ const AdminManagerProfile: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   // Show only error on full page if there's a critical error
   if (error && !loading) {
     return (
-      <div>
-        {/* NAVBAR */}
-        <nav className={styles.navbar}>
-          <div className={styles.logo}>
-            <i className="fa-solid fa-user-shield"></i> FastStay Admin
-          </div>
-          <div className={styles.navLinks}>
-            <Link to="/admin">Dashboard</Link>
-            <Link to="/admin/hostels">Hostels</Link>
-            <Link to="/admin/students">Students</Link>
-            <Link to="/admin/managers" className={styles.active}>Managers</Link>
-            <Link to="/admin/logout">Logout</Link>
-          </div>
-        </nav>
+      <>
+        {/* ADMIN SIDE NAVBAR */}
+        <AdminSideNavbar active="managers" />
 
+        <div className={styles.mainContent}>
         <div className={styles.container}>
           <div className={managerStyles.errorContainer}>
             <i className="fas fa-exclamation-triangle" style={{ fontSize: "48px", marginBottom: "20px" }}></i>
@@ -1412,26 +1393,17 @@ const AdminManagerProfile: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <i className="fa-solid fa-user-shield"></i> FastStay Admin
-        </div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers" className={styles.active}>Managers</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+    <>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="managers" />
 
+      <div className={styles.mainContent}>
       {/* PAGE CONTENT */}
       <div className={styles.container}>
         {actionMessage && (
@@ -1868,6 +1840,7 @@ const AdminManagerProfile: React.FC = () => {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       />
     </div>
+    </>
   );
 };
 

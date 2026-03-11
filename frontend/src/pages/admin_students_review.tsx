@@ -870,12 +870,13 @@
 
 
 import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getStudentProfile, CACHE_STUDENT_PROFILE, type StudentProfile } from "../api/admin_students_review";
 import { cacheGet } from "../utils/cache";
 import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 import studentStyles from "../styles/admin_students_profile.module.css";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 const AdminStudentProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -921,11 +922,6 @@ const AdminStudentProfile: React.FC = () => {
       });
   }, [id]);
 
-  const handleDelete = () => {
-    if (!student) return;
-    setShowDeleteConfirm(true);
-  };
-
   const confirmDelete = async () => {
     if (!student) return;
     setDeleteLoading(true);
@@ -965,22 +961,11 @@ const AdminStudentProfile: React.FC = () => {
   // Show only error on full page if there's a critical error
   if (error && !loading) {
     return (
-      <div>
-        {/* NAVBAR */}
-        <nav className={styles.navbar}>
-          <div className={styles.logo}>
-            <i className="fa-solid fa-user-shield"></i> FastStay Admin
-          </div>
-          <div className={styles.navLinks}>
-            <Link to="/admin">Dashboard</Link>
-            <Link to="/admin/hostels">Hostels</Link>
-            <Link to="/admin/students" className={styles.active}>Students</Link>
-            <Link to="/admin/managers">Managers</Link>
-            <Link to="/admin/suggestions">Suggestions</Link>
-            <Link to="/admin/logout">Logout</Link>
-          </div>
-        </nav>
+      <>
+        {/* ADMIN SIDE NAVBAR */}
+        <AdminSideNavbar active="students" />
 
+        <div className={styles.mainContent}>
         <div className={styles.container}>
           <div className={studentStyles.errorContainer}>
             <i className="fas fa-exclamation-triangle" style={{ fontSize: "48px", marginBottom: "20px" }}></i>
@@ -995,26 +980,17 @@ const AdminStudentProfile: React.FC = () => {
             </button>
           </div>
         </div>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <i className="fa-solid fa-user-shield"></i> FastStay Admin
-        </div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students" className={styles.active}>Students</Link>
-          <Link to="/admin/managers">Managers</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+    <>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="students" />
 
+      <div className={styles.mainContent}>
       {/* PAGE CONTENT */}
       <div className={styles.container}>
         {/* Loading state within the profile card */}
@@ -1506,6 +1482,7 @@ const AdminStudentProfile: React.FC = () => {
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       />
     </div>
+    </>
   );
 };
 

@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 
 import {
   loadDashboardData,
@@ -17,7 +18,7 @@ import { getStudentProfile } from "../api/admin_students_review";
 import { getManagerProfile } from "../api/admin_manager_review";
 import { getHostelDetails } from "../api/admin_hostels_review";
 import { getAllSuggestions, CACHE_SUGGESTIONS } from "../api/admin_suggestions";
-import SkeletonRow, { SkeletonBlock } from "../components/SkeletonRow";
+import { SkeletonBlock } from "../components/SkeletonRow";
 import styles from "../styles/admin_dashboard.module.css";
 
 // Dashboard Summary
@@ -173,21 +174,11 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}><i className="fa-solid fa-user-shield"></i> FastStay Admin</div>
-
-        <div className={styles.navLinks}>
-          <Link to="/admin" className={styles.active}>Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers">Managers</Link>
-          <Link to="/admin/suggestions">Suggestions</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="dashboard" />
 
       {/* MAIN CONTENT */}
+      <div className={styles.mainContent}>
       <div className={styles.container}>
         <h2 className={styles.pageTitle}>Admin Dashboard</h2>
         <p className={styles.subtitle}>Manage all data throughout the platform.</p>
@@ -799,6 +790,7 @@ const AdminDashboard: React.FC = () => {
             ))
           )}
         </div>
+      </div>
       </div>
     </>
   );

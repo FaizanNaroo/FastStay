@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import AdminSideNavbar from "../components/AdminSideNavbar";
 import {
   getAllSuggestions,
   CACHE_SUGGESTIONS,
@@ -91,22 +91,11 @@ const AdminSuggestions: React.FC = () => {
   }
 
   return (
-    <div>
-      {/* NAVBAR */}
-      <nav className={styles.navbar}>
-        <div className={styles.logo}>
-          <i className="fa-solid fa-user-shield"></i> FastStay Admin
-        </div>
-        <div className={styles.navLinks}>
-          <Link to="/admin">Dashboard</Link>
-          <Link to="/admin/hostels">Hostels</Link>
-          <Link to="/admin/students">Students</Link>
-          <Link to="/admin/managers">Managers</Link>
-          <Link to="/admin/suggestions" className={styles.active}>Suggestions</Link>
-          <Link to="/admin/logout">Logout</Link>
-        </div>
-      </nav>
+    <>
+      {/* ADMIN SIDE NAVBAR */}
+      <AdminSideNavbar active="suggestions" />
 
+      <div className={styles.mainContent}>
       <div className={styles.container}>
         {/* PAGE HEADER */}
         <h2 className={styles.pageTitle}>
@@ -412,7 +401,8 @@ const AdminSuggestions: React.FC = () => {
           )}
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
