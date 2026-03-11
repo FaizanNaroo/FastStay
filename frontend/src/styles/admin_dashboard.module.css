@@ -137,8 +137,18 @@ tr:hover {
 
 @media (max-width: 768px) {
   .cards {
-    flex-direction: column;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
+
+  .card {
+    min-width: 0;
+    padding: 16px;
+  }
+
+  .card i { font-size: 26px; }
+  .cardValue { font-size: 22px; }
 
   .container {
     padding: 16px;
@@ -148,59 +158,97 @@ tr:hover {
 /* ----------- SUGGESTIONS PAGE (admin_suggestions.tsx) ----------- */
 .suggestFilterBar {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
 .suggestSearchInput {
-  flex: 1 1 200px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
 .suggestFilterGroup {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
   flex-wrap: wrap;
 }
 
 @media (max-width: 768px) {
-  .suggestFilterBar   { flex-direction: column; }
-  .suggestSearchInput { width: 100%; }
-  .suggestFilterGroup { width: 100%; }
-  .suggestFilterGroup select { width: 100%; }
+  .suggestFilterBar { flex-wrap: wrap; gap: 6px; }
+
+  .suggestSearchInput {
+    flex: 1 1 100% !important;
+    width: 100%;
+  }
+
+  .suggestFilterGroup {
+    flex: 1 1 100%;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .suggestFilterGroup select {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+  }
+
+  .suggestFilterGroup button {
+    padding: 8px 10px !important;
+    font-size: 12px !important;
+  }
+
+  /* Tabs row */
+  .suggestTabs { gap: 6px !important; }
+  .suggestTabs button { padding: 6px 12px !important; font-size: 13px !important; }
 
   /* TABLE → CARD on mobile */
   .suggestTable thead { display: none; }
 
   .suggestTable tbody tr {
-    display: block;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "user   type"
+      "impr   impr"
+      "def    def"
+      "status status";
     border-radius: 10px;
     border: 1px solid #dfd6cb;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     overflow: hidden;
+    padding: 10px 12px;
+    gap: 8px;
   }
 
   .suggestTable td {
-    display: flex;
-    flex-direction: column;
-    padding: 10px 14px;
-    border-bottom: 1px solid #ede4d8;
+    display: block;
+    padding: 0;
+    border-bottom: none;
     max-width: 100%;
+    font-size: 13px;
   }
 
   .suggestTable td::before {
     content: attr(data-label);
-    font-size: 11px;
+    display: block;
+    font-size: 10px;
     font-weight: 700;
     color: #8d7060;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
-  /* Hide # counter column */
-  .suggestTable td:first-child { display: none; }
+  /* Map columns to grid areas */
+  .suggestTable td:nth-child(1) { display: none; }
+  .suggestTable td:nth-child(2) { grid-area: user; }
+  .suggestTable td:nth-child(3) { grid-area: type; justify-self: end; }
+  .suggestTable td:nth-child(4) { grid-area: impr; }
+  .suggestTable td:nth-child(5) { grid-area: def; }
+  .suggestTable td:nth-child(6) { grid-area: status; }
 
   .suggestTable td:last-child { border-bottom: none; }
 }
