@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../../api/config";
 import { useState, useEffect } from 'react';
 import styles from "../../styles/AddHostel.module.css";
 
@@ -45,7 +46,7 @@ export default function ExpensesSection({
     async function checkRoomsExist(hostelId: number) {
         setCheckingRooms(true);
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/Rooms/DisplayAllHostel/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/Rooms/DisplayAllHostel/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_HostelId: hostelId })
@@ -81,7 +82,7 @@ export default function ExpensesSection({
     async function fetchExpenses(hostelId: number) {
         try {
             setLoading(true);
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/Expenses/display/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/Expenses/display/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -194,10 +195,10 @@ export default function ExpensesSection({
 
         try {
             const url = existingExpenses
-                ? "http://127.0.0.1:8000/faststay_app/Expenses/update/"
+                ? `${FASTSTAY_APP_URL}/Expenses/update/`
                 : (isExpensesIncluded
-                    ? "http://127.0.0.1:8000/faststay_app/ExpensesRoomIncluded/add/"
-                    : "http://127.0.0.1:8000/faststay_app/Expenses/add/");
+                    ? `${FASTSTAY_APP_URL}/ExpensesRoomIncluded/add/`
+                    : `${FASTSTAY_APP_URL}/Expenses/add/`);
 
             const method = existingExpenses ? "PUT" : "POST";
 
@@ -229,7 +230,7 @@ export default function ExpensesSection({
         if (!window.confirm("Are you sure you want to delete expenses?")) return;
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/Expenses/delete/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/Expenses/delete/`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_ExpenseId: expenseId })
@@ -418,9 +419,9 @@ export default function ExpensesSection({
                                         required
                                     >
                                         <option value="">Select</option>
-                                        <option value="RoomMeterFull">Room Meter Full — Full room electricity on meter</option>
-                                        <option value="ACSubmeter">AC Submeter — Separate submeter for AC</option>
-                                        <option value="UnitBased">Unit Based — Charged per unit consumed</option>
+                                        <option value="RoomMeterFull">Room Meter Full â€” Full room electricity on meter</option>
+                                        <option value="ACSubmeter">AC Submeter â€” Separate submeter for AC</option>
+                                        <option value="UnitBased">Unit Based â€” Charged per unit consumed</option>
                                     </select>
                                 </div>
                             </div>
@@ -462,3 +463,4 @@ export default function ExpensesSection({
         </div>
     );
 }
+

@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import styles from "../styles/ManagerAnalytics.module.css";
@@ -20,7 +21,7 @@ export default function ManagerAnalytics() {
 
     const fetchHostels = async () => {
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+            const res = await fetch(`${FASTSTAY_APP_URL}/display/all_hostels`);
             const data = await res.json();
 
             if (data?.hostels) {
@@ -113,3 +114,4 @@ export default function ManagerAnalytics() {
         </div>
     );
 }
+

@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../../api/config";
 import { useState, useEffect } from 'react';
 import styles from "../../styles/AddHostel.module.css";
 
@@ -38,7 +39,7 @@ export default function SecurityInfoSection({
     async function fetchSecurityInfo(hostelId: number) {
         try {
             setLoading(true);
-            const res = await fetch(`http://127.0.0.1:8000/faststay_app/display/security_info?p_HostelId=${hostelId}`, {
+            const res = await fetch(`${FASTSTAY_APP_URL}/display/security_info?p_HostelId=${hostelId}`, {
                 method: "GET",
                 headers: { 
                     "Accept": "application/json"
@@ -102,8 +103,8 @@ export default function SecurityInfoSection({
 
         try {
             const url = existingSecurityInfo
-                ? "http://127.0.0.1:8000/faststay_app/update/security_info"
-                : "http://127.0.0.1:8000/faststay_app/add/security_info";
+                ? `${FASTSTAY_APP_URL}/update/security_info`
+                : `${FASTSTAY_APP_URL}/add/security_info`;
 
             const method = "POST"; // Both APIs use POST
 
@@ -142,7 +143,7 @@ export default function SecurityInfoSection({
         }
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/delete/security_info", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/delete/security_info`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_SecurityId: securityId }),
@@ -267,3 +268,4 @@ export default function SecurityInfoSection({
         </div>
     );
 }
+

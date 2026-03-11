@@ -4,6 +4,7 @@ import axios from "axios";
 import styles from "../styles/OwnerDetails.module.css";
 import Navbar from "../components/Navbar";
 import useAuthGuard from "../hooks/useAuthGuard";
+import { FASTSTAY_APP_URL } from "../api/config";
 
 interface ManagerDetails {
   p_PhotoLink?: string;
@@ -86,36 +87,33 @@ const OwnerDetails: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [imageError, setImageError] = useState(false);
-  
+
   const navigate = useNavigate();
   const location = useLocation();
   const abortControllerRef = useRef<AbortController | null>(null);
-  
+
   // Extract query parameters
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const hostelId = queryParams.get("id");
-  
-  // API Base URL
-  const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
-  
+
   // Format operating hours
   const formatOperatingHours = useCallback((hours: number): string => {
     if (hours === 24) return "24/7";
     if (hours === -1) return "Not specified";
     return `${hours} hours/day`;
   }, []);
-  
+
   // Format phone number for display
   const formatPhoneNumber = useCallback((phone: string): string => {
     // Remove any non-digit characters
     const cleaned = phone.replace(/\D/g, '');
-    
+
     if (cleaned.length === 11) {
       return `+${cleaned.slice(0, 4)} ${cleaned.slice(4, 11)}`;
     }
     return phone;
   }, []);
-  
+
   // Fetch owner details
   const fetchOwnerDetails = useCallback(async () => {
     if (!hostelId) {
@@ -123,7 +121,7 @@ const OwnerDetails: React.FC = () => {
       setLoading(false);
       return;
     }
-    
+
     // Check cache first
     const cacheKey = `owner_details_${hostelId}`;
     const cached = getCached<OwnerDetails>(cacheKey);
@@ -132,37 +130,37 @@ const OwnerDetails: React.FC = () => {
       setLoading(false);
       return;
     }
-    
+
     // Abort previous request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
-    
+
     abortControllerRef.current = new AbortController();
     const signal = abortControllerRef.current.signal;
-    
+
     setLoading(true);
     setError(null);
     setImageError(false);
-    
+
     try {
       // Fetch all data in parallel where possible
       const [hostelResponse, usersResponse] = await Promise.all([
-        axios.get(`${API_BASE_URL}/display/all_hostels`, { signal }).catch(() => ({ data: { hostels: [] } })),
-        axios.get(`${API_BASE_URL}/users/all/`, { signal }).catch(() => ({ data: { users: [] } }))
+        axios.get(`${FASTSTAY_APP_URL}/display/all_hostels`, { signal }).catch(() => ({ data: { hostels: [] } })),
+        axios.get(`${FASTSTAY_APP_URL}/users/all/`, { signal }).catch(() => ({ data: { users: [] } }))
       ]);
-      
+
       // Find hostel and manager ID
       let managerId = null;
       let hostelName = "";
       let hostelBlock = "";
       let hostelHouse = "";
-      
+
       if (hostelResponse.data.hostels?.length) {
         const hostel = hostelResponse.data.hostels.find(
           (h: any) => h.hostel_id === parseInt(hostelId) || h.p_hostelid === parseInt(hostelId)
         );
-        
+
         if (hostel) {
           managerId = hostel.p_managerid;
           hostelName = hostel.p_name || "";
@@ -170,11 +168,11 @@ const OwnerDetails: React.FC = () => {
           hostelHouse = hostel.p_houseno || "";
         }
       }
-      
+
       if (!managerId) {
         throw new Error("Manager not found for this hostel");
       }
-      
+
       // Find user details
       let userDetails: UserDetails | null = null;
       if (usersResponse.data.users?.length) {
@@ -182,21 +180,21 @@ const OwnerDetails: React.FC = () => {
           (u: any) => u.userid === managerId
         );
       }
-      
+
       if (!userDetails) {
         throw new Error("Manager details not found");
       }
-      
+
       // Fetch manager-specific details
       let managerDetails: ManagerDetails | null = null;
-      
+
       try {
         const managerResponse = await axios.post(
-          `${API_BASE_URL}/ManagerDetails/display/`,
+          `${FASTSTAY_APP_URL}/ManagerDetails/display/`,
           { p_ManagerId: managerId },
           { signal }
         );
-        
+
         if (managerResponse.data.success && managerResponse.data.result) {
           managerDetails = managerResponse.data.result;
         }
@@ -210,7 +208,7 @@ const OwnerDetails: React.FC = () => {
           p_OperatingHours: -1
         };
       }
-      
+
       // Combine all data
       const ownerData: OwnerDetails = {
         user: userDetails,
@@ -222,10 +220,10 @@ const OwnerDetails: React.FC = () => {
         responseTime: "Within 1-2 hours", // This should come from actual data
         experienceLevel: managerDetails?.p_ManagerType === "Full-time" ? "Experienced" : "Standard"
       };
-      
+
       setOwner(ownerData);
       setCache(cacheKey, ownerData);
-      
+
     } catch (error: any) {
       if (!signal.aborted) {
         console.error("Failed to fetch owner details:", error);
@@ -236,26 +234,26 @@ const OwnerDetails: React.FC = () => {
         setLoading(false);
       }
     }
-  }, [hostelId, API_BASE_URL]);
-  
+  }, [hostelId]);
+
   useEffect(() => {
     window.scrollTo(0, 0)
     fetchOwnerDetails();
-    
+
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
   }, [fetchOwnerDetails]);
-  
+
   // Handler functions
   const handleContact = useCallback(() => {
     if (owner?.manager.p_PhoneNo) {
       window.location.href = `tel:${owner.manager.p_PhoneNo}`;
     }
   }, [owner?.manager.p_PhoneNo]);
-  
+
   const handleWhatsApp = useCallback(() => {
     if (owner?.manager.p_PhoneNo) {
       const phone = owner.manager.p_PhoneNo.replace(/\D/g, '');
@@ -264,45 +262,45 @@ const OwnerDetails: React.FC = () => {
       window.open(whatsappUrl, '_blank');
     }
   }, [owner]);
-  
+
   const handleBack = useCallback(() => {
     navigate(`/student/home?user_id=${userId}`);
   }, [navigate, userId]);
-  
+
   const handleBackToHostel = useCallback(() => {
     navigate(`/student/hostelDetails?id=${hostelId}&user_id=${userId}`);
   }, [navigate, hostelId, userId]);
-  
+
   const handleRetry = useCallback(() => {
     sessionStorage.removeItem(`owner_details_${hostelId}`);
     fetchOwnerDetails();
   }, [fetchOwnerDetails, hostelId]);
-  
+
   const handleImageError = useCallback(() => {
     setImageError(true);
   }, []);
-  
+
   // Memoized values
-  const formattedPhone = useMemo(() => 
+  const formattedPhone = useMemo(() =>
     owner?.manager.p_PhoneNo ? formatPhoneNumber(owner.manager.p_PhoneNo) : "Not available",
     [owner?.manager.p_PhoneNo, formatPhoneNumber]
   );
-  
-  const operatingHoursDisplay = useMemo(() => 
+
+  const operatingHoursDisplay = useMemo(() =>
     formatOperatingHours(owner?.manager.p_OperatingHours || -1),
     [owner?.manager.p_OperatingHours, formatOperatingHours]
   );
-  
-  const fullName = useMemo(() => 
+
+  const fullName = useMemo(() =>
     `${owner?.user.fname || ''} ${owner?.user.lname || ''}`.trim() || "Manager",
     [owner?.user.fname, owner?.user.lname]
   );
-  
+
   // Render loading state
   if (loading) {
     return <SkeletonLoader userId={userId} />;
   }
-  
+
   // Render error state
   if (error || !owner) {
     return (
@@ -324,11 +322,11 @@ const OwnerDetails: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className={styles.pageWrapper}>
       <Navbar userId={userId ?? ""} />
-      
+
       {/* HEADER */}
       <div className={styles.header}>
         <div className={styles.headerContent}>
@@ -346,15 +344,15 @@ const OwnerDetails: React.FC = () => {
           )}
         </div>
       </div>
-      
+
       <div className={styles.container}>
         {/* PROFILE CARD */}
         <div className={styles.profileCard}>
           <div className={styles.profileHeader}>
             <div className={styles.profileImage}>
               {owner.manager.p_PhotoLink && !imageError ? (
-                <img 
-                  src={owner.manager.p_PhotoLink} 
+                <img
+                  src={owner.manager.p_PhotoLink}
                   alt={fullName}
                   onError={handleImageError}
                   loading="lazy"
@@ -394,7 +392,7 @@ const OwnerDetails: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           {/* CONTACT BUTTONS */}
           <div className={styles.contactButtons}>
             <button className={styles.contactBtn} onClick={handleContact} disabled={!owner.manager.p_PhoneNo}>
@@ -405,7 +403,7 @@ const OwnerDetails: React.FC = () => {
             </button>
           </div>
         </div>
-        
+
         {/* DETAILED INFORMATION */}
         <div className={styles.detailsGrid}>
           {/* PERSONAL INFO */}
@@ -440,7 +438,7 @@ const OwnerDetails: React.FC = () => {
               </div>
             </div>
           </section>
-          
+
           {/* PROFESSIONAL INFO */}
           <section className={styles.detailSection}>
             <h3><i className="fa-solid fa-briefcase"></i> Professional Information</h3>
@@ -471,7 +469,7 @@ const OwnerDetails: React.FC = () => {
               )}
             </div>
           </section>
-          
+
           {/* CONTACT INFO - Fixed alignment */}
           <section className={styles.detailSection}>
             <h3><i className="fa-solid fa-address-book"></i> Contact Information</h3>
@@ -498,7 +496,7 @@ const OwnerDetails: React.FC = () => {
               )}
             </div>
           </section>
-          
+
           {/* HOSTEL INFO */}
           {owner.hostelName && (
             <section className={styles.detailSection}>
@@ -526,7 +524,7 @@ const OwnerDetails: React.FC = () => {
             </section>
           )}
         </div>
-        
+
         {/* ABOUT SECTION - Only show if we have meaningful data */}
         {(owner.manager.p_ManagerType || owner.manager.p_Education) && (
           <section className={styles.aboutSection}>
@@ -540,7 +538,7 @@ const OwnerDetails: React.FC = () => {
             </div>
           </section>
         )}
-        
+
         {/* ACTION BUTTONS */}
         <div className={styles.actionButtons}>
           <button className={styles.primaryBtn} onClick={handleContact} disabled={!owner.manager.p_PhoneNo}>
@@ -553,7 +551,7 @@ const OwnerDetails: React.FC = () => {
             <i className="fa-solid fa-home"></i> Back to Home
           </button>
         </div>
-        
+
         {/* TIPS SECTION */}
         <div className={styles.tipsSection}>
           <h4><i className="fa-solid fa-lightbulb"></i> Tips for Contacting the Manager</h4>

@@ -1,8 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
 import { CACHE_ALL_USERS_RAW, CACHE_ALL_MANAGERS_RAW, CACHE_ALL_HOSTELS_RAW } from './admin_dashboard';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import API_BASE_URL from './config';
 
 export const CACHE_HOSTEL_DETAIL = (id: number) => `cache:admin:hostel:detail:${id}`;
 export const CACHE_PENDING_HOSTELS = 'cache:admin:hostels:pending';

@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
 import { getAllUsers } from './admin_students_review';
-
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import API_BASE_URL from './config';
 
 export const CACHE_SUGGESTIONS = 'cache:admin:suggestions';
 

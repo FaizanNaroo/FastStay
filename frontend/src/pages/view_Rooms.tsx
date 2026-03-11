@@ -4,6 +4,7 @@ import axios from "axios";
 import styles from "../styles/ViewRooms.module.css";
 import Navbar from "../components/Navbar";
 import useAuthGuard from "../hooks/useAuthGuard";
+import { FASTSTAY_APP_URL } from "../api/config";
 
 interface Room {
   p_RoomNo: number;
@@ -89,8 +90,6 @@ const ViewRooms: React.FC = () => {
   const queryParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
   const hostelId = queryParams.get("hostel_id");
 
-  const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
-
   const [filters, setFilters] = useState({
     seater: "all",
     floor: "all",
@@ -136,9 +135,9 @@ const ViewRooms: React.FC = () => {
       try {
         // Fetch hostel info, room pics, and rooms in parallel
         const [hostelRes, picsRes, roomsRes] = await Promise.all([
-          axios.get(`${API_BASE_URL}/display/all_hostels`, { signal }).catch(() => ({ data: null })),
-          axios.get(`${API_BASE_URL}/display/room_pic?p_HostelId=${hostelId}`, { signal }).catch(() => ({ data: null })),
-          axios.post(`${API_BASE_URL}/Rooms/DisplayAllHostel/`, { p_HostelId: parseInt(hostelId) }, { signal })
+          axios.get(`${FASTSTAY_APP_URL}/display/all_hostels`, { signal }).catch(() => ({ data: null })),
+          axios.get(`${FASTSTAY_APP_URL}/display/room_pic?p_HostelId=${hostelId}`, { signal }).catch(() => ({ data: null })),
+          axios.post(`${FASTSTAY_APP_URL}/Rooms/DisplayAllHostel/`, { p_HostelId: parseInt(hostelId) }, { signal })
         ]);
 
         // Process hostel info
@@ -620,22 +619,22 @@ const ViewRooms: React.FC = () => {
             </div>
             <div className={styles.filterGroup}>
               <label>Min Rent (PKR)</label>
-              <input 
-                type="number" 
-                placeholder="e.g., 10000" 
-                value={filters.minRent} 
-                onChange={(e) => handleFilterChange("minRent", e.target.value)} 
-                min="0" 
+              <input
+                type="number"
+                placeholder="e.g., 10000"
+                value={filters.minRent}
+                onChange={(e) => handleFilterChange("minRent", e.target.value)}
+                min="0"
               />
             </div>
             <div className={styles.filterGroup}>
               <label>Max Rent (PKR)</label>
-              <input 
-                type="number" 
-                placeholder="e.g., 25000" 
-                value={filters.maxRent} 
-                onChange={(e) => handleFilterChange("maxRent", e.target.value)} 
-                min="0" 
+              <input
+                type="number"
+                placeholder="e.g., 25000"
+                value={filters.maxRent}
+                onChange={(e) => handleFilterChange("maxRent", e.target.value)}
+                min="0"
               />
             </div>
           </div>
@@ -644,26 +643,26 @@ const ViewRooms: React.FC = () => {
           <div className={styles.featureFilters}>
             <div className={styles.featureGrid}>
               <label className={styles.featureCheckbox}>
-                <input 
-                  type="checkbox" 
-                  checked={filters.hasVentilation} 
-                  onChange={(e) => handleFilterChange("hasVentilation", e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={filters.hasVentilation}
+                  onChange={(e) => handleFilterChange("hasVentilation", e.target.checked)}
                 />
                 <span><i className="fa-solid fa-wind"></i> Ventilated</span>
               </label>
               <label className={styles.featureCheckbox}>
-                <input 
-                  type="checkbox" 
-                  checked={filters.hasCarpet} 
-                  onChange={(e) => handleFilterChange("hasCarpet", e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={filters.hasCarpet}
+                  onChange={(e) => handleFilterChange("hasCarpet", e.target.checked)}
                 />
                 <span><i className="fa-solid fa-carpet"></i> Carpet Floor</span>
               </label>
               <label className={styles.featureCheckbox}>
-                <input 
-                  type="checkbox" 
-                  checked={filters.hasFridge} 
-                  onChange={(e) => handleFilterChange("hasFridge", e.target.checked)} 
+                <input
+                  type="checkbox"
+                  checked={filters.hasFridge}
+                  onChange={(e) => handleFilterChange("hasFridge", e.target.checked)}
                 />
                 <span><i className="fa-solid fa-snowflake"></i> Mini Fridge</span>
               </label>

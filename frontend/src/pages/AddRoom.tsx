@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import { useState, useEffect, useRef } from "react";
 import styles from "../styles/AddRoom.module.css";
 import { Link } from "react-router-dom";
@@ -77,7 +78,7 @@ export default function AddRoom() {
     useEffect(() => {
         async function fetchHostels() {
             try {
-                const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+                const res = await fetch(`${FASTSTAY_APP_URL}/display/all_hostels`);
                 const data = await res.json();
 
                 if (data?.hostels) {
@@ -119,7 +120,7 @@ export default function AddRoom() {
         setMessage("");
         try {
             console.log("Fetching rooms for hostel ID:", hostelId);
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/Rooms/DisplayAllHostel/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/Rooms/DisplayAllHostel/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_HostelId: hostelId })
@@ -181,7 +182,7 @@ export default function AddRoom() {
 
     async function fetchRoomPics(hostelId: number) {
         try {
-            const res = await fetch(`http://127.0.0.1:8000/faststay_app/display/room_pic?p_HostelId=${hostelId}`, {
+            const res = await fetch(`${FASTSTAY_APP_URL}/display/room_pic?p_HostelId=${hostelId}`, {
                 method: "GET",
                 headers: {
                     "Content-Type": "application/json",
@@ -371,7 +372,7 @@ export default function AddRoom() {
             });
 
             // Send request to your API
-            const response = await fetch("http://127.0.0.1:8000/faststay_app/room_pics/add", {
+            const response = await fetch(`${FASTSTAY_APP_URL}/room_pics/add`, {
                 method: "POST",
                 body: formData,
             });
@@ -442,8 +443,8 @@ export default function AddRoom() {
 
         try {
             const url = isEditing
-                ? "http://127.0.0.1:8000/faststay_app/Rooms/update/"
-                : "http://127.0.0.1:8000/faststay_app/Rooms/add/";
+                ? `${FASTSTAY_APP_URL}/Rooms/update/`
+                : `${FASTSTAY_APP_URL}/Rooms/add/`;
 
             const method = isEditing ? "PUT" : "POST";
 
@@ -477,7 +478,7 @@ export default function AddRoom() {
         if (!window.confirm("Are you sure you want to delete this room?")) return;
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/Rooms/delete/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/Rooms/delete/`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
@@ -1007,7 +1008,7 @@ export default function AddRoom() {
                                             <div key={index} className={styles.previewItem}>
                                                 <img src={link} alt={`Uploaded ${index + 1}`} />
                                                 <div className={styles.previewOverlay}>
-                                                    <span>✓ Uploaded</span>
+                                                    <span>âœ“ Uploaded</span>
                                                 </div>
                                             </div>
                                         ))}
@@ -1037,3 +1038,4 @@ export default function AddRoom() {
         </>
     );
 }
+

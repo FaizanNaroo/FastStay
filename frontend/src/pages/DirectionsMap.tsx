@@ -5,8 +5,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import styles from "../styles/DirectionsMap.module.css";
 
-const MAPBOX_TOKEN =
-  "pk.eyJ1IjoiYXJoYW0xMjM0IiwiYSI6ImNta3J6ejF6cjE3eWIzbHFuczZxcGwwbTIifQ.Or9JpWqTXoefT5uaz5YjHA";
+const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN as string;
 
 const FAST_LAHORE = { lat: 31.48104, lng: 74.303449 };
 

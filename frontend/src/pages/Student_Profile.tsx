@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -114,10 +115,10 @@ const StudentProfile: React.FC = () => {
 
       try {
         const [profileResponse, usersResponse] = await Promise.all([
-          axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
+          axios.post(`${FASTSTAY_APP_URL}/UserDetail/display/`, {
             p_StudentId: parseInt(userId)
           }, { signal }),
-          axios.get("http://127.0.0.1:8000/faststay_app/users/all/", { signal })
+          axios.get(`${FASTSTAY_APP_URL}/users/all/`, { signal })
         ]);
 
         const users: StudentDetails[] = usersResponse.data.users;
@@ -243,23 +244,23 @@ const StudentProfile: React.FC = () => {
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>First Name</span>
-                  <span className={styles.value}>{student?.fname || '—'}</span>
+                  <span className={styles.value}>{student?.fname || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Last Name</span>
-                  <span className={styles.value}>{student?.lname || '—'}</span>
+                  <span className={styles.value}>{student?.lname || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Age</span>
-                  <span className={styles.value}>{student?.age || '—'}</span>
+                  <span className={styles.value}>{student?.age || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Gender</span>
-                  <span className={styles.value}>{student?.gender || '—'}</span>
+                  <span className={styles.value}>{student?.gender || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>City</span>
-                  <span className={styles.value}>{student?.city || '—'}</span>
+                  <span className={styles.value}>{student?.city || 'â€”'}</span>
                 </div>
               </div>
             </div>
@@ -273,15 +274,15 @@ const StudentProfile: React.FC = () => {
               <div className={styles.infoGrid}>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Department</span>
-                  <span className={styles.value}>{student?.p_Department || '—'}</span>
+                  <span className={styles.value}>{student?.p_Department || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Batch</span>
-                  <span className={styles.value}>{student?.p_Batch || '—'}</span>
+                  <span className={styles.value}>{student?.p_Batch || 'â€”'}</span>
                 </div>
                 <div className={styles.infoItem}>
                   <span className={styles.label}>Semester</span>
-                  <span className={styles.value}>{student?.p_Semester || '—'}</span>
+                  <span className={styles.value}>{student?.p_Semester || 'â€”'}</span>
                 </div>
               </div>
             </div>
@@ -297,7 +298,7 @@ const StudentProfile: React.FC = () => {
                   <i className="fa-solid fa-people-group"></i>
                   <div>
                     <span className={styles.prefLabel}>Roommate Count</span>
-                    <span className={styles.prefValue}>{student?.p_RoomateCount || '—'}</span>
+                    <span className={styles.prefValue}>{student?.p_RoomateCount || 'â€”'}</span>
                   </div>
                 </div>
                 <div className={styles.preferenceItem}>
@@ -305,7 +306,7 @@ const StudentProfile: React.FC = () => {
                   <div>
                     <span className={styles.prefLabel}>Distance from University</span>
                     <span className={styles.prefValue}>
-                      {student?.p_UniDistance ? `${student.p_UniDistance} km` : '—'}
+                      {student?.p_UniDistance ? `${student.p_UniDistance} km` : 'â€”'}
                     </span>
                   </div>
                 </div>
@@ -314,7 +315,7 @@ const StudentProfile: React.FC = () => {
                   <div>
                     <span className={styles.prefLabel}>AC Room</span>
                     <span className={styles.prefValue}>
-                      {student?.p_isAcRoom !== undefined ? (student.p_isAcRoom ? 'Yes' : 'No') : '—'}
+                      {student?.p_isAcRoom !== undefined ? (student.p_isAcRoom ? 'Yes' : 'No') : 'â€”'}
                     </span>
                   </div>
                 </div>
@@ -323,7 +324,7 @@ const StudentProfile: React.FC = () => {
                   <div>
                     <span className={styles.prefLabel}>Mess Required</span>
                     <span className={styles.prefValue}>
-                      {student?.p_isMess !== undefined ? (student.p_isMess ? 'Yes' : 'No') : '—'}
+                      {student?.p_isMess !== undefined ? (student.p_isMess ? 'Yes' : 'No') : 'â€”'}
                     </span>
                   </div>
                 </div>
@@ -331,14 +332,14 @@ const StudentProfile: React.FC = () => {
                   <i className="fa-solid fa-bed"></i>
                   <div>
                     <span className={styles.prefLabel}>Bed Type</span>
-                    <span className={styles.prefValue}>{student?.p_BedType || '—'}</span>
+                    <span className={styles.prefValue}>{student?.p_BedType || 'â€”'}</span>
                   </div>
                 </div>
                 <div className={styles.preferenceItem}>
                   <i className="fa-solid fa-toilet"></i>
                   <div>
                     <span className={styles.prefLabel}>Washroom Type</span>
-                    <span className={styles.prefValue}>{student?.p_WashroomType || '—'}</span>
+                    <span className={styles.prefValue}>{student?.p_WashroomType || 'â€”'}</span>
                   </div>
                 </div>
               </div>
@@ -351,3 +352,4 @@ const StudentProfile: React.FC = () => {
 };
 
 export default StudentProfile;
+

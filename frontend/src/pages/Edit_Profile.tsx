@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -112,10 +113,10 @@ const EditProfile: React.FC = () => {
 
       try {
         const [profileResponse, usersResponse] = await Promise.all([
-          axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
+          axios.post(`${FASTSTAY_APP_URL}/UserDetail/display/`, {
             p_StudentId: parseInt(userId)
           }, { signal }),
-          axios.get("http://127.0.0.1:8000/faststay_app/users/all/", { signal })
+          axios.get(`${FASTSTAY_APP_URL}/users/all/`, { signal })
         ]);
 
         const users: StudentDetails[] = usersResponse.data.users;
@@ -188,7 +189,7 @@ const EditProfile: React.FC = () => {
       };
 
       const response = await axios.put(
-        "http://127.0.0.1:8000/faststay_app/UserDetail/update/",
+        `${FASTSTAY_APP_URL}/UserDetail/update/`,
         updateData
       );
 
@@ -480,3 +481,4 @@ const EditProfile: React.FC = () => {
 };
 
 export default EditProfile;
+

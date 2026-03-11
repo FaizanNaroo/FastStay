@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useState, useEffect } from "react";
 import styles from "../styles/ManagerDemographics.module.css";
 
@@ -54,7 +55,7 @@ const ManagerDemographics: React.FC = () => {
         formData.append("p_OperatingHours", hours);
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/ManagerDetails/add/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/ManagerDetails/add/`, {
                 method: "POST",
                 body: formData
             });
@@ -146,3 +147,4 @@ const ManagerDemographics: React.FC = () => {
 };
 
 export default ManagerDemographics;
+

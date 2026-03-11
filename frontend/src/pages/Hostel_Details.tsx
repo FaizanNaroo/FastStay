@@ -4,6 +4,7 @@ import axios from "axios";
 import styles from "../styles/HostelDetails.module.css";
 import useAuthGuard from "../hooks/useAuthGuard";
 import Navbar from "../components/Navbar";
+import { FASTSTAY_APP_URL } from "../api/config";
 
 // ─── Interfaces ───
 
@@ -91,7 +92,6 @@ interface HostelDetails {
   p_longitude?: number;
 }
 
-const API_BASE_URL = "http://127.0.0.1:8000/faststay_app";
 const CACHE_TTL = 30 * 60 * 1000;
 
 const getCached = <T,>(key: string): T | null => {
@@ -118,7 +118,7 @@ const calculateAverageRating = (ratings: Rating[]): number => {
 
 const getHostelImages = async (hostelId: number, signal: AbortSignal): Promise<HostelImage[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/display/hostel_pic?p_HostelId=${hostelId}`, { signal });
+    const response = await axios.get(`${FASTSTAY_APP_URL}/display/hostel_pic?p_HostelId=${hostelId}`, { signal });
     const d = response.data;
     if (d && d.p_photolink) return [{ p_PhotoLink: d.p_photolink }];
     if (d && d.p_PhotoLink) return [{ p_PhotoLink: d.p_PhotoLink }];
@@ -129,7 +129,7 @@ const getHostelImages = async (hostelId: number, signal: AbortSignal): Promise<H
 
 const getHostelRatings = async (hostelId: number, signal: AbortSignal): Promise<Rating[]> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/display/hostel_rating`, { signal });
+    const response = await axios.get(`${FASTSTAY_APP_URL}/display/hostel_rating`, { signal });
     if (response.data && Array.isArray(response.data.ratings)) {
       return response.data.ratings
         .filter((r: any) => r.p_hostelid === hostelId || r.p_HostelId === hostelId || r.hostel_id === hostelId)
@@ -150,7 +150,7 @@ const getHostelRatings = async (hostelId: number, signal: AbortSignal): Promise<
 
 const getHostelExpenses = async (hostelId: number, signal: AbortSignal): Promise<Expense | null> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/Expenses/display/`, { p_HostelId: hostelId }, { signal });
+    const response = await axios.post(`${FASTSTAY_APP_URL}/Expenses/display/`, { p_HostelId: hostelId }, { signal });
     const data = response.data;
     if (data.success && data.result) {
       const r = data.result;
@@ -174,7 +174,7 @@ const getHostelExpenses = async (hostelId: number, signal: AbortSignal): Promise
 
 const getHostelMess = async (hostelId: number, signal: AbortSignal): Promise<MessDetails | null> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/display/hostel_mess?p_HostelId=${hostelId}`, { signal });
+    const response = await axios.get(`${FASTSTAY_APP_URL}/display/hostel_mess?p_HostelId=${hostelId}`, { signal });
     const d = response.data;
     if (d && !d.error) {
       const timeCount = d.p_messtimecount ?? d.p_MessTimeCount ?? 0;
@@ -190,7 +190,7 @@ const getHostelMess = async (hostelId: number, signal: AbortSignal): Promise<Mes
 
 const getHostelKitchen = async (hostelId: number, signal: AbortSignal): Promise<KitchenDetails | null> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/display/details_kitchen?p_HostelId=${hostelId}`, { signal });
+    const response = await axios.get(`${FASTSTAY_APP_URL}/display/details_kitchen?p_HostelId=${hostelId}`, { signal });
     const d = response.data;
     if (d && !d.error) {
       return {
@@ -205,7 +205,7 @@ const getHostelKitchen = async (hostelId: number, signal: AbortSignal): Promise<
 
 const getHostelSecurity = async (hostelId: number, signal: AbortSignal): Promise<SecurityInfo | null> => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/display/security_info?p_HostelId=${hostelId}`, { signal });
+    const response = await axios.get(`${FASTSTAY_APP_URL}/display/security_info?p_HostelId=${hostelId}`, { signal });
     const d = response.data;
     if (d && !d.error) {
       return {
@@ -221,7 +221,7 @@ const getHostelSecurity = async (hostelId: number, signal: AbortSignal): Promise
 
 const getHostelCoordinates = async (hostelId: number, signal: AbortSignal): Promise<{ lat: number; lng: number } | null> => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/hostel/display/`, { p_HostelId: hostelId }, { signal });
+    const response = await axios.post(`${FASTSTAY_APP_URL}/hostel/display/`, { p_HostelId: hostelId }, { signal });
     const data = response.data;
     if (data?.success && data?.result) {
       const r = data.result;
@@ -356,8 +356,8 @@ const HostelDetailsPage: React.FC = () => {
 
       // Fetch basic info list + detailed single hostel info in parallel
       const [allHostelsRes, singleHostelRes] = await Promise.all([
-        axios.get(`${API_BASE_URL}/display/all_hostels`, { signal }),
-        axios.post(`${API_BASE_URL}/hostel/display/`, { p_HostelId: id }, { signal }).catch(() => null),
+        axios.get(`${FASTSTAY_APP_URL}/display/all_hostels`, { signal }),
+        axios.post(`${FASTSTAY_APP_URL}/hostel/display/`, { p_HostelId: id }, { signal }).catch(() => null),
       ]);
 
       let basicListInfo: any = null;

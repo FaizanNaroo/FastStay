@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import { useEffect, useState } from "react";
 import styles from "../styles/HostelDashboard.module.css";
 import { Link, useNavigate } from "react-router-dom";
@@ -81,7 +82,7 @@ export default function HostelDashboard() {
         setDeleteMessage(null);
 
         try {
-            const response = await fetch("http://127.0.0.1:8000/faststay_app/hosteldetails/delete", {
+            const response = await fetch(`${FASTSTAY_APP_URL}/hosteldetails/delete`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -134,7 +135,7 @@ export default function HostelDashboard() {
     const fetchHostels = async () => {
         try {
             setLoading(true);
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+            const res = await fetch(`${FASTSTAY_APP_URL}/display/all_hostels`);
             const data = await res.json();
 
             if (data?.hostels) {
@@ -144,7 +145,7 @@ export default function HostelDashboard() {
                 );
                 setHostels(filtered);
 
-                // For each hostel → fetch pics
+                // For each hostel â†’ fetch pics
                 filtered.forEach((h: { p_HostelId: number }) => fetchPics(h.p_HostelId));
             }
         } catch (error) {
@@ -158,7 +159,7 @@ export default function HostelDashboard() {
     async function fetchPics(hostelId: number) {
         try {
             const res = await fetch(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelId}`
+                `${FASTSTAY_APP_URL}/display/hostel_pic?p_HostelId=${hostelId}`
             );
             const data = await res.json();
 
@@ -246,7 +247,7 @@ export default function HostelDashboard() {
                                         <p><span>Rooms:</span> {hostelToDelete?.p_NumRooms}</p>
                                     </div>
                                     <div className={styles.warningBox}>
-                                        <p className={styles.warningTitle}>⚠️ Warning</p>
+                                        <p className={styles.warningTitle}>âš ï¸ Warning</p>
                                         <p>This action will permanently delete:</p>
                                         <ul>
                                             <li>All rooms in this hostel</li>
@@ -448,3 +449,4 @@ export default function HostelDashboard() {
         </>
     );
 }
+

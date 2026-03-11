@@ -1,3 +1,5 @@
+import { FASTSTAY_APP_URL } from "../api/config";
+import API_BASE_URL from "../api/config";
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -73,9 +75,9 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
+  const a =
     Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
     Math.sin(dLon/2) * Math.sin(dLon/2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   return parseFloat((R * c).toFixed(2));
@@ -130,7 +132,7 @@ const processHostelData = (hostelData: any): Hostel => {
       images = hostelData.p_photolinks.split(',')
         .map((link: string) => link.trim())
         .filter((link: string) => link.length > 0)
-        .map((link: string) => link.startsWith('/') ? `http://127.0.0.1:8000${link}` : link);
+        .map((link: string) => link.startsWith('/') ? `${API_BASE_URL}${link}` : link);
     }
   }
 
@@ -252,7 +254,7 @@ const StudentHome: React.FC = () => {
 
       try {
         const response = await axios.get(
-          "http://127.0.0.1:8000/faststay_app/display/StudentHome",
+          `${FASTSTAY_APP_URL}/display/StudentHome`,
           { signal }
         );
 
@@ -438,7 +440,7 @@ const StudentHome: React.FC = () => {
               Block {hostel.p_blockno}, House {hostel.p_houseno}
               {hostel.distance_from_university !== -1 && (
                 <span className={styles.distance}>
-                  • {formatValue(hostel.distance_from_university, { isDistance: true })} from FAST
+                  â€¢ {formatValue(hostel.distance_from_university, { isDistance: true })} from FAST
                 </span>
               )}
             </p>
@@ -689,3 +691,4 @@ const StudentHome: React.FC = () => {
 };
 
 export default StudentHome;
+

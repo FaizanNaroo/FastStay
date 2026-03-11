@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../../api/config";
 import { useState, useEffect } from 'react';
 import styles from "../../styles/AddHostel.module.css";
 
@@ -33,7 +34,7 @@ export default function MessDetailsSection({
         try {
             setLoading(true);
 
-            const url = `http://127.0.0.1:8000/faststay_app/display/hostel_mess?p_HostelId=${hostelId}`;
+            const url = `${FASTSTAY_APP_URL}/display/hostel_mess?p_HostelId=${hostelId}`;
             const res = await fetch(url, {
                 method: "GET",
                 headers: { "Accept": "application/json" }
@@ -146,8 +147,8 @@ export default function MessDetailsSection({
 
         try {
             const url = existingMessDetails && messId
-                ? "http://127.0.0.1:8000/faststay_app/messDetails/update/"
-                : "http://127.0.0.1:8000/faststay_app/messDetails/add/";
+                ? `${FASTSTAY_APP_URL}/messDetails/update/`
+                : `${FASTSTAY_APP_URL}/messDetails/add/`;
 
             const method = existingMessDetails && messId ? "PUT" : "POST";
 
@@ -181,7 +182,7 @@ export default function MessDetailsSection({
         if (!window.confirm("Are you sure you want to delete mess details?")) return;
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/messDetails/delete/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/messDetails/delete/`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_MessId: messId }),
@@ -316,3 +317,4 @@ export default function MessDetailsSection({
         </div>
     );
 }
+

@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import styles from "../styles/Signup.module.css";
@@ -52,7 +53,7 @@ const Signup: React.FC = () => {
     }
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/faststay_app/signup/", {
+      const res = await fetch(`${FASTSTAY_APP_URL}/signup/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form)
@@ -233,3 +234,4 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
+

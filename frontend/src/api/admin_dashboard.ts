@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
-
-const API_BASE_URL = 'http://localhost:8000';
+import API_BASE_URL from './config';
 
 // Cache keys exported so the component can read them directly for SWR
 export const CACHE_DASHBOARD   = 'cache:admin:dashboard:summary';

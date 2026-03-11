@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import { useEffect, useState } from "react";
 import styles from "../styles/Profile.module.css";
 import { Link } from "react-router-dom";
@@ -70,7 +71,7 @@ export default function Profile() {
   useEffect(() => {
     async function fetchUserDetails() {
       try {
-        const res = await fetch("http://127.0.0.1:8000/faststay_app/users/all/");
+        const res = await fetch(`${FASTSTAY_APP_URL}/users/all/`);
         const data = await res.json();
         
         if (data?.users) {
@@ -90,7 +91,7 @@ export default function Profile() {
   useEffect(() => {
     async function fetchManagerDetails() {
       try {
-        const res = await fetch("http://127.0.0.1:8000/faststay_app/ManagerDetails/display/", {
+        const res = await fetch(`${FASTSTAY_APP_URL}/ManagerDetails/display/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -150,7 +151,7 @@ export default function Profile() {
     formDataToSend.append("p_OperatingHours", formData.p_OperatingHours.toString());
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/faststay_app/ManagerDetails/update/", {
+      const res = await fetch(`${FASTSTAY_APP_URL}/ManagerDetails/update/`, {
         method: "PUT",
         body: formDataToSend,
       });
@@ -247,7 +248,7 @@ export default function Profile() {
 
       <div className={styles.screen}>
         <div className={styles.container}>
-          {/* Page header is always rendered — never shifts */}
+          {/* Page header is always rendered â€” never shifts */}
           <div className={styles.pageHeader}>
             <h2 className={styles.pageTitle}>Your Profile</h2>
             <p className={styles.subtitle}>View and update your profile information</p>
@@ -548,3 +549,4 @@ export default function Profile() {
     </>
   );
 }
+

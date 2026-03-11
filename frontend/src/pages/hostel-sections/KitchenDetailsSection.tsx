@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../../api/config";
 import { useState, useEffect } from 'react';
 import styles from "../../styles/AddHostel.module.css";
 
@@ -36,7 +37,7 @@ export default function KitchenDetailsSection({
     async function fetchKitchenDetails(hostelId: number) {
         try {
             setLoading(true);
-            const res = await fetch(`http://127.0.0.1:8000/faststay_app/display/details_kitchen?p_HostelId=${hostelId}`, {
+            const res = await fetch(`${FASTSTAY_APP_URL}/display/details_kitchen?p_HostelId=${hostelId}`, {
                 method: "GET",
                 headers: {
                     "Accept": "application/json"
@@ -91,8 +92,8 @@ export default function KitchenDetailsSection({
 
         try {
             const url = existingKitchenDetails
-                ? "http://127.0.0.1:8000/faststay_app/kitchenDetails/update/"
-                : "http://127.0.0.1:8000/faststay_app/kitchenDetails/add/";
+                ? `${FASTSTAY_APP_URL}/kitchenDetails/update/`
+                : `${FASTSTAY_APP_URL}/kitchenDetails/add/`;
 
             const method = existingKitchenDetails ? "PUT" : "POST";
 
@@ -132,7 +133,7 @@ export default function KitchenDetailsSection({
         }
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/kitchen/delete", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/kitchen/delete`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_KitchenId: kitchenId }),
@@ -235,3 +236,4 @@ export default function KitchenDetailsSection({
         </div>
     );
 }
+

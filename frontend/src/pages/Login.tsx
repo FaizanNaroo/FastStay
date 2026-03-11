@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import { useState } from "react";
 import axios from "axios";
 import styles from "../styles/Login.module.css";
@@ -55,7 +56,7 @@ const Login: React.FC = () => {
     // --- Admin login: only access code needed ---
     if (adminMode) {
       try {
-        await axios.post("http://127.0.0.1:8000/faststay_app/admin/verify-access/", {
+        await axios.post(`${FASTSTAY_APP_URL}/admin/verify-access/`, {
           admin_secret: adminSecret,
         });
         setAuthenticatedUser("admin");
@@ -71,7 +72,7 @@ const Login: React.FC = () => {
 
     // --- Normal login ---
     try {
-      const response = await axios.post("http://127.0.0.1:8000/faststay_app/login/", {
+      const response = await axios.post(`${FASTSTAY_APP_URL}/login/`, {
         email,
         password,
       });
@@ -212,3 +213,4 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+

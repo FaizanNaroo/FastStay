@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useState, useEffect } from "react";
 import styles from "../styles/StudentDemographics.module.css";
 
@@ -41,7 +42,7 @@ const StudentDemographics: React.FC = () => {
         };
 
         try {
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/UserDetail/add/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/UserDetail/add/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -178,3 +179,4 @@ const StudentDemographics: React.FC = () => {
 };
 
 export default StudentDemographics;
+

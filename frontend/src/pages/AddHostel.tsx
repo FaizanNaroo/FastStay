@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 // src/components/AddHostel.tsx
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/AddHostel.module.css";
@@ -85,7 +86,7 @@ export default function AddHostel() {
         async function fetchHostels() {
             try {
                 setLoading(true);
-                const res = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+                const res = await fetch(`${FASTSTAY_APP_URL}/display/all_hostels`);
                 const data = await res.json();
 
                 if (data?.hostels) {
@@ -145,7 +146,7 @@ export default function AddHostel() {
     async function fetchHostelDetails(hostelIdParam: number) {
         try {
             setLoading(true);
-            const res = await fetch("http://127.0.0.1:8000/faststay_app/hostel/display/", {
+            const res = await fetch(`${FASTSTAY_APP_URL}/hostel/display/`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ p_HostelId: hostelIdParam })
@@ -195,7 +196,7 @@ export default function AddHostel() {
     async function loadHostelPics(hostelIdParam: number) {
         try {
             const res = await fetch(
-                `http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostelIdParam}`
+                `${FASTSTAY_APP_URL}/display/hostel_pic?p_HostelId=${hostelIdParam}`
             );
             const data = await res.json();
 
@@ -279,8 +280,8 @@ export default function AddHostel() {
 
         try {
             const url = editingMode
-                ? "http://127.0.0.1:8000/faststay_app/hostel/update/"
-                : "http://127.0.0.1:8000/faststay_app/hostel/add/";
+                ? `${FASTSTAY_APP_URL}/hostel/update/`
+                : `${FASTSTAY_APP_URL}/hostel/add/`;
 
             const method = editingMode ? "PUT" : "POST";
 
@@ -335,7 +336,7 @@ export default function AddHostel() {
                 }
 
                 // Refresh hostel list
-                const refreshRes = await fetch("http://127.0.0.1:8000/faststay_app/display/all_hostels");
+                const refreshRes = await fetch(`${FASTSTAY_APP_URL}/display/all_hostels`);
                 const refreshData = await refreshRes.json();
 
                 if (refreshData?.hostels) {
@@ -378,7 +379,7 @@ export default function AddHostel() {
             formData.append("p_PhotoLink", file);
 
             try {
-                const res = await fetch("http://127.0.0.1:8000/faststay_app/hostel_pics/add", {
+                const res = await fetch(`${FASTSTAY_APP_URL}/hostel_pics/add`, {
                     method: "POST",
                     body: formData,
                 });
@@ -427,7 +428,7 @@ export default function AddHostel() {
             formData.append("p_PhotoLink", file);
 
             try {
-                const res = await fetch("http://127.0.0.1:8000/faststay_app/hostel_pics/add", {
+                const res = await fetch(`${FASTSTAY_APP_URL}/hostel_pics/add`, {
                     method: "POST",
                     body: formData,
                 });
@@ -686,3 +687,4 @@ export default function AddHostel() {
         </>
     );
 }
+

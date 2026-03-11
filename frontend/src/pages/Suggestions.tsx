@@ -1,3 +1,4 @@
+import { FASTSTAY_APP_URL } from "../api/config";
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -145,12 +146,12 @@ const Suggestions: React.FC = () => {
 
       try {
         const [profileResponse, hostelsResponse, ratingsResponse, usersResponse] = await Promise.all([
-          axios.post("http://127.0.0.1:8000/faststay_app/UserDetail/display/", {
+          axios.post(`${FASTSTAY_APP_URL}/UserDetail/display/`, {
             p_StudentId: parseInt(userId)
           }, { signal }),
-          axios.get("http://127.0.0.1:8000/faststay_app/display/all_hostels", { signal }),
-          axios.get("http://127.0.0.1:8000/faststay_app/display/hostel_rating", { signal }).catch(() => ({ data: null })),
-          axios.get("http://127.0.0.1:8000/faststay_app/users/all/", { signal }).catch(() => ({ data: null }))
+          axios.get(`${FASTSTAY_APP_URL}/display/all_hostels`, { signal }),
+          axios.get(`${FASTSTAY_APP_URL}/display/hostel_rating`, { signal }).catch(() => ({ data: null })),
+          axios.get(`${FASTSTAY_APP_URL}/users/all/`, { signal }).catch(() => ({ data: null }))
         ]);
 
         let fetchedProfile: StudentProfile | null = null;
@@ -203,8 +204,8 @@ const Suggestions: React.FC = () => {
             topHostels.map(async (hostel: any) => {
               try {
                 const [imagesRes, expensesRes] = await Promise.all([
-                  axios.get(`http://127.0.0.1:8000/faststay_app/display/hostel_pic?p_HostelId=${hostel.p_hostelid}`, { signal }).catch(() => ({ data: null })),
-                  axios.post(`http://127.0.0.1:8000/faststay_app/Expenses/display/`, { p_HostelId: hostel.p_hostelid }, { signal }).catch(() => ({ data: null }))
+                  axios.get(`${FASTSTAY_APP_URL}/display/hostel_pic?p_HostelId=${hostel.p_hostelid}`, { signal }).catch(() => ({ data: null })),
+                  axios.post(`${FASTSTAY_APP_URL}/Expenses/display/`, { p_HostelId: hostel.p_hostelid }, { signal }).catch(() => ({ data: null }))
                 ]);
 
                 let images = '';
@@ -273,7 +274,7 @@ const Suggestions: React.FC = () => {
 
     try {
       const response = await axios.post(
-        "http://127.0.0.1:8000/faststay_app/AppSuggestion/add/",
+        `${FASTSTAY_APP_URL}/AppSuggestion/add/`,
         { p_UserId: parseInt(userId), p_Improvements: improvements, p_Defects: defects }
       );
 
@@ -612,3 +613,4 @@ const Suggestions: React.FC = () => {
 };
 
 export default Suggestions;
+

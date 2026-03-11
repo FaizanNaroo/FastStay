@@ -75,7 +75,7 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
     if (geocoderInstanceRef.current || !geocoderRef.current) return;
 
     const geocoder = new MapboxGeocoder({
-      accessToken: 'pk.eyJ1IjoiYXJoYW0xMjM0IiwiYSI6ImNta3J6ejF6cjE3eWIzbHFuczZxcGwwbTIifQ.Or9JpWqTXoefT5uaz5YjHA',
+      accessToken: import.meta.env.VITE_MAPBOX_TOKEN as string,
       mapboxgl: mapboxgl as any,
       placeholder: "Search hostel location...",
       marker: false,
@@ -92,7 +92,7 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         font-size: 14px;
       }
-      
+
       /* Fix the input field */
       .mapboxgl-ctrl-geocoder input[type='text'] {
         height: 40px !important;
@@ -101,7 +101,7 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         line-height: 1.5;
         border-radius: 4px !important;
       }
-      
+
       /* Fix search icon position */
       .mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--icon {
         top: 50% !important;
@@ -110,12 +110,12 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         width: 18px !important;
         height: 18px !important;
       }
-      
+
       /* Fix search icon color */
       .mapboxgl-ctrl-geocoder--icon {
         fill: #757575 !important;
       }
-      
+
       /* Fix dropdown suggestions */
       .mapbox-gl-geocoder--suggestion {
         padding: 10px 12px !important;
@@ -125,14 +125,14 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         font-size: 14px;
         line-height: 1.5;
       }
-      
+
       /* Fix suggestion icon */
       .mapbox-gl-geocoder--suggestion-icon {
         flex-shrink: 0 !important;
         margin-right: 8px !important;
         font-size: 16px;
       }
-      
+
       /* Fix suggestion text */
       .mapbox-gl-geocoder--suggestion-text {
         flex: 1 !important;
@@ -140,24 +140,24 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         text-overflow: ellipsis !important;
         white-space: nowrap !important;
       }
-      
+
       /* Ensure the geocoder appears properly */
       .mapboxgl-ctrl-geocoder--input:focus {
         outline: 2px solid #4a90e2;
         outline-offset: -2px;
       }
-      
+
       /* Fix loading spinner */
       .mapboxgl-ctrl-geocoder--icon-loading {
         width: 20px !important;
         height: 20px !important;
       }
-      
+
       /* Remove any conflicting styles */
       .mapboxgl-ctrl-geocoder--icon-close {
         margin-top: -10px !important;
       }
-      
+
       /* Ensure the geocoder dropdown appears above map */
       .mapboxgl-ctrl-geocoder--suggestions {
         z-index: 1000 !important;
@@ -218,9 +218,9 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         zIndex: 2,
         width: "100%",
       }}>
-        <div 
-          ref={geocoderRef} 
-          style={{ 
+        <div
+          ref={geocoderRef}
+          style={{
             flex: 1,
             height: "40px",
             position: "relative",
@@ -269,17 +269,17 @@ export default function MapPicker({ lat, lng, onSelect }: Props) {
         </button>
       </div>
 
-      <div style={{ 
-        width: "100%", 
-        height: "300px", 
-        minHeight: "300px", 
+      <div style={{
+        width: "100%",
+        height: "300px",
+        minHeight: "300px",
         position: "relative",
-        zIndex: 1 
+        zIndex: 1
       }}>
         <Map
           ref={mapRef}
           mapLib={mapboxgl}
-          mapboxAccessToken='pk.eyJ1IjoiYXJoYW0xMjM0IiwiYSI6ImNta3J6ejF6cjE3eWIzbHFuczZxcGwwbTIifQ.Or9JpWqTXoefT5uaz5YjHA'
+          mapboxAccessToken={import.meta.env.VITE_MAPBOX_TOKEN as string}
           {...viewState}
           onMove={(e) => setViewState(e.viewState)}
           onClick={(e) => {

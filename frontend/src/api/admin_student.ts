@@ -2,9 +2,7 @@
 
 import axios, { AxiosError } from 'axios';
 import { cacheGet, cacheSet } from '../utils/cache';
-
-// Base URL for the FastStay API
-const API_BASE_URL = 'http://127.0.0.1:8000';
+import API_BASE_URL from './config';
 
 export const CACHE_STUDENTS = 'cache:admin:students:all';
 
