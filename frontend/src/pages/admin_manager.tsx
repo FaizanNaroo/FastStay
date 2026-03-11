@@ -452,7 +452,7 @@ const AdminViewManagers: React.FC = () => {
               fontSize: '14px', minWidth: '280px', flex: '1 1 280px',
             }}
           />
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className={styles.mgrFilterGroup} style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <select
               value={filterType}
               onChange={e => setFilterType(e.target.value)}
@@ -489,8 +489,7 @@ const AdminViewManagers: React.FC = () => {
           </div>
 
           {/* Column headers */}
-          <div style={{
-            display: 'grid', gridTemplateColumns: '2fr 130px 110px 160px 120px 80px',
+          <div className={styles.mgrColHeader} style={{
             padding: '8px 20px', background: '#f5ece0', borderBottom: '1px solid #e8d8c8',
             fontSize: '11px', fontWeight: 700, color: '#6b4c38', textTransform: 'uppercase', letterSpacing: '0.5px',
           }}>
@@ -528,9 +527,8 @@ const AdminViewManagers: React.FC = () => {
             </div>
           ) : (
             filteredManagers.map((m, i) => (
-              <div key={m.id} style={{
-                display: 'grid', gridTemplateColumns: '2fr 130px 110px 160px 120px 80px',
-                alignItems: 'center', padding: '13px 20px',
+              <div key={m.id} className={styles.mgrGridRow} style={{
+                padding: '13px 20px',
                 borderBottom: i < filteredManagers.length - 1 ? '1px solid #ede4d8' : 'none',
                 transition: 'background 0.15s',
               }}
@@ -538,7 +536,7 @@ const AdminViewManagers: React.FC = () => {
                 onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
               >
                 {/* Avatar + Name */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+                <div className={styles.mgrCellName} style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
                   <div style={{ width: '42px', height: '42px', borderRadius: '50%', flexShrink: 0, background: 'linear-gradient(135deg, #8d5f3a, #5c3d2e)', color: '#f8f3e7', fontWeight: 700, fontSize: '15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {(m.name || 'M').charAt(0).toUpperCase()}
                   </div>
@@ -548,14 +546,14 @@ const AdminViewManagers: React.FC = () => {
                   </div>
                 </div>
                 {/* Phone */}
-                <div>
+                <div className={styles.mgrCellPhone}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#4b3a32' }}>
                     <i className="fa-solid fa-phone" style={{ color: '#8d7060', fontSize: '10px' }}></i>
                     {m.phone || '—'}
                   </span>
                 </div>
                 {/* Type */}
-                <div>
+                <div className={styles.mgrCellType}>
                   <span style={{
                     display: 'inline-block', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: 700,
                     backgroundColor:
@@ -569,17 +567,17 @@ const AdminViewManagers: React.FC = () => {
                   }}>{m.type || '—'}</span>
                 </div>
                 {/* Education */}
-                <div style={{ fontSize: '12px', color: '#4b3a32', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <div className={styles.mgrCellEdu} style={{ fontSize: '12px', color: '#4b3a32', display: 'flex', alignItems: 'center', gap: '5px' }}>
                   <i className="fa-solid fa-graduation-cap" style={{ color: '#8d7060', fontSize: '10px', flexShrink: 0 }}></i>
                   <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.education || '—'}</span>
                 </div>
                 {/* Operating Hours */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#4b3a32' }}>
+                <div className={styles.mgrCellHours} style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', color: '#4b3a32' }}>
                   <i className="fa-solid fa-clock" style={{ color: '#8d7060', fontSize: '10px' }}></i>
                   <span><strong>{m.operatingHours}</strong> hrs/day</span>
                 </div>
                 {/* Action */}
-                <div style={{ textAlign: 'right' }}>
+                <div className={styles.mgrCellAction} style={{ textAlign: 'right' }}>
                   <Link to={`/admin/managers/${m.id}`} style={{
                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                     padding: '7px 14px', background: '#5c3d2e', color: '#f8f3e7',

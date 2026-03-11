@@ -145,6 +145,47 @@ tr:hover {
   }
 }
 
+/* ----------- MANAGER LIST GRID (admin_manager.tsx) ----------- */
+.mgrColHeader {
+  display: grid;
+  grid-template-columns: 2fr 130px 110px 160px 120px 80px;
+}
+
+.mgrGridRow {
+  display: grid;
+  grid-template-columns: 2fr 130px 110px 160px 120px 80px;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mgrColHeader {
+    display: none;
+  }
+
+  .mgrGridRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mgrCellName   { flex: 1 1 auto; min-width: 0; order: 1; }
+  .mgrCellAction { flex: 0 0 auto; order: 2; align-self: flex-start; }
+  .mgrCellPhone  { flex: 0 0 auto; order: 3; }
+  .mgrCellType   { flex: 0 0 auto; order: 4; }
+  .mgrCellHours  { flex: 0 0 auto; order: 5; }
+  .mgrCellEdu    { flex: 1 1 100%; order: 6; }
+
+  .mgrFilterGroup {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .mgrFilterGroup select {
+    width: 100%;
+  }
+}
+
 /* ----------- HOSTEL LIST GRID (admin_hostels.tsx) ----------- */
 .hostelColHeader {
   display: grid;
