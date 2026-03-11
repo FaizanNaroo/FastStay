@@ -289,27 +289,128 @@ tr:hover {
   .hostelCellMgr    { grid-area: mgr;    min-width: 0; align-self: center; }
   .hostelCellAmen   { grid-area: amen;   align-self: center; justify-content: flex-end; }
 
-  /* Search / filter bar — single row on mobile */
+  /* Search on its own row, filters on second row */
   .hostelFilterBar {
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: 6px !important;
   }
 
   .hostelFilterBar input {
+    flex: 1 1 100% !important;
     min-width: 0 !important;
-    flex: 1 1 0 !important;
     padding: 8px 10px !important;
     font-size: 13px !important;
   }
 
   .hostelFilterBar select {
     min-width: 0 !important;
+    flex: 1 1 0 !important;
     padding: 8px 4px !important;
     font-size: 12px !important;
-    max-width: 90px;
+    max-width: 130px;
   }
 
   .hostelFilterBar button {
+    padding: 8px 8px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* ----------- STUDENT OVERVIEW TILES (admin_student.tsx) ----------- */
+.stuOverviewGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.stuOverviewGrid > div {
+  border-right: 1px solid #ede4d8;
+  border-bottom: 1px solid #ede4d8;
+}
+
+.stuOverviewGrid > div:last-child {
+  border-right: none;
+}
+
+@media (max-width: 768px) {
+  .stuOverviewGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stuOverviewGrid > div:nth-child(2) {
+    border-right: none;
+  }
+
+  .stuOverviewGrid > div:nth-child(3),
+  .stuOverviewGrid > div:nth-child(4) {
+    border-top: none;
+  }
+
+  .stuOverviewGrid > div:nth-child(4) {
+    border-right: none;
+  }
+}
+
+/* ----------- STUDENT LIST GRID (admin_student.tsx) ----------- */
+.stuColHeader {
+  display: grid;
+  grid-template-columns: 1fr 80px 140px 130px 90px;
+}
+
+.stuGridRow {
+  display: grid;
+  grid-template-columns: 1fr 80px 140px 130px 90px;
+  align-items: center;
+  padding: 13px 20px;
+  margin: 0 12px 8px;
+  border: 1px solid #dce8f7;
+  border-radius: 10px;
+  background: #fdfdff;
+  transition: background 0.15s, box-shadow 0.15s;
+}
+
+@media (max-width: 768px) {
+  .stuColHeader { display: none; }
+
+  .stuGridRow {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name   action"
+      "city   gender"
+      "age    age";
+    column-gap: 8px;
+    row-gap: 6px;
+    padding: 12px 14px;
+    margin: 0 8px 8px;
+  }
+
+  .stuCellName   { grid-area: name;   min-width: 0; }
+  .stuCellAction { grid-area: action; align-self: start; }
+  .stuCellCity   { grid-area: city;   align-self: center; }
+  .stuCellGender { grid-area: gender; align-self: center; justify-self: end; }
+  .stuCellAge    { grid-area: age;    align-self: center; }
+
+  .stuFilterBar {
+    flex-wrap: wrap;
+    gap: 6px !important;
+  }
+
+  .stuFilterBar input {
+    flex: 1 1 100% !important;
+    min-width: 0 !important;
+    padding: 8px 10px !important;
+    font-size: 13px !important;
+  }
+
+  .stuFilterBar select {
+    min-width: 0 !important;
+    flex: 1 1 0 !important;
+    padding: 8px 4px !important;
+    font-size: 12px !important;
+    max-width: 130px;
+  }
+
+  .stuFilterBar button {
     padding: 8px 8px !important;
     font-size: 12px !important;
   }
