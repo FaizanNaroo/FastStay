@@ -55,6 +55,7 @@ function App() {
         <Route path="/student/ownerDetails" element={<OwnerDetails/>}/>
         <Route path="/student/rooms" element={<Rooms/>}/>
         <Route path="/student/directions" element={<DirectionsMap />} />
+        <Route path="/student/signout" element={<LogoutConfirm />} />
         <Route element={<AdminLayout />}>
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/logout" element={<LogoutConfirm />} />

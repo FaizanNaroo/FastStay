@@ -11,10 +11,10 @@ const useAuthGuard = (options?: { allowGuest?: boolean }): string => {
   const navigate = useNavigate();
   const allowGuest = options?.allowGuest ?? false;
 
-  const userId =
-    searchParams.get("user_id") ||
-    sessionStorage.getItem("authenticated_user") ||
-    "";
+  const urlUserId = searchParams.get("user_id");
+  const storedUser = sessionStorage.getItem("authenticated_user");
+
+  const userId = urlUserId || storedUser || "";
 
   useEffect(() => {
     if (!userId) {
@@ -23,17 +23,17 @@ const useAuthGuard = (options?: { allowGuest?: boolean }): string => {
     }
 
     if (userId === "guest" && !allowGuest) {
-      // Will be handled by the page component itself
       return;
     }
 
     if (userId !== "guest") {
-      const storedUser = sessionStorage.getItem("authenticated_user");
-      if (storedUser && storedUser !== userId) {
+      // If no stored user, or URL user_id doesn't match stored user, redirect
+      if (!storedUser || (urlUserId && urlUserId !== storedUser)) {
         navigate("/");
+        return;
       }
     }
-  }, [userId, navigate, allowGuest]);
+  }, [userId, urlUserId, storedUser, navigate, allowGuest]);
 
   return userId;
 };

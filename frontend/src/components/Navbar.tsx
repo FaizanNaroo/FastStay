@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import styles from "../styles/Navbar.module.css";
 
 interface NavbarProps {
@@ -9,7 +9,6 @@ interface NavbarProps {
 const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
   const location = useLocation();
   const currentPath = location.pathname;
-  const navigate = useNavigate();
   const isGuest = userId === "guest";
   const [drawerOpen, setDrawerOpen] = useState(false);
 
@@ -23,12 +22,6 @@ const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
     document.body.style.overflow = drawerOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
-
-  const handleLogout = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    const currentUrl = `${location.pathname}${location.search}`;
-    navigate(`/admin/logout?from=${encodeURIComponent(currentUrl)}`);
-  }, [location, navigate]);
 
   const isActive = useCallback((path: string) => {
     return currentPath.includes(path)
@@ -74,9 +67,9 @@ const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
               Recommendations
             </Link>
           )}
-          <a href="" onClick={handleLogout} className={styles.navLinkItem}>
+          <Link to={`/student/signout?user_id=${userId}`} className={isActive("/student/signout")}>
             Sign out
-          </a>
+          </Link>
         </div>
 
         {/* Hamburger (mobile only) */}
@@ -139,17 +132,10 @@ const SharedNavbar: React.FC<NavbarProps> = ({ userId }) => {
 
           <div className={styles.drawerDivider} />
 
-          <a href="" onClick={handleLogout} className={styles.drawerLink}>
+          <Link to={`/student/signout?user_id=${userId}`} className={isDrawerActive("/student/signout")}>
             <i className="fa-solid fa-right-from-bracket"></i> Sign out
-          </a>
+          </Link>
         </div>
 
         <div className={styles.drawerFooter}>
-          <p>© {new Date().getFullYear()} FastStay</p>
-        </div>
-      </aside>
-    </>
-  );
-};
-
-export default SharedNavbar;
+          <p>© {new Date().getFullYear()} FastStay</p>        </div>      </aside>    </>  );};export default SharedNavbar;

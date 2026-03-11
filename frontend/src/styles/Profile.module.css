@@ -49,7 +49,7 @@
 /* Fixed page header so title/subtitle don't shift on load */
 .pageHeader {
     min-height: 80px;
-    padding: 16px 0 12px;
+    padding: 2px 0px 12px;
 }
 
 .pageTitle {
