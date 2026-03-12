@@ -522,3 +522,89 @@ tr:hover {
     font-size: 12px !important;
   }
 }
+
+/* ----------- DASHBOARD RECENT USERS TABLE ----------- */
+.dashUserColHeader {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px 90px;
+  padding: 8px 20px;
+  background: #fdf6ef;
+  border-bottom: 1px solid #ede4d8;
+  font-size: 11px;
+  font-weight: 700;
+  color: #8d7060;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashUserRow {
+  display: grid;
+  grid-template-columns: 1fr 120px 140px 90px;
+  align-items: center;
+  padding: 12px 20px;
+  transition: background 0.15s;
+}
+
+@media (max-width: 768px) {
+  .dashUserColHeader {
+    display: none;
+  }
+  .dashUserRow {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name action"
+      "city type";
+    padding: 10px 12px;
+    margin: 0 8px 6px;
+    border: 1px solid #ede4d8;
+    border-radius: 10px;
+    background: #fffdf9;
+  }
+  .dashUserCellName   { grid-area: name;   min-width: 0; }
+  .dashUserCellAction { grid-area: action; align-self: center; }
+  .dashUserCellCity   { grid-area: city;   align-self: center; font-size: 12px !important; }
+  .dashUserCellType   { grid-area: type;   align-self: center; justify-self: end; }
+}
+
+/* ----------- DASHBOARD RECENT HOSTELS TABLE ----------- */
+.dashHostelColHeader {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 90px;
+  padding: 8px 20px;
+  background: #f3f8f3;
+  border-bottom: 1px solid #deeade;
+  font-size: 11px;
+  font-weight: 700;
+  color: #5a7060;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dashHostelRow {
+  display: grid;
+  grid-template-columns: 1fr 160px 160px 90px;
+  align-items: center;
+  padding: 12px 20px;
+  transition: background 0.15s;
+}
+
+@media (max-width: 768px) {
+  .dashHostelColHeader {
+    display: none;
+  }
+  .dashHostelRow {
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "hostel action"
+      "block manager";
+    padding: 10px 12px;
+    margin: 0 8px 6px;
+    border: 1px solid #deeade;
+    border-radius: 10px;
+    background: #f9fdf9;
+  }
+  .dashHostelCellHostel  { grid-area: hostel;  min-width: 0; }
+  .dashHostelCellAction  { grid-area: action;  align-self: center; }
+  .dashHostelCellBlock   { grid-area: block;   align-self: center; font-size: 12px !important; }
+  .dashHostelCellManager { grid-area: manager; align-self: center; justify-self: end; font-size: 12px !important; }
+}
