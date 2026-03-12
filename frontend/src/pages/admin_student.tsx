@@ -84,7 +84,7 @@ const AdminViewStudents: React.FC = () => {
                 <h2 className={styles.pageTitle}>
                     <i className="fa-solid fa-user-graduate" style={{ color: '#2980b9', marginRight: '10px' }}></i>All Students
                 </h2>
-                <p className={styles.subtitle}>View and manage student accounts registered on FastStay.</p>
+                <p className={styles.subtitle}>View and manage registered student accounts on FastStay.</p>
 
                 {/* STUDENT OVERVIEW TILES */}
                 <div style={{ background: '#f8f3e7', borderRadius: '16px', boxShadow: '0 6px 20px rgba(0,0,0,0.22)', marginBottom: '24px', overflow: 'hidden' }}>
